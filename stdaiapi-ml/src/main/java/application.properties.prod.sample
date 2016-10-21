@@ -1,0 +1,8 @@
+app.name=stdaiapi-ml
+app.description=${app.name} provide a service layer of machine learning
+
+server.port=10102
+server.context-path=/ml
+
+# dev, qa, prod, home
+spring.profiles.active=prod
