@@ -1,8 +1,0 @@
-app.name=stdaiapi-math
-app.description=${app.name} provide a service layer of math
-
-server.port=10101
-server.context-path=/math
-
-# dev, qa, prod, home
-spring.profiles.active=qa
