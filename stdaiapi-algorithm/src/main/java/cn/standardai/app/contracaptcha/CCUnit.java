@@ -67,7 +67,8 @@ public class CCUnit extends GAUnit {
 		double sigmoidK = (double)Converter.binaryString2Int(strGene.substring(index, index += 5)) / 10;
 
 		// 建立网络
-		bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		// TODO
+		//bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
 		bpnet.setPs(getPs());
 		getPs().println("--------BPNetwork INFO--------");
 		bpnet.printInitParam();

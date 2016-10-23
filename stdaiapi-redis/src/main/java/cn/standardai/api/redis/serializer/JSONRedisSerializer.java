@@ -1,4 +1,4 @@
-package com.kingdy.parkos.redis.serializer;
+package cn.standardai.api.redis.serializer;
 
 import java.nio.charset.Charset;
 

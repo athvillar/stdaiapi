@@ -75,7 +75,7 @@ public class C45 {
 		}
 
 		// 最大增益的点即是最佳分割点
-		Double maxSplitPoint = Statistic.maxValueKey(igMap);
+		Double maxSplitPoint = Statistic.maxDoubleValueKey(igMap);
 		attribute.getClassifier().setSeparator(maxSplitPoint);
 
 		// 返回最大增益
@@ -125,7 +125,7 @@ public class C45 {
 		}
 
 		// 最大增益TODO的属性
-		Attribute maxIGAttribute = Statistic.maxValueKey(igRatioMap);
+		Attribute maxIGAttribute = Statistic.maxDoubleValueKey(igRatioMap);
 		// 设为节点属性
 		currentNode.setAttribute(maxIGAttribute);
 		// 将其从新属性列表中删除
@@ -243,7 +243,7 @@ public class C45 {
 				count2Map(countMap, str);
 			}
 			// 获得类别个数最多的类别作为分类结果
-			return (String)Statistic.maxValueKey(countMap);
+			return (String)Statistic.maxIntegerValueKey(countMap);
 		} else {
 			// 超过叶子节点最大允许数据数量，判断各数据是否可以划分为同一类
 			for (Integer i : dataIndexes) {

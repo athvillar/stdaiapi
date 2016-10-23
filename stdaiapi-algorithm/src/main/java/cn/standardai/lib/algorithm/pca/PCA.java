@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import cn.standardai.lib.algorithm.kmeans.KMeansNode;
+
 /**
  * K平均算法（k-means）主类
  * @author 韩晴

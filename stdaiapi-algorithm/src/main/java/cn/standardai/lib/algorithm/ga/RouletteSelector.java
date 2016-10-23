@@ -52,12 +52,12 @@ public class RouletteSelector extends Selector {
 	 */
 	public int nextIndex() {
 		try {
-			return (int)chooseFunction.getY(Math.random() * sum);
+			return (int)((Roulette)chooseFunction).getY(Math.random() * sum);
 		} catch (FunctionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return 0;
 		}
-		return 0;
 	}
 
 	/**

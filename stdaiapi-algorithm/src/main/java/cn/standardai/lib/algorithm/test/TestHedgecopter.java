@@ -60,7 +60,9 @@ public class TestHedgecopter {
 		BPNetwork bpnet = new BPNetwork(num, 0.2, -0.5, 0.5, af, cf);
 
 		// 训练
-		Hedgecopter hedgecopter = new Hedgecopter(bpnet, 5);
+		// TODO
+		//Hedgecopter hedgecopter = new Hedgecopter(bpnet, 5);
+		Hedgecopter hedgecopter = null;
 		while (!hedgecopter.crash()) {
 			hedgecopter.next();
 		}

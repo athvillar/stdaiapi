@@ -4,6 +4,10 @@
 */
 package cn.standardai.lib.base.function;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 /**
  * 统计相关函数
  * @author 韩晴
@@ -83,5 +87,29 @@ public class Statistic {
 			max += input[i];
 		}
 		return max;
+	}
+
+	public static <T> T maxDoubleValueKey(Map<T, Double> igMap) {
+		Double maxValue = Double.MIN_VALUE;
+		T maxKey = null;
+		for (Entry<T, Double> entry : igMap.entrySet()) {
+			if (entry.getValue() > maxValue) {
+				maxKey = entry.getKey();
+				maxValue = entry.getValue();
+			}
+		}
+		return maxKey;
+	}
+
+	public static <T> T maxIntegerValueKey(Map<T, Integer> igMap) {
+		Integer maxValue = Integer.MIN_VALUE;
+		T maxKey = null;
+		for (Entry<T, Integer> entry : igMap.entrySet()) {
+			if (entry.getValue() > maxValue) {
+				maxKey = entry.getKey();
+				maxValue = entry.getValue();
+			}
+		}
+		return maxKey;
 	}
 }

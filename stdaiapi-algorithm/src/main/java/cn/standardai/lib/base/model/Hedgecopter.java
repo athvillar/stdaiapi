@@ -57,9 +57,12 @@ public class Hedgecopter {
 		double[] predictCoreExpect = getRealStatus();
 		
 		try {
+			// TODO
+			/*
 			if (isCorrect(desicionCoreOutput)) {
 				decisionCore.train(new double[][] {input4DesicionCore}, new double[][] {desicionCoreOutput});
 			}
+			*/
 			predictCore.train(new double[][] {input4PredictCore}, new double[][] {predictCoreExpect});
 		} catch (AnnException e) {
 			// TODO Auto-generated catch block
@@ -72,15 +75,16 @@ public class Hedgecopter {
 	}
 	
 	private boolean isCorrect(double[] desicions, double[] predicts) {
-		double heightInFuture = getHeightByTime(height, speed, acceleration, time);
+		// TODO
+		//double heightInFuture = getHeightByTime(height, speed, acceleration, time);
 		if (height < insHeight * (1 + insDeviation) && height > insHeight * (1 - insDeviation)) {
 			return true;
 		} else {
 			return false;
 		}
-		for (int i = 0; i < insTimeLimit; i++) {
-			
-		}
+		//for (int i = 0; i < insTimeLimit; i++) {
+		//	
+		//}
 	}
 	
 	private double[] getRealStatus() {

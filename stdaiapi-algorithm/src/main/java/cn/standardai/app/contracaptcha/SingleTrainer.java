@@ -69,7 +69,9 @@ public class SingleTrainer {
 		double sigmoidK = 1;
 
 		// 建立网络
-		BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		// TODO
+		//BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		BPNetwork bpnet = null;
 		bpnet.setPs(ps);
 		ps.println("--------BPNetwork INFO--------");
 		bpnet.printInitParam();

@@ -128,9 +128,9 @@ public class TestGA {
 		double sigmoidK = 3.1;
 
 		// 建立网络
-		BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		//BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
 
-		return bpnet;
+		return null;
 	}
 	
 	private static BPNetwork makeBP2() {
@@ -143,9 +143,9 @@ public class TestGA {
 		double sigmoidK = 2.3;
 
 		// 建立网络
-		BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		//BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
 
-		return bpnet;
+		return null;
 	}
 	
 	private static BPNetwork makeBP3() {
@@ -158,9 +158,9 @@ public class TestGA {
 		double sigmoidK = 3.0;
 
 		// 建立网络
-		BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		//BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
 
-		return bpnet;
+		return null;
 	}
 	
 	private static BPNetwork makeBP4() {
@@ -173,8 +173,8 @@ public class TestGA {
 		double sigmoidK = 2.8;
 
 		// 建立网络
-		BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
+		//BPNetwork bpnet = new BPNetwork(layerNums, eta, maxTrain, minW, maxW, sigmoidK);
 
-		return bpnet;
+		return null;
 	}
 }

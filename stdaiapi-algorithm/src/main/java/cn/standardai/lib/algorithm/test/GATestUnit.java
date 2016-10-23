@@ -25,10 +25,6 @@ public class GATestUnit extends GAUnit {
 		super(geneLen);
 	}
 
-	public GATestUnit(boolean[] gene) {
-		super(gene);
-	}
-
 	/**
 	 * 个体根据基因工作
 	 */

@@ -49,7 +49,9 @@ public class TestAnn {
 
 		// 创建网络
 		int[] num = {40, 20,20,20, 3};
-		BPNetwork bpnet = new BPNetwork(num, 0.1, 3000, -0.5, 0.5, 1);
+		// TDOO
+		BPNetwork bpnet = null;
+		//BPNetwork bpnet = new BPNetwork(num, 0.1, 3000, -0.5, 0.5, 1);
 
 		// 训练
 		bpnet.train(input, expectation);
@@ -96,7 +98,9 @@ public class TestAnn {
 
 		// 创建网络
 		int[] num = {5,8,8,8, 4};
-		BPNetwork bpnet = new BPNetwork(num, 0.1, 1000, -0.5, 0.5, 2);
+		// TDOO
+		BPNetwork bpnet = null;
+		//BPNetwork bpnet = new BPNetwork(num, 0.1, 1000, -0.5, 0.5, 2);
 
 		// 训练
 		bpnet.train(input, expectation);
@@ -133,7 +137,10 @@ public class TestAnn {
 
 		// 创建网络
 		int[] num = {2, 3, 1};
-		BPNetwork bpnet = new BPNetwork(num, 0.1, 1000, -0.5, 0.5, 2);
+
+		// TDOO
+		BPNetwork bpnet = null;
+		//BPNetwork bpnet = new BPNetwork(num, 0.1, 1000, -0.5, 0.5, 2);
 
 		// 训练
 		bpnet.train(input, expectation);
@@ -180,7 +187,10 @@ public class TestAnn {
 
 		// 创建网络
 		int[] num = {8, 111, 8};
-		BPNetwork bpnet = new BPNetwork(num, 0.1,5000, -0.5, 0.5, 2);
+
+		// TDOO
+		BPNetwork bpnet = null;
+		//BPNetwork bpnet = new BPNetwork(num, 0.1,5000, -0.5, 0.5, 2);
 
 		// 训练
 		bpnet.train(input, expectation);
@@ -231,7 +241,10 @@ public class TestAnn {
 
 		// 创建网络
 		int[] num = {1, 16, 8};
-		BPNetwork bpnet = new BPNetwork(num,2,70000,-1, 1, 0.08);
+
+		// TDOO
+		BPNetwork bpnet = null;
+		//BPNetwork bpnet = new BPNetwork(num,2,70000,-1, 1, 0.08);
 
 		// 训练
 		bpnet.train(input, expectation);

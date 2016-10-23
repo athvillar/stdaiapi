@@ -1,4 +1,4 @@
-package com.kingdy.parkos.redis.core;
+package cn.standardai.api.redis.core;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +9,8 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
-import com.kingdy.parkos.core.bean.PropertyConfig.Redis;
-import com.kingdy.parkos.redis.serializer.JSONRedisSerializer;
+import cn.standardai.api.core.bean.PropertyConfig.Redis;
+import cn.standardai.api.redis.serializer.JSONRedisSerializer;
 
 public class StringJSONRedisCacheManager {
 

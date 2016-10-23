@@ -1,6 +1,6 @@
-package com.kingdy.parkos.redis.exception;
+package cn.standardai.api.redis.exception;
 
-import com.kingdy.parkos.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.ParkOSException;
 
 public class RedisException extends ParkOSException {
 

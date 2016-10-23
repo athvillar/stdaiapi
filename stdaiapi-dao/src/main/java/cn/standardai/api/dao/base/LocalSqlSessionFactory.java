@@ -9,9 +9,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
-import com.kingdy.parkos.core.bean.PropertyConfig.Mysql;
-import com.kingdy.parkos.core.bean.PropertyConfig.Oracle;
-
+import cn.standardai.api.core.bean.PropertyConfig.Mysql;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.exception.DaoException;
 

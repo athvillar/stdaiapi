@@ -11,9 +11,11 @@ public class ClassifyAgent {
 
 		String algorithm = request.getString("algorithm");
 		if (algorithm == null || "".equals(algorithm) || "KNN".equalsIgnoreCase(algorithm)) {
-			Classifier agent = new KNNClassifier();
+			KNNClassifier agent = new KNNClassifier();
+			return agent.classify(request);
+		} else {
+			return null;
 		}
-		agent.load(request.getString("token"), request.getString("dataSet"));
 	}
 
 	public void done() {

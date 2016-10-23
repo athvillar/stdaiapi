@@ -1,10 +1,10 @@
-package com.kingdy.parkos.redis.agent;
+package cn.standardai.api.redis.agent;
 
 import org.springframework.cache.Cache;
 import org.springframework.cache.Cache.ValueWrapper;
 
-import com.kingdy.parkos.redis.bean.Token;
-import com.kingdy.parkos.redis.core.StringJSONRedisCacheManager;
+import cn.standardai.api.redis.bean.Token;
+import cn.standardai.api.redis.core.StringJSONRedisCacheManager;
 
 public class TokenRedisAgent {
 

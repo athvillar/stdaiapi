@@ -1,31 +1,15 @@
-/**
-* DBUtil.java
-* Copyright 2015 standardai Co.ltd.
-*/
 package cn.standardai.app.vchess;
 
-/**
- * DBUtil
- * @author 韩晴
- *
- */
 public class DBUtil {
 
-	/**
-	 * constructor
-	 */
-	public DBUtil() {
-		super();
+	public static void update(Player player2) {
+		// TODO Auto-generated method stub
+		
 	}
-	
+
 	public static void insert(Script script) {
-
-		// TODO
+		// TODO Auto-generated method stub
+		
 	}
 
-	public static void update(Player player) {
-
-		// TODO
-	}
-	
 }

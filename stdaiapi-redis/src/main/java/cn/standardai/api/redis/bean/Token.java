@@ -1,4 +1,4 @@
-package com.kingdy.parkos.redis.bean;
+package cn.standardai.api.redis.bean;
 
 import java.io.Serializable;
 import java.util.Date;

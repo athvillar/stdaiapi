@@ -1,6 +1,6 @@
 package cn.standardai.api.dao.exception;
 
-import com.kingdy.parkos.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.ParkOSException;
 
 public class DaoException extends ParkOSException {
 
