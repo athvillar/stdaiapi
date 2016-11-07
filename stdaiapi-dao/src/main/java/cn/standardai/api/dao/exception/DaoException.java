@@ -1,8 +1,8 @@
 package cn.standardai.api.dao.exception;
 
-import cn.standardai.api.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.StdaiException;
 
-public class DaoException extends ParkOSException {
+public class DaoException extends StdaiException {
 
 	private static final String moduleName = "DAO模块";
 

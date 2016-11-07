@@ -30,20 +30,6 @@ public class MathUtil {
 		return (preSCG = (int)((a * preSCG + c) % m));
 	}
 
-	public static String random(char[] chars, int n) {
-		if (chars == null) return random(n);
-		int scg = preSCG;
-		char[] c = new char[n];
-		for (int i = 0; i < n; i++) {
-			if (scg == 0) scg = scg(SCGA, SCGC, SCGM);
-			int mod = scg % AVAILABLE_CHAR_NUM;
-			int mod2 = mod % chars.length;
-			c[i] = chars[mod2];
-			scg = (scg - mod) / AVAILABLE_CHAR_NUM;
-		}
-		return String.valueOf(c);
-	}
-
 	public static String random(int n) {
 		int scg = preSCG;
 		char[] c = new char[n];
@@ -94,5 +80,19 @@ public class MathUtil {
 		System.out.println(Long.MAX_VALUE);
 		System.out.println((int)(2147483647L*2147483647L));
 		*/
+	}
+
+	public static String random(char[] chars, int n) {
+		if (chars == null) return random(n);
+		int scg = preSCG;
+		char[] c = new char[n];
+		for (int i = 0; i < n; i++) {
+			if (scg == 0) scg = scg(SCGA, SCGC, SCGM);
+			int mod = scg % AVAILABLE_CHAR_NUM;
+			int mod2 = mod % chars.length;
+			c[i] = chars[mod2];
+			scg = (scg - mod) / AVAILABLE_CHAR_NUM;
+		}
+		return String.valueOf(c);
 	}
 }

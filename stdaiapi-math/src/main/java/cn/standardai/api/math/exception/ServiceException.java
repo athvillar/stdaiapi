@@ -1,8 +1,8 @@
 package cn.standardai.api.math.exception;
 
-import cn.standardai.api.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.StdaiException;
 
-public class ServiceException extends ParkOSException {
+public class ServiceException extends StdaiException {
 
 	private static final String moduleName = "服务模块";
 

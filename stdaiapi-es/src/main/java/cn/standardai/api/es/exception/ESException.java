@@ -1,8 +1,8 @@
 package cn.standardai.api.es.exception;
 
-import cn.standardai.api.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.StdaiException;
 
-public class ESException extends ParkOSException {
+public class ESException extends StdaiException {
 
 	private static final String moduleName = "ElasticSearch";
 

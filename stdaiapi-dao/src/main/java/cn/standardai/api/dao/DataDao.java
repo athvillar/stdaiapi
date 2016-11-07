@@ -6,14 +6,16 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import com.alibaba.fastjson.JSONObject;
+
 import cn.standardai.api.dao.bean.JsonData;
 
 public interface DataDao {
 
-	@Select({"SELECT * FROM JSONDATA WHERE DATASETID = #{dataSetId}"})
-	List<JsonData> selectJsonDataByDataSetId(String dataSetId);
+	@Select({"SELECT DATA FROM JSONDATA WHERE DATASETID = #{datasetId}"})
+	List<JSONObject> selectByDatasetId(@Param("datasetId") String datasetId);
 
-	@Insert({"INSERT INTO JSONDATA (ID, DATASETID, DATA) ",
-		"VALUES (#{param.id}, #{param.dataSetId}, #{param.data})"})
-	void insertJsonData(@Param("data") JsonData param);
+	@Insert({"INSERT INTO JSONDATA (DATASETID, INDEX, DATA) ",
+		"VALUES (#{param.datasetId}, #{param.index}, #{param.data})"})
+	void insert(@Param("param") JsonData param);
 }

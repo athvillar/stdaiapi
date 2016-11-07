@@ -1,8 +1,0 @@
-app.name=stdaiapi-data
-app.description=${app.name} provide a service layer of data
-
-server.port=10103
-server.context-path=/data
-
-# dev, qa, prod, home
-spring.profiles.active=qa

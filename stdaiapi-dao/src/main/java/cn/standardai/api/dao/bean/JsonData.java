@@ -1,31 +1,19 @@
 package cn.standardai.api.dao.bean;
 
-import java.util.Date;
-
 public class JsonData {
 
-	private String id;
+	private String datasetId;
 
-	private String dataSetId;
+	private Integer index;
 
 	private String data;
 
-	private Date updateTime;
-
-	public String getId() {
-		return id;
+	public Integer getIndex() {
+		return index;
 	}
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getDataSetId() {
-		return dataSetId;
-	}
-
-	public void setDataSetId(String dataSetId) {
-		this.dataSetId = dataSetId;
+	public void setIndex(Integer index) {
+		this.index = index;
 	}
 
 	public String getData() {
@@ -36,11 +24,11 @@ public class JsonData {
 		this.data = data;
 	}
 
-	public Date getUpdateTime() {
-		return updateTime;
+	public String getDatasetId() {
+		return datasetId;
 	}
 
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
+	public void setDatasetId(String datasetId) {
+		this.datasetId = datasetId;
 	}
 }

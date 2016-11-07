@@ -1,8 +1,8 @@
 package cn.standardai.api.core.exception;
 
-import cn.standardai.api.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.StdaiException;
 
-public class SignatureException extends ParkOSException {
+public class SignatureException extends StdaiException {
 
 	private static final long serialVersionUID = 1L;
 

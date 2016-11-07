@@ -25,21 +25,19 @@ public class UploadService extends BaseService {
 	@RequestMapping(value = "/json", method = RequestMethod.POST)
 	public String receiveData(@RequestBody JSONObject request) {
 		logger.info("Start /data/upload/json ...");
-		UploadAgent uploader = null;
+		UploadAgent agent = null;
 		JSONObject result = null;
 		try {
-			uploader = new UploadAgent();
-			result = uploader.saveJSONData(request);
+			agent = new UploadAgent();
+			result = agent.saveJSONData(request);
 			result = successResponse(result);
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} finally {
-			if (uploader != null) {
-				uploader.done();
-			}
+			if (agent != null) agent.done();
 		}
-		logger.info("Finish /data/upload/json (" + result + ")");
+		logger.info("Finish /data/upload/json (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

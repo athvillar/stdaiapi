@@ -1,26 +1,26 @@
 package cn.standardai.api.core.exception;
 
-public class ParkOSException extends Exception {
+public class StdaiException extends Exception {
 
 	public String moduleName;
 
 	private static final long serialVersionUID = 1L;
 
-	public ParkOSException() {
+	public StdaiException() {
 		super();
 	}
 
-	public ParkOSException(String msg) {
+	public StdaiException(String msg) {
 		super(msg);
 		//LogUtil.error(getModuleName() + "模块异常：" + msg);
 	}
 
-	public ParkOSException(Throwable e) {
+	public StdaiException(Throwable e) {
 		super(e);
 		//LogUtil.error(e);
 	}
 
-	public ParkOSException(String msg, Throwable e) {
+	public StdaiException(String msg, Throwable e) {
 		super(msg, e);
 		//LogUtil.error(getModuleName() + "模块异常：" + msg, e);
 	}

@@ -33,6 +33,7 @@
 	</pluginRepositories>
 	<modules>
 		<module>./stdaiapi-algorithm</module>
+		<module>./stdaiapi-biz</module>
 		<module>./stdaiapi-core</module>
 		<module>./stdaiapi-dao</module>
 		<module>./stdaiapi-data</module>

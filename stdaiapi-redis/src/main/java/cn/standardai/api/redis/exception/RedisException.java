@@ -1,8 +1,8 @@
 package cn.standardai.api.redis.exception;
 
-import cn.standardai.api.core.exception.ParkOSException;
+import cn.standardai.api.core.exception.StdaiException;
 
-public class RedisException extends ParkOSException {
+public class RedisException extends StdaiException {
 
 	private static final String moduleName = "Redis";
 
