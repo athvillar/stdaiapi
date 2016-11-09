@@ -41,7 +41,7 @@ public class UploadAgent {
 		if (datasetName == null) {
 			if (datasetId == null) {
 				// 未提供id和name，insert新记录
-				datasetId = MathUtil.random(13);
+				datasetId = MathUtil.random(24);
 				datasetName = datasetId;
 				Dataset datasetParam = new Dataset();
 				datasetParam.setDatasetId(datasetId);
@@ -55,7 +55,7 @@ public class UploadAgent {
 				datasetParam.setDatasetId(datasetId);
 				datasetParam.setUserId(tokenResult.get(0).getUserId());
 				DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
-				if (datasetDao.selectCoundByIdUser(datasetParam) == 0) {
+				if (datasetDao.selectCountByIdUser(datasetParam) == 0) {
 					throw new DataException("no dataset(" + datasetId + ")");
 				}
 			}
@@ -68,7 +68,7 @@ public class UploadAgent {
 				DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
 				datasetId = datasetDao.selectIdByKey(datasetParam);
 				if (datasetId == null) {
-					datasetId = MathUtil.random(13);
+					datasetId = MathUtil.random(24);
 					datasetParam.setDatasetId(datasetId);
 					datasetDao.insert(datasetParam);
 				}
@@ -78,7 +78,7 @@ public class UploadAgent {
 				datasetParam.setDatasetId(datasetId);
 				datasetParam.setUserId(tokenResult.get(0).getUserId());
 				DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
-				if (datasetDao.selectCoundByIdUser(datasetParam) == 0) {
+				if (datasetDao.selectCountByIdUser(datasetParam) == 0) {
 					throw new DataException("no dataset(" + datasetId + ")");
 				} else {
 					datasetParam.setDatasetName(datasetName);
@@ -90,11 +90,12 @@ public class UploadAgent {
 		// save data
 		JSONArray data = dataRequest.getJSONArray("data");
 		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+		Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
 		for (int i = 0; i < data.size(); i++) {
 			JSONObject data1 = data.getJSONObject(i);
 			JsonData param = new JsonData();
 			param.setDatasetId(datasetId);
-			param.setIndex(i);
+			param.setIdx(baseIdx + i);
 			param.setData(data1.toJSONString());
 			dataDao.insert(param);
 		}

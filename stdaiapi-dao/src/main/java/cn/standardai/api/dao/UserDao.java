@@ -13,10 +13,10 @@ import cn.standardai.api.dao.bean.User;
 public interface UserDao {
 
 	@Select({"SELECT COUNT(*) FROM USER WHERE USERID = #{userId}"})
-	Integer selectCoundById(@Param("userId") String userId);
+	Integer selectCountById(@Param("userId") String userId);
 
 	@Select({"SELECT COUNT(*) FROM USER WHERE USERID = #{param.userId} AND PASSWORD = #{param.password}"})
-	Integer selectCoundByAuth(@Param("param") User param);
+	Integer selectCountByAuth(@Param("param") User param);
 
 	@Select({"SELECT * FROM USER WHERE USERID = #{userId}"})
 	List<User> selectById(@Param("userId") String userId);
@@ -25,9 +25,9 @@ public interface UserDao {
 		"VALUES (#{param.userId}, #{param.password})"})
 	void insert(@Param("param") User param);
 
-	@Update({"UPDATE JSONDATA SET PASSWORD = #{param.password} WHERE USERID = #{param.userId})"})
+	@Update({"UPDATE USER SET PASSWORD = #{param.password} WHERE USERID = #{param.userId}"})
 	void updateById(@Param("param") User param);
 
-	@Delete({"DELETE USER WHERE USERID = #{userId}"})
+	@Delete({"DELETE FROM USER WHERE USERID = #{userId}"})
 	void deleteById(@Param("userId") String userId);
 }

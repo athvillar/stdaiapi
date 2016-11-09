@@ -24,7 +24,7 @@ public class UploadService extends BaseService {
 
 	@RequestMapping(value = "/json", method = RequestMethod.POST)
 	public String receiveData(@RequestBody JSONObject request) {
-		logger.info("Start /data/upload/json ...");
+		logger.info("stdaiapi-data 收到数据上传请求 ...");
 		UploadAgent agent = null;
 		JSONObject result = null;
 		try {
@@ -37,7 +37,7 @@ public class UploadService extends BaseService {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("Finish /data/upload/json (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data 结束数据上传 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

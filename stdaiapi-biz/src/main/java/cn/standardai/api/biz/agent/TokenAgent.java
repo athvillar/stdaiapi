@@ -16,7 +16,7 @@ import cn.standardai.api.dao.bean.User;
 
 public class TokenAgent {
 
-	private DaoHandler daoHandler = new DaoHandler();
+	private DaoHandler daoHandler = new DaoHandler(true);
 
 	public JSONObject createToken(JSONObject request) throws BizException {
 
@@ -31,7 +31,7 @@ public class TokenAgent {
 			throw new BizException("加密失败");
 		}
 		UserDao dao1 = daoHandler.getMySQLMapper(UserDao.class);
-		if (dao1.selectCoundByAuth(param1) == 0) throw new BizException("认证失败");
+		if (dao1.selectCountByAuth(param1) == 0) throw new BizException("认证失败");
 
 		Token param2 = new Token();
 		param2.setUserId(userId);
@@ -51,7 +51,8 @@ public class TokenAgent {
 
 	public void removeById(String token) {
 		TokenDao dao = daoHandler.getMySQLMapper(TokenDao.class);
-		dao.deleteByToken(token);
+		String userId = dao.selectUserIdByToken(token);
+		dao.deleteByUserId(userId);
 	}
 
 	public void done() {

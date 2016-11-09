@@ -4,17 +4,9 @@ public class JsonData {
 
 	private String datasetId;
 
-	private Integer index;
+	private Integer idx;
 
 	private String data;
-
-	public Integer getIndex() {
-		return index;
-	}
-
-	public void setIndex(Integer index) {
-		this.index = index;
-	}
 
 	public String getData() {
 		return data;
@@ -30,5 +22,13 @@ public class JsonData {
 
 	public void setDatasetId(String datasetId) {
 		this.datasetId = datasetId;
+	}
+
+	public Integer getIdx() {
+		return idx;
+	}
+
+	public void setIdx(Integer idx) {
+		this.idx = idx;
 	}
 }

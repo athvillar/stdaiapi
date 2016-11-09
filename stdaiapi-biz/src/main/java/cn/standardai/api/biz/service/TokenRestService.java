@@ -43,7 +43,7 @@ public class TokenRestService extends BaseService {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public String removeToken(@PathVariable("id") String id, String tpParamName) {
+	public String removeToken(@PathVariable("id") String id) {
 		logger.info("stdaiapi-biz 收到删除token请求(id=" + id + ")");
 		TokenAgent agent = null;
 		JSONObject result = new JSONObject();

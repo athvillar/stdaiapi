@@ -11,6 +11,9 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import cn.standardai.api.core.bean.PropertyConfig.Mysql;
 import cn.standardai.api.dao.DataDao;
+import cn.standardai.api.dao.DatasetDao;
+import cn.standardai.api.dao.TokenDao;
+import cn.standardai.api.dao.UserDao;
 import cn.standardai.api.dao.exception.DaoException;
 
 public class LocalSqlSessionFactory {
@@ -21,7 +24,7 @@ public class LocalSqlSessionFactory {
 
 		if (ssf4Mysql != null) return;
 
-		String resource = "cn/standardai/api/dao/sqlmap/mysql/mybatis.xml";
+		String resource = "cn/standardai/api/dao/sql/map/mybatis.xml";
 		InputStream inputStream;
 		try {
 			inputStream = Resources.getResourceAsStream(resource);
@@ -37,6 +40,9 @@ public class LocalSqlSessionFactory {
 
 		ssf4Mysql = new SqlSessionFactoryBuilder().build(inputStream, properties);
 		ssf4Mysql.getConfiguration().addMapper(DataDao.class);
+		ssf4Mysql.getConfiguration().addMapper(DatasetDao.class);
+		ssf4Mysql.getConfiguration().addMapper(TokenDao.class);
+		ssf4Mysql.getConfiguration().addMapper(UserDao.class);
 	}
 
 	public static SqlSession getMySQLInstance() {

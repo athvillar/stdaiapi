@@ -4,9 +4,9 @@ import java.util.Date;
 
 public class Token {
 
-	private String userId;
-
 	private String token;
+
+	private String userId;
 
 	private Date expireTime;
 

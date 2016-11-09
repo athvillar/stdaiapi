@@ -14,12 +14,12 @@ public interface TokenDao {
 	@Select({"SELECT * FROM TOKEN WHERE TOKEN = #{param.token} AND EXPIRETIME >= #{param.expireTime}"})
 	List<Token> selectByToken(@Param("param") Token param);
 
-	@Insert({"INSERT INTO TOKEN (USERID, TOKEN) VALUES (#{param.userId}, #{param.token})"})
+	@Select({"SELECT USERID FROM TOKEN WHERE TOKEN = #{token}"})
+	String selectUserIdByToken(@Param("token") String token);
+
+	@Insert({"INSERT INTO TOKEN (TOKEN, USERID, EXPIRETIME) VALUES (#{param.token}, #{param.userId}, #{param.expireTime})"})
 	void insert(@Param("param") Token param);
 
-	@Delete({"DELETE TOKEN WHERE USERID  = #{userId}"})
+	@Delete({"DELETE FROM TOKEN WHERE USERID  = #{userId}"})
 	void deleteByUserId(@Param("userId") String userId);
-
-	@Delete({"DELETE TOKEN WHERE USERID IN (SELECT USERID WHERE TOKEN = #{token})"})
-	void deleteByToken(@Param("token") String token);
 }

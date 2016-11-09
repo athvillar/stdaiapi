@@ -1,9 +1,6 @@
 package cn.standardai.api.ml.agent;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
-import cn.standardai.api.core.util.MathUtil;
 
 public class ClassifyAgent {
 

@@ -29,7 +29,7 @@ public class UserAgent {
 		User param = new User();
 		param.setUserId(userId);
 		param.setPassword(CryptUtil.encodeBase64(CryptUtil.encryptMD5(request.getString("password").getBytes())));
-		if (dao.selectCoundById(userId) == 0) {
+		if (dao.selectCountById(userId) == 0) {
 			dao.insert(param);
 		} else {
 			dao.updateById(param);
