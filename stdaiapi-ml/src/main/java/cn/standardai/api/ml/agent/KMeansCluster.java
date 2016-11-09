@@ -9,39 +9,47 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.core.util.JsonUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.base.DaoHandler;
-import cn.standardai.lib.algorithm.knn.DoubleNode;
-import cn.standardai.lib.algorithm.knn.KNN;
-import cn.standardai.lib.algorithm.knn.KNNNode;
+import cn.standardai.lib.algorithm.kmeans.KMeans;
+import cn.standardai.lib.algorithm.kmeans.KMeansNode;
+import cn.standardai.lib.algorithm.kmeans.NumberNode;
 
-public class KNNClassifier implements Classifier {
+public class KMeansCluster implements Clusterer {
 
 	private DaoHandler daoHandler = new DaoHandler(false);
 
-	public JSONObject classify(JSONObject request) {
+	public JSONObject cluster(JSONObject request) {
 
 		List<JSONObject> trainingSet = loadData(request.getJSONObject("trainingSet"));
-		ArrayList<KNNNode<?, ?>> nodeList = new ArrayList<KNNNode<?, ?>>();
+		ArrayList<KMeansNode<?, ?>> nodeList = new ArrayList<KMeansNode<?, ?>>();
 		for (int i = 0; i < trainingSet.size(); i++) {
 			JSONObject data1 = trainingSet.get(i);
 			JSONArray features = data1.getJSONArray("features");
-			DoubleNode node = new DoubleNode(JsonUtil.toList(features, Double.class), data1.getString("category"));
+			NumberNode node = new NumberNode(JsonUtil.toList(features, Double.class));
 			nodeList.add(node);
 		}
 
-		KNN knn = new KNN(nodeList);
+		Integer clusterNumber = request.getInteger("clusterNumber");
+		// TODO
+		//KMeans kmeans = new KMeans(nodeList, 3, KMeans.InitMethod.KMEANSPLUS, KMeans.FinishCondition.MAX_MOVE, 5);
+		KMeans kmeans = new KMeans(nodeList, clusterNumber == null ? 3 : clusterNumber);
+		kmeans.sort();
 
-		List<JSONObject> targetSet = loadData(request.getJSONObject("targetSet"));
-		JSONObject result = new JSONObject();
-		JSONArray data = new JSONArray();
-		for (int i = 0; i < targetSet.size(); i++) {
-			JSONObject data1 = targetSet.get(i);
-			JSONArray features = data1.getJSONArray("features");
-			DoubleNode node = (DoubleNode)knn.sort(new DoubleNode(JsonUtil.toList(features, Double.class)));
-			data1.put("category", node.getCategory());
-			data.add(data1);
+		JSONArray clusters = new JSONArray();
+		for (KMeansNode<?,?> centroid : kmeans.getCentroids()) {
+			System.out.println("cluster start:");
+			JSONArray records = new JSONArray();
+			for (KMeansNode<?,?> theNode : kmeans.getClusters().get(centroid)) {
+				JSONArray features = new JSONArray();
+				for (Object theFeature : theNode.getFeature()) {
+					features.add(theFeature);
+				}
+				records.add(features);
+			}
+			clusters.add(records);
 		}
 
-		result.put("data", data);
+		JSONObject result = new JSONObject();
+		result.put("cluster", clusters);
 		return result;
 	}
 

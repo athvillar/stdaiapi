@@ -29,103 +29,103 @@ public class TestKMeans {
 		feature = new ArrayList<Double>();
 		feature.add(2.0);
 		feature.add(3.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(2.0);
 		feature.add(4.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(2.0);
 		feature.add(5.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(3.0);
 		feature.add(3.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(3.0);
 		feature.add(4.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(4.0);
 		feature.add(3.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(4.0);
 		feature.add(4.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(4.0);
 		feature.add(5.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(3.0);
 		feature.add(16.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(4.0);
 		feature.add(17.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(3.0);
 		feature.add(17.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(4.0);
 		feature.add(16.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(5.0);
 		feature.add(18.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(9.0);
 		feature.add(7.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(9.0);
 		feature.add(8.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(9.0);
 		feature.add(9.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		feature = new ArrayList<Double>();
 		feature.add(9.0);
 		feature.add(11.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 		//KMeans kmeans = new KMeans(nodeList, 3);
@@ -157,7 +157,7 @@ public class TestKMeans {
 		feature = new ArrayList<Double>();
 		feature.add(2.0);
 		feature.add(3.0);
-		node = new NumberNode(feature, NumberNode.DistanceMeasureMethod.MINKOWSKI, 5);
+		node = new NumberNode(feature);
 		nodeList.add(node);
 
 

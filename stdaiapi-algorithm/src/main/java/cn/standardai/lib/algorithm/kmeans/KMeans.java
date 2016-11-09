@@ -10,12 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import cn.standardai.lib.algorithm.kmeans.KMeansNode.DistanceMeasureMethod;
+
 /**
  * K平均算法（k-means）主类
  * @author 韩晴
  *
  */
 public class KMeans {
+
+	// 距离度量方法
+	private static final DistanceMeasureMethod distanceMeasureMethod = DistanceMeasureMethod.MINKOWSKI;
+
+	// 闵可夫斯基Lamda
+	private static final double minkowskiLamda = 2;
 
 	// 初始中心点生成策略
 	private static enum InitMethod {RANDOM, KMEANSPLUS};
@@ -195,7 +203,7 @@ public class KMeans {
 			double sumDistance = 0;
 			for (KMeansNode<?, ?> node : nodes) {
 				// 对每一个点，获取距离其最近的中心点
-				HashMap<String, Object> nearestNodeMap = node.getNearestNode(centroids);
+				HashMap<String, Object> nearestNodeMap = node.getNearestNode(distanceMeasureMethod, centroids, minkowskiLamda);
 				sumDistance += (Double)nearestNodeMap.get("distance");
 				nearestNodes.add(nearestNodeMap);
 			}
@@ -229,7 +237,7 @@ public class KMeans {
 		// 取得所有已知节点到新节点距离
 		for (KMeansNode<?, ?> node : nodes) {
 			// 对每一个点，获取距离其最近的中心点
-			HashMap<String, Object> nearestNodeMap = node.getNearestNode(centroids);
+			HashMap<String, Object> nearestNodeMap = node.getNearestNode(distanceMeasureMethod, centroids, minkowskiLamda);
 			// 给该节点指定中心点
 			node.setCentroid((KMeansNode<?, ?>)nearestNodeMap.get("node"));
 			// 将该节点加入到最近中心点对应的簇中

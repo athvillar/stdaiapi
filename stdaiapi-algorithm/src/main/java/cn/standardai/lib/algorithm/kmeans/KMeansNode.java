@@ -14,6 +14,9 @@ import java.util.List;
  */
 public abstract class KMeansNode<F, C> {
 
+	// 距离度量方法
+	public static enum DistanceMeasureMethod {CITYBLOCK, EUCLIDEAN, MINKOWSKI, COSINE, CHEBYCHEV};
+
 	// 特征值
 	private List<F> feature;
 
@@ -43,7 +46,7 @@ public abstract class KMeansNode<F, C> {
 		this.centroid = kMeansNode;
 	}
 
-	public abstract double getDistance(KMeansNode<?, ?> targetNode);
+	public abstract double getDistance(DistanceMeasureMethod distanceMeasureMethod, KMeansNode<?, ?> targetNode, double param);
 
 	/**
 	 * 获得距离最近的一个点
@@ -52,13 +55,13 @@ public abstract class KMeansNode<F, C> {
 	 * @return
 	 * 最近点
 	 */
-	public HashMap<String, Object> getNearestNode(List<KMeansNode<?, ?>> targetNodes) {
+	public HashMap<String, Object> getNearestNode(DistanceMeasureMethod distanceMeasureMethod, List<KMeansNode<?, ?>> targetNodes, double param) {
 
 		// 为最近邻类别计数，保存在counter中
 		double minDistance = Double.MAX_VALUE;
 		KMeansNode<?, ?> nearestNode = null;
 		for (KMeansNode<?, ?> targetNode : targetNodes) {
-			double tmp = this.getDistance(targetNode);
+			double tmp = this.getDistance(distanceMeasureMethod, targetNode, param);
 			if (tmp < minDistance) {
 				nearestNode = targetNode;
 				minDistance = tmp;

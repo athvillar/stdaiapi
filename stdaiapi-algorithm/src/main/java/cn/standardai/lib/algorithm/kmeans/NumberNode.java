@@ -10,35 +10,12 @@ import java.util.List;
 
 public class NumberNode extends KMeansNode<Double, Object> {
 
-	// 距离度量方法
-	public static enum DistanceMeasureMethod {CITYBLOCK, EUCLIDEAN, MINKOWSKI, COSINE, CHEBYCHEV};
-
-	// 距离度量方法
-	private DistanceMeasureMethod distanceMeasureMethod;
-
-	// 闵可夫斯基Lamda
-	private double minkowskiLamda = 1;
-
 	public NumberNode() {
 		super();
 	}
 
 	public NumberNode(List<Double> feature) {
 		super(feature);
-		this.distanceMeasureMethod = DistanceMeasureMethod.EUCLIDEAN;
-	}
-
-	public NumberNode(List<Double> feature, DistanceMeasureMethod distanceMeasureMethod) {
-		super(feature);
-		this.distanceMeasureMethod = distanceMeasureMethod;
-	}
-
-	public NumberNode(List<Double> feature, DistanceMeasureMethod distanceMeasureMethod, double minkowskiLamda) {
-		super(feature);
-		this.distanceMeasureMethod = distanceMeasureMethod;
-		if (distanceMeasureMethod == DistanceMeasureMethod.MINKOWSKI) {
-			this.minkowskiLamda = minkowskiLamda;
-		}
 	}
 
 	/**
@@ -50,14 +27,14 @@ public class NumberNode extends KMeansNode<Double, Object> {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public double getDistance(KMeansNode<?, ?> targetNode) {
+	public double getDistance(DistanceMeasureMethod distanceMeasureMethod, KMeansNode<?, ?> targetNode, double param) {
 		switch (distanceMeasureMethod) {
 		case CITYBLOCK:
 			return getCityBlockDistance((KMeansNode<Double, Object>)targetNode);
 		case EUCLIDEAN:
 			return getEuclideanDistance((KMeansNode<Double, Object>)targetNode);
 		case MINKOWSKI:
-			return getMinkowskiDistance((KMeansNode<Double, Object>)targetNode, minkowskiLamda);
+			return getMinkowskiDistance((KMeansNode<Double, Object>)targetNode, param);
 		case COSINE:
 			return getCosineDistance((KMeansNode<Double, Object>)targetNode);
 		case CHEBYCHEV:
@@ -176,8 +153,6 @@ public class NumberNode extends KMeansNode<Double, Object> {
 		for (int i = 0; i < this.getFeature().size(); i++) {
 			newNode.getFeature().add(i, Double.valueOf(this.getFeature().get(i)));
 		}
-		newNode.distanceMeasureMethod = this.distanceMeasureMethod;
-		newNode.minkowskiLamda = this.minkowskiLamda;
 		return newNode;
 	}
 }
