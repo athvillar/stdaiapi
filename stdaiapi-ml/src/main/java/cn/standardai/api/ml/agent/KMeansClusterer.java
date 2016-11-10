@@ -7,19 +7,22 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.util.JsonUtil;
-import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.base.DaoHandler;
+import cn.standardai.api.ml.bean.Request;
+import cn.standardai.api.ml.bean.Request.DataType;
 import cn.standardai.lib.algorithm.kmeans.KMeans;
 import cn.standardai.lib.algorithm.kmeans.KMeansNode;
 import cn.standardai.lib.algorithm.kmeans.NumberNode;
 
-public class KMeansCluster implements Clusterer {
+public class KMeansClusterer implements Clusterer {
 
 	private DaoHandler daoHandler = new DaoHandler(false);
 
-	public JSONObject cluster(JSONObject request) {
+	public JSONObject cluster(JSONObject requestJSONObject) {
 
-		List<JSONObject> trainingSet = loadData(request.getJSONObject("trainingSet"));
+		Request request = new Request(requestJSONObject, daoHandler);
+
+		List<JSONObject> trainingSet = request.loadData(DataType.training, JSONObject.class);
 		ArrayList<KMeansNode<?, ?>> nodeList = new ArrayList<KMeansNode<?, ?>>();
 		for (int i = 0; i < trainingSet.size(); i++) {
 			JSONObject data1 = trainingSet.get(i);
@@ -28,9 +31,9 @@ public class KMeansCluster implements Clusterer {
 			nodeList.add(node);
 		}
 
-		Integer clusterNumber = request.getInteger("clusterNumber");
 		// TODO
 		//KMeans kmeans = new KMeans(nodeList, 3, KMeans.InitMethod.KMEANSPLUS, KMeans.FinishCondition.MAX_MOVE, 5);
+		Integer clusterNumber = requestJSONObject.getInteger("clusterNumber");
 		KMeans kmeans = new KMeans(nodeList, clusterNumber == null ? 3 : clusterNumber);
 		kmeans.sort();
 
@@ -51,24 +54,6 @@ public class KMeansCluster implements Clusterer {
 		JSONObject result = new JSONObject();
 		result.put("cluster", clusters);
 		return result;
-	}
-
-	private List<JSONObject> loadData(JSONObject dataJSONObject) {
-		String dataId = dataJSONObject.getString("id");
-		List<JSONObject> dataList = new ArrayList<JSONObject>();
-		if (dataId == null || "".equals(dataId)) {
-			JSONArray data = dataJSONObject.getJSONArray("data");
-			for (int i = 0; i < data.size(); i++) {
-				dataList.add(data.getJSONObject(i));
-			}
-		} else {
-			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
-			List<String> dataString = dataDao.selectDataByDatasetId(dataId);
-			for (String dataString1 : dataString) {
-				dataList.add(JSONObject.parseObject(dataString1));
-			}
-		}
-		return dataList;
 	}
 
 	public void done() {

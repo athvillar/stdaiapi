@@ -1,4 +1,4 @@
-package cn.standardai.api.data.service;
+package cn.standardai.api.ml.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,24 +12,24 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
-import cn.standardai.api.data.agent.UploadAgent;
+import cn.standardai.api.ml.agent.MLAgent;
 
 @Controller
 @RestController
 @EnableAutoConfiguration
-@RequestMapping("/upload")
-public class UploadService extends BaseService {
+@RequestMapping("/decision")
+public class DecisionService extends BaseService {
 
-	private Logger logger = LoggerFactory.getLogger(UploadService.class);
+	private Logger logger = LoggerFactory.getLogger(DecisionService.class);
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String receiveData(@RequestBody JSONObject request) {
-		logger.info("stdaiapi-data 收到数据上传请求 ...");
-		UploadAgent agent = null;
+		logger.info("stdaiapi-ml decision start ...");
+		MLAgent agent = null;
 		JSONObject result = null;
 		try {
-			agent = new UploadAgent();
-			result = agent.saveJSONData(request);
+			agent = new MLAgent();
+			result = agent.makeDecisionTree(request);
 			result = successResponse(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -37,7 +37,7 @@ public class UploadService extends BaseService {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data 结束数据上传 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-ml decision finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

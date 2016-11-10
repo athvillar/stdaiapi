@@ -12,7 +12,7 @@ import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.TokenDao;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Dataset;
-import cn.standardai.api.dao.bean.JsonData;
+import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Token;
 import cn.standardai.api.data.exception.DataException;
 
@@ -27,6 +27,7 @@ public class UploadAgent {
 		String token = dataRequest.getString("token");
 		String datasetId = dataRequest.getString("datasetId");
 		String datasetName = dataRequest.getString("datasetName");
+		String format = dataRequest.getString("format");
 
 		// check token
 		if (token == null) throw new DataException("认证失败");
@@ -47,6 +48,7 @@ public class UploadAgent {
 				datasetParam.setDatasetId(datasetId);
 				datasetParam.setDatasetName(datasetName);
 				datasetParam.setUserId(tokenResult.get(0).getUserId());
+				datasetParam.setFormat(format);
 				DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
 				datasetDao.insert(datasetParam);
 			} else {
@@ -62,15 +64,18 @@ public class UploadAgent {
 		} else {
 			if (datasetId == null) {
 				// 提供name，未提供id，按照name检索，检索成功使用检出的id执行后续处理，未检出生成新id执行后续处理，并insert
-				Dataset datasetParam = new Dataset();
-				datasetParam.setDatasetName(datasetName);
-				datasetParam.setUserId(tokenResult.get(0).getUserId());
 				DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
-				datasetId = datasetDao.selectIdByKey(datasetParam);
-				if (datasetId == null) {
+				Dataset dataset = datasetDao.selectByKey(datasetName, tokenResult.get(0).getUserId());
+				if (dataset == null) {
 					datasetId = MathUtil.random(24);
+					Dataset datasetParam = new Dataset();
+					datasetParam.setDatasetName(datasetName);
+					datasetParam.setUserId(tokenResult.get(0).getUserId());
 					datasetParam.setDatasetId(datasetId);
+					datasetParam.setFormat(format);
 					datasetDao.insert(datasetParam);
+				} else {
+					datasetId = dataset.getDatasetId();
 				}
 			} else {
 				// 提供id与name，按照id检索，未检出报异常，检出更新name
@@ -92,11 +97,11 @@ public class UploadAgent {
 		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
 		Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
 		for (int i = 0; i < data.size(); i++) {
-			JSONObject data1 = data.getJSONObject(i);
-			JsonData param = new JsonData();
+			String data1 = data.getString(i);
+			Data param = new Data();
 			param.setDatasetId(datasetId);
 			param.setIdx(baseIdx + i);
-			param.setData(data1.toJSONString());
+			param.setData(data1);
 			dataDao.insert(param);
 		}
 

@@ -1,12 +1,14 @@
 package cn.standardai.api.dao.bean;
 
-public class JsonData {
+public class Data {
 
 	private String datasetId;
 
 	private Integer idx;
 
 	private String data;
+
+	private String type;
 
 	public String getData() {
 		return data;
@@ -30,5 +32,13 @@ public class JsonData {
 
 	public void setIdx(Integer idx) {
 		this.idx = idx;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 }

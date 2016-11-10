@@ -7,20 +7,20 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import cn.standardai.api.dao.bean.JsonData;
+import cn.standardai.api.dao.bean.Data;
 
 public interface DataDao {
 
-	@Select({"SELECT COUNT(*) FROM JSONDATA WHERE DATASETID = #{datasetId}"})
+	@Select({"SELECT COUNT(*) FROM DATA WHERE DATASETID = #{datasetId}"})
 	Integer selectCountByDatasetId(@Param("datasetId") String datasetId);
 
-	@Select({"SELECT DATA FROM JSONDATA WHERE DATASETID = #{datasetId}"})
-	List<String> selectDataByDatasetId(@Param("datasetId") String datasetId);
+	@Select({"SELECT DATA, TYPE FROM DATA WHERE DATASETID = #{datasetId}"})
+	List<Data> selectDataByDatasetId(@Param("datasetId") String datasetId);
 
-	@Insert({"INSERT INTO JSONDATA (DATASETID, IDX, DATA) ",
-		"VALUES (#{param.datasetId}, #{param.idx}, #{param.data})"})
-	void insert(@Param("param") JsonData param);
+	@Insert({"INSERT INTO DATA (DATASETID, IDX, DATA, TYPE) ",
+		"VALUES (#{param.datasetId}, #{param.idx}, #{param.data}, #{param.type})"})
+	void insert(@Param("param") Data param);
 
-	@Delete({"DELETE FROM JSONDATA WHERE DATASETID = #{datasetId}"})
+	@Delete({"DELETE FROM DATA WHERE DATASETID = #{datasetId}"})
 	void deleteByDatasetId(@Param("datasetId") String datasetId);
 }

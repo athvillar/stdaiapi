@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
-import cn.standardai.api.ml.agent.ClassifyAgent;
+import cn.standardai.api.ml.agent.MLAgent;
 
 @Controller
 @RestController
@@ -25,10 +25,10 @@ public class ClassifyService extends BaseService {
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String receiveData(@RequestBody JSONObject request) {
 		logger.info("stdaiapi-ml classify start ...");
-		ClassifyAgent agent = null;
+		MLAgent agent = null;
 		JSONObject result = null;
 		try {
-			agent = new ClassifyAgent();
+			agent = new MLAgent();
 			result = agent.classify(request);
 			result = successResponse(result);
 		} catch (Exception e) {

@@ -8,6 +8,8 @@ public class Dataset {
 
 	private String userId;
 
+	private String format;
+
 	public String getDatasetId() {
 		return datasetId;
 	}
@@ -30,5 +32,13 @@ public class Dataset {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
 	}
 }
