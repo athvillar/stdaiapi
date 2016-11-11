@@ -43,7 +43,7 @@ public class C45Decider implements Decider {
 		System.out.println();
 
 		JSONObject result = new JSONObject();
-		result.put("decisionTree", c45.getRoot().toString());
+		result.put("decisionTree", c45.getRoot().toJSONObject());
 		return result;
 	}
 

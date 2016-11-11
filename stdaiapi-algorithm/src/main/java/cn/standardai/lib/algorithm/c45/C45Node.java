@@ -7,6 +7,9 @@ package cn.standardai.lib.algorithm.c45;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.standardai.lib.algorithm.common.StringUtil;
 
 /**
@@ -52,8 +55,31 @@ public class C45Node {
 				sb.append(entry.getValue().toString(layer + 1));
 			}
 		}
-
 		return sb.toString();
+	}
+
+	public JSONObject toJSONObject() {
+		JSONObject json = new JSONObject();
+		if (attribute != null) {
+			json.put("attr", attribute.getName());
+			if (attribute.getClassifier() != null) {
+				json.put("type", attribute.getClassifier().getType());
+				json.put("seperator", attribute.getClassifier().getSeparator());
+			}
+		}
+		if (classification != null) {
+			json.put("classification", classification);
+		}
+		if (children != null) {
+			JSONArray childrenJSONArray = new JSONArray();
+			for (Entry<Object, C45Node> entry : children.entrySet()) {
+				JSONObject childJSONObject = new JSONObject();
+				childJSONObject.put(entry.getKey().toString(), entry.getValue().toJSONObject());
+				childrenJSONArray.add(childJSONObject);
+			}
+			json.put("children", childrenJSONArray);
+		}
+		return json;
 	}
 
 	public C45Node getParent() {
