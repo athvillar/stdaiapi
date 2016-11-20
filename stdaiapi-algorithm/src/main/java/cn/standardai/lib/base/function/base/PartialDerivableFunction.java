@@ -4,7 +4,6 @@
 */
 package cn.standardai.lib.base.function.base;
 
-
 /**
  * 多个自变量可导函数基类
  * @author 韩晴

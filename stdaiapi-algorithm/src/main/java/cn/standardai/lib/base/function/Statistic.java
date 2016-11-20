@@ -6,7 +6,6 @@ package cn.standardai.lib.base.function;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * 统计相关函数
@@ -29,6 +28,32 @@ public class Statistic {
 		for (int i = 0; i < input.length; i++) {
 			if (input[i] > max) {
 				max = input[i];
+			}
+		}
+		return max;
+	}
+
+	public static Integer max(Integer...args) {
+		if (args == null || args.length == 0) {
+			return null;
+		}
+		int max = Integer.MIN_VALUE;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i] > max) {
+				max = args[i];
+			}
+		}
+		return max;
+	}
+
+	public static Double max(Double...args) {
+		if (args == null || args.length == 0) {
+			return null;
+		}
+		double max = Double.MIN_VALUE;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i] > max) {
+				max = args[i];
 			}
 		}
 		return max;
@@ -70,6 +95,28 @@ public class Statistic {
 			sum += input[i];
 		}
 		return sum / input.length;
+	}
+
+	public static double avg(Integer...args) {
+		if (args == null || args.length == 0) {
+			return 0;
+		}
+		double sum = 0;
+		for (int i = 0; i < args.length; i++) {
+			sum += args[i];
+		}
+		return sum / args.length;
+	}
+
+	public static double avg(Double...args) {
+		if (args == null || args.length == 0) {
+			return 0;
+		}
+		double sum = 0;
+		for (int i = 0; i < args.length; i++) {
+			sum += args[i];
+		}
+		return sum / args.length;
 	}
 
 	/**
