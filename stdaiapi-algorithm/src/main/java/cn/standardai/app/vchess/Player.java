@@ -89,7 +89,7 @@ public class Player {
 			moveMaps.add(stepGroupMap);
 		}
 
-		double maxExpScore = Double.MIN_VALUE;
+		double maxExpScore = Double.NEGATIVE_INFINITY;
 		int bestIndex = 0;
 		for (int i = 0; i < moveMaps.size(); i++) {
 			ArrayList<Step> stepGroup = (ArrayList<Step>)moveMaps.get(i).get("moveGroup");

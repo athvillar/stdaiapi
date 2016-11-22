@@ -18,6 +18,16 @@ import javax.imageio.ImageIO;
  */
 public class getGray {
 
+	public static void main(String[] args) {
+		String trainDataDir = "/Users/athvillar/Downloads/q1.jpg";
+		try {
+			getGray41File(trainDataDir);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static void convertImageBinary(String filepath, String newFilepath) throws IOException{
 
 		File file = new File(filepath);
@@ -26,15 +36,24 @@ public class getGray {
 		int width = image.getWidth();
 		int height = image.getHeight();
 
-		FileOutputStream fos = new FileOutputStream(new File(newFilepath));
+		//FileOutputStream fos = new FileOutputStream(new File(newFilepath));
 		for (int i= 0 ; i < width ; i++) {
 			for (int j = 0 ; j < height; j++) {
 				int rgb = image.getRGB(i, j);
-				fos.write(Byte.parseByte(""+rgb+"\t"));
+				int R =(rgb & 0xff0000 ) >> 16 ;
+				int G= (rgb & 0xff00 ) >> 8 ;
+				int B= (rgb & 0xff );
+				System.out.print("" + rgb + ":");
+				//fos.write(Byte.parseByte(""+rgb+"\t"));
 			}
 		}
 
-		fos.close();
+		//fos.close();
+	}
+
+	public static void getGray41File(String filename) throws IOException {
+		File file = new File(filename);
+		convertImageBinary(file.getAbsolutePath(), null);
 	}
 
 	public static void getGray(String baseDir) {
@@ -71,10 +90,5 @@ public class getGray {
 		for (File file : files) {
 			file.delete();
 		}
-	}
-
-	public static void main(String[] args) {
-		String trainDataDir = "C:\\work\\trainImages";
-		getGray(trainDataDir);
 	}
 }

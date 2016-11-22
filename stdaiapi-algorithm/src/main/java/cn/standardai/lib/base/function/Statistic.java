@@ -50,7 +50,7 @@ public class Statistic {
 		if (args == null || args.length == 0) {
 			return null;
 		}
-		double max = Double.MIN_VALUE;
+		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < args.length; i++) {
 			if (args[i] > max) {
 				max = args[i];
@@ -137,7 +137,7 @@ public class Statistic {
 	}
 
 	public static <T> T maxDoubleValueKey(Map<T, Double> igMap) {
-		Double maxValue = Double.MIN_VALUE;
+		Double maxValue = Double.NEGATIVE_INFINITY;
 		T maxKey = null;
 		for (Entry<T, Double> entry : igMap.entrySet()) {
 			if (entry.getValue() > maxValue) {

@@ -1,22 +1,25 @@
 package cn.standardai.lib.algorithm.cnn;
 
+import cn.standardai.lib.base.function.activate.Self;
+import cn.standardai.lib.base.function.activate.Sigmoid;
 import cn.standardai.lib.base.function.base.DerivableFunction;
 
 public class Layer {
 
-	protected Integer width;
-
-	protected Integer height;
-
-	protected Integer depth;
-
 	public enum LayerType { input, conv, relu, pool, fc };
 
-	protected Double[][][] data;
+	// TODO all public
+	public Integer width;
 
-	protected Double[][][] error;
+	public Integer height;
 
-	protected DerivableFunction activateFunction;
+	public Integer depth;
+
+	public Double[][][] data;
+
+	public Double[][][] error;
+
+	public DerivableFunction aF;
 
 	public static LayerType parseType(String type) {
 		if (type == null) return null;
@@ -41,7 +44,7 @@ public class Layer {
 		}
 	}
 
-	public void exec(Double[][][] data) {
+	public void exec(Layer prevLayer) {
 		return;
 	}
 
@@ -53,7 +56,75 @@ public class Layer {
 		return;
 	}
 
-	public void calcError(Layer nextLayer) {
+	public void calcPrevError(Layer prev) {
+		//prev.initError();
 		return;
+	}
+
+	public void initError() {
+		for (int i = 0; i < this.width; i++) {
+			for (int j = 0; j < this.height; j++) {
+				for (int k = 0; k < this.depth; k++) {
+					this.error[i][j][k] = 0.0;
+				}
+			}
+		}
+		return;
+	}
+
+	public void print() {
+		System.out.println(this.getClass());
+		printData();
+		printError();
+		printFilter();
+	}
+
+	public void printData() {
+		System.out.println(this.getClass());
+		System.out.println("data:");
+		for (int k = 0; k < this.depth; k++) {
+			for (int j = 0; j < this.height; j++) {
+				for (int i = 0; i < this.width; i++) {
+					System.out.print(data[i][j][k] + "\t|");
+				}
+				System.out.println();
+			}
+			System.out.println("---------------------------------------------");
+		}
+	}
+
+	public void printError() {
+		if (this.error == null) return;
+		System.out.println(this.getClass());
+		System.out.println("error:");
+		for (int k = 0; k < this.depth; k++) {
+			for (int j = 0; j < this.height; j++) {
+				for (int i = 0; i < this.width; i++) {
+					System.out.print(error[i][j][k] + "\t|");
+				}
+				System.out.println();
+			}
+			System.out.println("---------------------------------------------");
+		}
+	}
+
+	public void printFilter() {
+		System.out.println(this.getClass());
+		System.out.println("filters:none");
+		return;
+	}
+
+	public void upgrade(Layer prev, int batchNum) {
+		return;
+	}
+
+	public void setAF(String aF) {
+		if (aF == null) {
+			this.aF = new Self();
+		} else if ("sigmoid".equals(aF)) {
+			this.aF = new Sigmoid(1);
+		} else {
+			this.aF = new Self();
+		}
 	}
 }

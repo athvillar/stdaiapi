@@ -1,6 +1,6 @@
 package cn.standardai.lib.algorithm.cnn;
 
-public class FilterFactory extends Layer {
+public class FilterFactory {
 
 	protected Integer width;
 
@@ -11,7 +11,7 @@ public class FilterFactory extends Layer {
 		this.height = height;
 	}
 
-	public Filter getInstance(Integer depth) {
-		return new Filter(this.width, this.height, depth);
+	public Filter getInstance(Integer depth, Integer divider) {
+		return new Filter(this.width, this.height, depth, divider);
 	}
 }

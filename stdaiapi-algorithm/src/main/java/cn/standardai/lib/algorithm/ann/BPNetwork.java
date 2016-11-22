@@ -354,10 +354,10 @@ public class BPNetwork implements Cloneable {
 			if (i == layers.length - 1) {
 				// 计算输出层误差
 				for (int j = 0; j < layers[i].getN(); j++) {
-					// 第j个节点误差 = 激励函数的导数 * Cost函数的偏导数 = 节点输出的导数 * (期望输出 - 实际输出)
-					//δ[i][j] = aF.getDerivativeY(o[i][j]) * (exp[j] - o[i][j]);
+					// 第j个节点误差 = 激励函数的导数 * Cost函数的偏导数 = 节点输出的导数 * (实际输出 - 期望输出)
+					//δ[i][j] = aF.getDerivativeY(o[i][j]) * (exp[j] - o[i][j]); TODO 前一个batch的error被覆盖？
 					δ[i][j] = aF.getDerivativeY(o[i][j]) * cF.getDerivativeX(o[i], j);
-					// 计算w的梯度
+					// 计算w的梯度 TODO 不需要初始化为0？
 					nablaw[i][j] += δ[i][j] * o[i - 1][j];
 					// 计算b的梯度
 					nablab[i][j] += δ[i][j];
@@ -367,7 +367,7 @@ public class BPNetwork implements Cloneable {
 				for (int j = 0; j < layers[i].getN(); j++) {
 					// 第j个节点误差 = 节点输出的导数 * 下一层误差加权之和
 					δ[i][j] = aF.getDerivativeY(o[i][j]) * getSumOfMultiply(wout[i][j], δ[i + 1], layers[i + 1].getN());
-					// 计算w的梯度
+					// 计算w的梯度 TODO o需要加激励导数？
 					nablaw[i][j] += δ[i][j] * o[i - 1][j];
 					// 计算b的梯度
 					nablab[i][j] += δ[i][j];
