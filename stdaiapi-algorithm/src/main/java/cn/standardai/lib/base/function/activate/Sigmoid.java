@@ -4,6 +4,8 @@
 */
 package cn.standardai.lib.base.function.activate;
 
+import cn.standardai.lib.algorithm.common.ByteUtil;
+import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.base.function.base.DerivableFunction;
 
 /**
@@ -12,6 +14,8 @@ import cn.standardai.lib.base.function.base.DerivableFunction;
  *
  */
 public class Sigmoid extends DerivableFunction {
+
+	public static int BYTES = Double.BYTES + 1;
 
 	public double k = 1;
 
@@ -51,5 +55,23 @@ public class Sigmoid extends DerivableFunction {
 	public double getDerivativeY(double y) {
 		// y' = k * y * (1 - y)
 		return k * y * (1 - y);
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x03;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] bytes = new byte[Double.BYTES + 1];
+		bytes[0] = getSerial();
+		ByteUtil.putDouble(bytes, this.k, 1);
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		this.k = ByteUtil.getInt(bytes, 1);
 	}
 }

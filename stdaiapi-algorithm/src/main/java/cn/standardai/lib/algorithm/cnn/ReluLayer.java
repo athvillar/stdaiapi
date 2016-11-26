@@ -1,8 +1,14 @@
 package cn.standardai.lib.algorithm.cnn;
 
+import cn.standardai.lib.algorithm.exception.StorageException;
+
 public class ReluLayer extends Layer {
 
 	private String function;
+
+	public ReluLayer() {
+		super();
+	}
 
 	public ReluLayer(String function) {
 		this.function = function;
@@ -49,5 +55,52 @@ public class ReluLayer extends Layer {
 				}
 			}
 		}
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x04;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] commonBytes;
+		int length = Integer.BYTES + (commonBytes = super.getBytes()).length + 1;
+		byte[] bytes = new byte[length];
+		int index = 0;
+		System.arraycopy(commonBytes.length, 0, bytes, index, Integer.BYTES);
+		index += Integer.BYTES;
+		System.arraycopy(commonBytes, 0, bytes, index, commonBytes.length);
+		index += commonBytes.length;
+		switch (this.function) {
+		case "max":
+			bytes[index] = 0x01;
+			break;
+		default:
+			break;
+		}
+		index++;
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		if (bytes == null) throw new StorageException("ReluLayer load failure");
+		int index = 0, commonLength = 0;
+		System.arraycopy(bytes, index, commonLength, 0, Integer.BYTES);
+		index += Integer.BYTES;
+		byte[] commonBytes = new byte[commonLength];
+		System.arraycopy(bytes, index, commonBytes, 0, commonLength);
+		super.load(commonBytes);
+		index += commonLength;
+		switch (bytes[index]) {
+		case 0x01:
+			this.function = "max";
+			break;
+		default:
+			break;
+		}
+		this.data = new Double[this.width][this.height][this.depth];
+		this.error = new Double[this.width][this.height][this.depth];
 	}
 }

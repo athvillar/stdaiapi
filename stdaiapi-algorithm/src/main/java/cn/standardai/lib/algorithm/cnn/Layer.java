@@ -1,12 +1,39 @@
 package cn.standardai.lib.algorithm.cnn;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import cn.standardai.lib.algorithm.common.ByteUtil;
+import cn.standardai.lib.algorithm.common.Storable;
+import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.base.function.activate.Self;
 import cn.standardai.lib.base.function.activate.Sigmoid;
 import cn.standardai.lib.base.function.base.DerivableFunction;
 
-public class Layer {
+public abstract class Layer implements Storable {
 
-	public enum LayerType { input, conv, relu, pool, fc };
+	public enum LayerType {
+
+		input((byte)0x05), conv((byte)0x02), relu((byte)0x04), pool((byte)0x03), fc((byte)0x01);
+
+		Byte type;
+
+		private LayerType(Byte type) {
+			this.type = type;
+		}
+
+		private static final Map<Byte, LayerType> mappings = new HashMap<Byte, LayerType>(5);
+
+		static {
+			for (LayerType layer : values()) {
+				mappings.put(layer.type, layer);
+			}
+		}
+
+		public static LayerType resolve(Byte type) {
+			return (type != null ? mappings.get(type) : null);
+		}
+	}
 
 	// TODO all public
 	public Integer width;
@@ -126,5 +153,56 @@ public class Layer {
 		} else {
 			this.aF = new Self();
 		}
+	}
+
+	public abstract byte getSerial();
+
+	public static Layer getInstance(byte serial) {
+		switch (LayerType.resolve(serial)) {
+		case conv:
+			return new ConvLayer();
+		case fc:
+			return new FCLayer();
+		case input:
+			return new InputLayer();
+		case pool:
+			return new PoolLayer();
+		case relu:
+			return new ReluLayer();
+		default:
+			return null;
+		}
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] aFBytes;
+		byte[] bytes = new byte[3 * Integer.BYTES + 1 + (aFBytes = aF.getBytes()).length];
+		int index = 0;
+		ByteUtil.putInt(bytes, this.width, index);
+		index += Integer.BYTES;
+		ByteUtil.putInt(bytes, this.height, index);
+		index += Integer.BYTES;
+		ByteUtil.putInt(bytes, this.depth, index);
+		index += Integer.BYTES;
+		bytes[index] = (byte)aFBytes.length;
+		index++;
+		System.arraycopy(aFBytes, 0, bytes, index, aFBytes.length);
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		if (bytes == null) throw new StorageException("Layer load failure");
+		int index = 0;
+		this.width = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.height = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.depth = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		byte[] aFBytes = new byte[bytes[index++]];
+		System.arraycopy(bytes, index, aFBytes, 0, aFBytes.length);
+		this.aF = DerivableFunction.getInstance(aFBytes);
 	}
 }

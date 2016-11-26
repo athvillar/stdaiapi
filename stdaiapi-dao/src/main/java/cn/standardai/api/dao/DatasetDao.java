@@ -36,7 +36,4 @@ public interface DatasetDao {
 
 	@Delete({"DELETE FROM DATASET WHERE DATASETID = #{datasetId}"})
 	void deleteById(@Param("datasetId") String datasetId);
-
-	@Delete({"DELETE FROM DATASET WHERE DATASETNAME = #{datasetName}"})
-	void deleteByDatasetName(@Param("datasetName") String datasetName);
 }

@@ -1,8 +1,11 @@
 package cn.standardai.lib.base.function.activate;
 
+import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.base.function.base.DerivableFunction;
 
 public class Self extends DerivableFunction {
+
+	public static int BYTES = 1;
 
 	public Self() {
 		super();
@@ -37,5 +40,22 @@ public class Self extends DerivableFunction {
 	 */
 	public double getDerivativeY(double y) {
 		return 1;
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x01;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] bytes = new byte[1];
+		bytes[0] = getSerial();
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		return;
 	}
 }

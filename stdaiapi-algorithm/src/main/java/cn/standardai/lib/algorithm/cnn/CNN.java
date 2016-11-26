@@ -7,13 +7,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.lib.algorithm.cnn.Layer.LayerType;
+import cn.standardai.lib.algorithm.common.ByteUtil;
+import cn.standardai.lib.algorithm.exception.StorageException;
 
 public class CNN {
 
 	// TODO public
-	public List<Layer> layers;
-
-	private Integer maxTrainingCount;
+	public List<Layer> layers = new ArrayList<Layer>();
 
 	private List<Integer[][][]> batchData = new ArrayList<Integer[][][]>();
 
@@ -48,8 +48,6 @@ public class CNN {
 				return null;
 
 		CNN instance = new CNN();
-		instance.maxTrainingCount = param.getInteger("maxTrainingCount");
-		instance.layers = new ArrayList<Layer>();
 		for (int i = 0; i < layersJSONArray.size(); i++) {
 			LayerType type = Layer.parseType(layersJSONArray.getJSONObject(i).getString("type"));
 			if (type == null) return null;
@@ -93,12 +91,12 @@ public class CNN {
 		return instance;
 	}
 
-	public void train(Integer maxTrainingCount) {
+	public void train(Integer batchSize, Integer batchCount) {
 		Integer trainingCount = 0;
 		do {
 			trainingCount++;
 			if (this.batchJSON.size() != 0) {
-				int[] batchNums = randBatchNums(batchJSON.size());
+				int[] batchNums = randBatchNums(batchSize, batchJSON.size());
 				clearError();
 				for (int i = 0; i < batchNums.length; i++) {
 					this.get1stLayer().setData(this.batchJSON.get(batchNums[i]).getJSONArray("data"));
@@ -109,7 +107,7 @@ public class CNN {
 				adjust(batchNums.length);
 				// TODO adjust(batchNums.length);
 			} else if (this.batchData.size() != 0) {
-				int[] batchNums = randBatchNums(batchData.size());
+				int[] batchNums = randBatchNums(batchSize, batchData.size());
 				clearError();
 				for (int i = 0; i < batchNums.length; i++) {
 					this.get1stLayer().setData(this.batchData.get(batchNums[i]));
@@ -120,11 +118,7 @@ public class CNN {
 				adjust(batchNums.length);
 				// TODO adjust(batchNums.length);
 			}
-		} while (trainingCount < maxTrainingCount);
-	}
-
-	public void train() {
-		train(this.maxTrainingCount);
+		} while (trainingCount < batchCount);
 	}
 
 	private void forward() {
@@ -160,7 +154,7 @@ public class CNN {
 	}
 
 	private boolean canFinish(Integer trainingCount) {
-		return (trainingCount >= this.maxTrainingCount);
+		return true;
 	}
 
 	public Double[][][] predict(JSONObject data) {
@@ -200,12 +194,52 @@ public class CNN {
 		}
 	}
 
-	public void save() {
-		// TODO
+	public static byte[] getBytes(CNN cnn) {
+
+		int size = 0;
+		int layerNum = cnn.layers.size();
+		byte[] layersSerial = new byte[layerNum];
+		Integer[] layersLength = new Integer[layerNum];
+		List<byte[]> layersBytes = new ArrayList<byte[]>();
+		for (int i = 0; i < cnn.layers.size(); i++) {
+			layersSerial[i] = cnn.layers.get(i).getSerial();
+			layersBytes.add(cnn.layers.get(i).getBytes());
+			layersLength[i] = layersBytes.get(i).length;
+			size += layersLength[i];
+			size += Integer.BYTES;
+			size++;
+		}
+
+		byte[] bytes = new byte[size];
+		int index = 0;
+		for (int i = 0; i < layerNum; i++) {
+			bytes[index++] = layersSerial[i];
+			ByteUtil.putInt(bytes, layersLength[i], index);
+			index += Integer.BYTES;
+			System.arraycopy(layersBytes.get(i), 0, bytes, index, layersLength[i]);
+			index += layersLength[i];
+		}
+
+		return bytes;
 	}
 
-	public void load() {
-		// TODO
+	public static CNN getInstance(byte[] bytes) throws StorageException {
+
+		CNN cnn = new CNN();
+		int index = 0;
+		while (index < bytes.length) {
+			byte layerSirial = bytes[index++];
+			Layer layer = Layer.getInstance(layerSirial);
+			int layerLength = ByteUtil.getInt(bytes, index);
+			index += Integer.BYTES;
+			byte[] layerBytes = new byte[layerLength];
+			System.arraycopy(bytes, index, layerBytes, 0, layerLength);
+			index += layerLength;
+			layer.load(layerBytes);
+			cnn.layers.add(layer);
+		}
+
+		return cnn;
 	}
 
 	public void loadData(JSONObject param) {
@@ -216,6 +250,22 @@ public class CNN {
 	public void loadData(Integer[][][] input, Integer[] expect) {
 		this.get1stLayer().setData(input);
 		this.getLastLayer().setTarget(expect);
+	}
+
+	public int dataCount() {
+		if (this.batchJSON != null) return this.batchJSON.size();
+		if (this.batchData != null) return this.batchData.size();
+		return 0;
+	}
+
+	public void clearData() {
+		if (this.batchData != null) {
+			this.batchData.clear();
+			this.batchExpect.clear();
+		}
+		if (this.batchJSON != null) {
+			this.batchJSON.clear();
+		}
 	}
 
 	public void addData(JSONObject param) {
@@ -237,12 +287,10 @@ public class CNN {
 		return (FCLayer)this.layers.get(this.layers.size() - 1);
 	}
 
-	private int[] randBatchNums(int size) {
-		int batchSize = size / 15 + 1;
-		//int batchSize = 2;
-		int[] batchNums = new int[batchSize];
-		for (int i = 0; i < batchSize; i++) {
-			batchNums[i] = new Double(Math.random() * size).intValue();
+	private int[] randBatchNums(int count, int maxSize) {
+		int[] batchNums = new int[count];
+		for (int i = 0; i < count; i++) {
+			batchNums[i] = new Double(Math.random() * maxSize).intValue();
 		}
 		return batchNums;
 	}

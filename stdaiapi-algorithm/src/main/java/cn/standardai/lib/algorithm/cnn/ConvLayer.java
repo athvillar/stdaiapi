@@ -3,15 +3,15 @@ package cn.standardai.lib.algorithm.cnn;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.standardai.lib.base.function.activate.Self;
-import cn.standardai.lib.base.function.activate.Sigmoid;
+import cn.standardai.lib.algorithm.common.ByteUtil;
+import cn.standardai.lib.algorithm.exception.StorageException;
 
 public class ConvLayer extends Layer {
 
 	// TODO all protected
-	public final Integer stride;
+	public Integer stride;
 
-	public final Integer padding;
+	public Integer padding;
 
 	public Integer kernelWidth;
 
@@ -19,16 +19,19 @@ public class ConvLayer extends Layer {
 
 	public FilterFactory filterFactory;
 
-	public List<Filter> filters;
+	public List<Filter> filters = new ArrayList<Filter>();
 
 	public Double η;
+
+	public ConvLayer() {
+		super();
+	}
 
 	public ConvLayer(Integer depth, Integer stride, Integer padding, Double learningRate) {
 		this.depth = depth;
 		this.stride = stride;
 		this.padding = padding;
 		this.η = learningRate;
-		this.filters = new ArrayList<Filter>();
 	}
 
 	public ConvLayer(Integer depth, Integer stride, Integer padding, Integer kernelWidth, Integer kernelHeight, Double learningRate) {
@@ -39,7 +42,6 @@ public class ConvLayer extends Layer {
 		this.kernelHeight = kernelHeight;
 		this.η = learningRate;
 		this.filterFactory = new FilterFactory(kernelWidth, kernelHeight);
-		this.filters = new ArrayList<Filter>();
 	}
 
 	@Override
@@ -183,5 +185,105 @@ public class ConvLayer extends Layer {
 			}
 			System.out.println("-------------------------------------------------------------------------------");
 		}
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x02;
+	}
+
+	@Override
+	public byte[] getBytes() {
+
+		byte[] commonBytes;
+		List<byte[]> filtersBytes = new ArrayList<byte[]>();
+		int filterBytesLength = 0;
+		for (int i = 0; i < this.filters.size(); i++) {
+			byte[] filterBytes = this.filters.get(i).getBytes();
+			filtersBytes.add(filterBytes);
+			filterBytesLength += filterBytes.length;
+		}
+		int length = Integer.BYTES + (commonBytes = super.getBytes()).length + 4 * Integer.BYTES + Double.BYTES + FilterFactory.BYTES + Integer.BYTES + Integer.BYTES * this.filters.size() + filterBytesLength;
+		byte[] bytes = new byte[length];
+		int index = 0;
+		ByteUtil.putInt(bytes, commonBytes.length, index);
+		index += Integer.BYTES;
+		System.arraycopy(commonBytes, 0, bytes, index, commonBytes.length);
+		index += commonBytes.length;
+		ByteUtil.putInt(bytes, this.stride, index);
+		index += Integer.BYTES;
+		ByteUtil.putInt(bytes, this.padding, index);
+		index += Integer.BYTES;
+		ByteUtil.putInt(bytes, this.kernelWidth, index);
+		index += Integer.BYTES;
+		ByteUtil.putInt(bytes, this.kernelHeight, index);
+		index += Integer.BYTES;
+		ByteUtil.putDouble(bytes, this.η, index);
+		index += Double.BYTES;
+		System.arraycopy(this.filterFactory.getBytes(), 0, bytes, index, FilterFactory.BYTES);
+		index += FilterFactory.BYTES;
+		ByteUtil.putInt(bytes, filterBytesLength, index);
+		index += Integer.BYTES;
+		for (byte[] filterBytes : filtersBytes) {
+			ByteUtil.putInt(bytes, filterBytes.length, index);
+			index += Integer.BYTES;
+			System.arraycopy(filterBytes, 0, bytes, index, filterBytes.length);
+			index += filterBytes.length;
+		}
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		if (bytes == null) throw new StorageException("ConvLayer load failure");
+		int index = 0, commonLength = 0;
+		commonLength = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		byte[] commonBytes = new byte[commonLength];
+		System.arraycopy(bytes, index, commonBytes, 0, commonLength);
+		index += commonLength;
+		super.load(commonBytes);
+		this.stride = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.padding = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.kernelWidth = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.kernelHeight = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.η = ByteUtil.getDouble(bytes, index);
+		index += Double.BYTES;
+		byte[] ffb = new byte[FilterFactory.BYTES];
+		System.arraycopy(bytes, index, ffb, 0, FilterFactory.BYTES);
+		index += FilterFactory.BYTES;
+		this.filterFactory = new FilterFactory(this.kernelWidth, this.kernelHeight);
+		this.filterFactory.load(ffb);
+		//int filtersBytesSize = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.filters.clear();
+		while (index < bytes.length) {
+			//int filterSize = ByteUtil.getInt(bytes, index);
+			index += Integer.BYTES;
+			int filterI = ByteUtil.getInt(bytes, index);
+			index += Integer.BYTES;
+			int filterJ = ByteUtil.getInt(bytes, index);
+			index += Integer.BYTES;
+			int filterK = ByteUtil.getInt(bytes, index);
+			index += Integer.BYTES;
+			Filter filter = new Filter(filterI, filterJ, filterK);
+			for (int i = 0; i < filterI; i++) {
+				for (int j = 0; j < filterJ; j++) {
+					for (int k = 0; k < filterK; k++) {
+						filter.w[i][j][k] = ByteUtil.getDouble(bytes, index);
+						index += Double.BYTES;
+					}
+				}
+			}
+			filter.b = ByteUtil.getDouble(bytes, index);
+			index += Double.BYTES;
+			this.filters.add(filter);
+		}
+		this.data = new Double[this.width][this.height][this.depth];
+		this.error = new Double[this.width][this.height][this.depth];
 	}
 }

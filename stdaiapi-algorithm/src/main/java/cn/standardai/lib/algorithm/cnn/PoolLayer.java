@@ -1,14 +1,19 @@
 package cn.standardai.lib.algorithm.cnn;
 
-import cn.standardai.lib.base.function.activate.Self;
+import cn.standardai.lib.algorithm.common.ByteUtil;
+import cn.standardai.lib.algorithm.exception.StorageException;
 
 public class PoolLayer extends Layer {
 
-	protected final String method;
+	protected String method;
 
-	protected final Integer spatial;
+	protected Integer spatial;
 
-	protected final Integer stride;
+	protected Integer stride;
+
+	public PoolLayer() {
+		super();
+	}
 
 	public PoolLayer(String method, Integer spatial, Integer stride) {
 		this.method = method;
@@ -121,5 +126,65 @@ public class PoolLayer extends Layer {
 			}
 			break;
 		}
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x03;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] commonBytes;
+		int length = Integer.BYTES + (commonBytes = super.getBytes()).length + 1 + 2 * Integer.BYTES;
+		byte[] bytes = new byte[length];
+		int index = 0;
+		ByteUtil.putInt(bytes, commonBytes.length, index);
+		index += Integer.BYTES;
+		System.arraycopy(commonBytes, 0, bytes, index, commonBytes.length);
+		index += commonBytes.length;
+		switch (this.method) {
+		case "max":
+			bytes[index] = 0x01;
+			break;
+		case "avg":
+			bytes[index] = 0x02;
+			break;
+		default:
+			break;
+		}
+		index++;
+		ByteUtil.putInt(bytes, this.spatial, index);
+		index += Integer.BYTES;
+		ByteUtil.putInt(bytes, this.stride, index);
+		index += Integer.BYTES;
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		if (bytes == null) throw new StorageException("PoolLayer load failure");
+		int index = 0, commonLength = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		byte[] commonBytes = new byte[commonLength];
+		System.arraycopy(bytes, index, commonBytes, 0, commonLength);
+		super.load(commonBytes);
+		index += commonLength;
+		switch (bytes[index]) {
+		case 0x01:
+			this.method = "max";
+			break;
+		case 0x02:
+			this.method = "avg";
+			break;
+		default:
+			break;
+		}
+		index++;
+		this.spatial = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		this.stride = ByteUtil.getInt(bytes, index);
+		this.data = new Double[this.width][this.height][this.depth];
+		this.error = new Double[this.width][this.height][this.depth];
 	}
 }

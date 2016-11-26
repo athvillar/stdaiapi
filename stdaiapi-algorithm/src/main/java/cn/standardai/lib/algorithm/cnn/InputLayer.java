@@ -2,9 +2,14 @@ package cn.standardai.lib.algorithm.cnn;
 
 import com.alibaba.fastjson.JSONArray;
 
-import cn.standardai.lib.base.function.activate.Sigmoid;
+import cn.standardai.lib.algorithm.common.ByteUtil;
+import cn.standardai.lib.algorithm.exception.StorageException;
 
 public class InputLayer extends Layer {
+
+	public InputLayer() {
+		super();
+	}
 
 	public InputLayer(Integer width, Integer height, Integer depth) {
 		this.width = width;
@@ -31,12 +36,24 @@ public class InputLayer extends Layer {
 				}
 			}
 		}
-		for (int i = 0; i < data1.size(); i++) {
-			JSONArray data2 = data1.getJSONArray(i);
-			for (int j = 0; j < data2.size(); j++) {
-				JSONArray data3 = data2.getJSONArray(j);
-				for (int k = 0; k < data3.size(); k++) {
-					this.data[k][j][i] = this.aF.getY((data3.getDouble(k) - min) / (max - min));
+		if (this.data.length == data1.size()) {
+			for (int i = 0; i < data1.size(); i++) {
+				JSONArray data2 = data1.getJSONArray(i);
+				for (int j = 0; j < data2.size(); j++) {
+					JSONArray data3 = data2.getJSONArray(j);
+					for (int k = 0; k < data3.size(); k++) {
+						this.data[i][j][k] = this.aF.getY((data3.getDouble(k) - min) / (max - min));
+					}
+				}
+			}
+		} else {
+			for (int i = 0; i < data1.size(); i++) {
+				JSONArray data2 = data1.getJSONArray(i);
+				for (int j = 0; j < data2.size(); j++) {
+					JSONArray data3 = data2.getJSONArray(j);
+					for (int k = 0; k < data3.size(); k++) {
+						this.data[k][j][i] = this.aF.getY((data3.getDouble(k) - min) / (max - min));
+					}
 				}
 			}
 		}
@@ -69,5 +86,34 @@ public class InputLayer extends Layer {
 			}
 		}
 		System.out.print("");
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x05;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		byte[] commonBytes;
+		int length = Integer.BYTES + (commonBytes = super.getBytes()).length;
+		byte[] bytes = new byte[length];
+		int index = 0;
+		ByteUtil.putInt(bytes, commonBytes.length, index);
+		index += Integer.BYTES;
+		System.arraycopy(commonBytes, 0, bytes, index, commonBytes.length);
+		index += commonBytes.length;
+		return bytes;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		if (bytes == null) throw new StorageException("InputLayer load failure");
+		int index = 0, commonLength = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		byte[] commonBytes = new byte[commonLength];
+		System.arraycopy(bytes, index, commonBytes, 0, commonLength);
+		super.load(commonBytes);
+		this.data = new Double[this.width][this.height][this.depth];
 	}
 }

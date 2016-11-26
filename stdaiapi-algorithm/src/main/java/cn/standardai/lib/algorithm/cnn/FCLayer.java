@@ -4,12 +4,15 @@ import java.util.ArrayList;
 
 import com.alibaba.fastjson.JSONArray;
 
-import cn.standardai.lib.base.function.activate.Self;
-import cn.standardai.lib.base.function.activate.Sigmoid;
+import cn.standardai.lib.algorithm.exception.StorageException;
 
 public class FCLayer extends ConvLayer {
 
 	private Integer[] target;
+
+	public FCLayer() {
+		super();
+	}
 
 	public FCLayer(Integer depth, Double learningRate) {
 		super(depth, 1, 0, learningRate);
@@ -49,5 +52,16 @@ public class FCLayer extends ConvLayer {
 		for (int i = 0; i < this.depth; i++) {
 			this.target[i] = target[i];
 		}
+	}
+
+	@Override
+	public byte getSerial() {
+		return 0x01;
+	}
+
+	@Override
+	public void load(byte[] bytes) throws StorageException {
+		super.load(bytes);
+		this.target = new Integer[this.depth];
 	}
 }
