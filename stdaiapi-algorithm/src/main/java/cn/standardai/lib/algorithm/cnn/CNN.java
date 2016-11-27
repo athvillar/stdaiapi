@@ -104,7 +104,7 @@ public class CNN {
 					forward();
 					backward();
 				}
-				adjust(batchNums.length);
+				adjust(1);
 				// TODO adjust(batchNums.length);
 			} else if (this.batchData.size() != 0) {
 				int[] batchNums = randBatchNums(batchSize, batchData.size());
@@ -115,7 +115,7 @@ public class CNN {
 					forward();
 					backward();
 				}
-				adjust(batchNums.length);
+				adjust(1);
 				// TODO adjust(batchNums.length);
 			}
 		} while (trainingCount < batchCount);
@@ -253,8 +253,8 @@ public class CNN {
 	}
 
 	public int dataCount() {
-		if (this.batchJSON != null) return this.batchJSON.size();
-		if (this.batchData != null) return this.batchData.size();
+		if (this.batchJSON != null && this.batchJSON.size() != 0) return this.batchJSON.size();
+		if (this.batchData != null && this.batchData.size() != 0) return this.batchData.size();
 		return 0;
 	}
 

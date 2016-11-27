@@ -72,6 +72,6 @@ public class Sigmoid extends DerivableFunction {
 
 	@Override
 	public void load(byte[] bytes) throws StorageException {
-		this.k = ByteUtil.getInt(bytes, 1);
+		this.k = ByteUtil.getDouble(bytes, 1);
 	}
 }

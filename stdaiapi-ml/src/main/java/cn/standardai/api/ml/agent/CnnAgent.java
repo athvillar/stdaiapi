@@ -21,6 +21,7 @@ import cn.standardai.api.ml.exception.MLException;
 import cn.standardai.lib.algorithm.cnn.CNN;
 import cn.standardai.lib.algorithm.cnn.CnnException;
 import cn.standardai.lib.algorithm.exception.StorageException;
+import cn.standardai.lib.base.function.Statistic;
 
 public class CnnAgent {
 
@@ -96,8 +97,8 @@ public class CnnAgent {
 		JSONObject train = request.getJSONObject("train");
 		if (train != null) {
 
-			Dataset dataset = getDataset(train);
-			List<Data> data = getData(dataset);
+			Dataset dataset = getDataset(userId, train);
+			List<Data> trainData = getData(dataset);
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 			String parentModelId = null;
@@ -123,7 +124,7 @@ public class CnnAgent {
 			}
 
 			// 载入数据
-			for (Data data1 : data) {
+			for (Data data1 : trainData) {
 				switch (data1.getType()) {
 				case "json":
 					cnn.addData(JSONObject.parseObject(data1.getData()));
@@ -136,33 +137,47 @@ public class CnnAgent {
 			// 训练网络
 			Integer batchSize = train.getInteger("batchSize");
 			Integer batchCount = train.getInteger("batchCount");
-			if (batchSize == null) batchSize = data.size();
+			Integer step = train.getInteger("step");
+			if (batchSize == null) batchSize = trainData.size();
 			if (batchCount == null) batchCount = 1;
-			cnn.train(batchSize, batchCount);
+			if (step == null) step = batchCount;
+			for (int i = 0; i < batchCount; i += step) {
+				cnn.train(batchSize, step);
+				// 更新DB
+				if (label != null) {
+					Model newModel = new Model();
+					String modelId = MathUtil.random(31);
+					result.put("modelId", modelId);
+					newModel.setModelId(modelId);
+					newModel.setModelTemplateId(modelTemplate.getModelTemplateId());
+					newModel.setParentModelId(parentModelId);
+					parentModelId = newModel.getModelId();
+					newModel.setLabel(label);
+					newModel.setDatasetId(dataset.getDatasetId());
+					newModel.setDataCount(trainData.size());
+					newModel.setBatchSize(batchSize);
+					newModel.setBatchCount(step);
+					newModel.setStructure(CNN.getBytes(cnn));
+					newModel.setCreateTime(new Date());
+					modelDao.insert(newModel);
+				}
 
-			// 更新DB
-			if (label != null) {
-				Model newModel = new Model();
-				String modelId = MathUtil.random(31);
-				result.put("modelId", modelId);
-				newModel.setModelId(modelId);
-				newModel.setModelTemplateId(modelTemplate.getModelTemplateId());
-				newModel.setParentModelId(parentModelId);
-				newModel.setLabel(label);
-				newModel.setDatasetId(dataset.getDatasetId());
-				newModel.setDataCount(data.size());
-				newModel.setBatchSize(batchSize);
-				newModel.setBatchCount(batchCount);
-				newModel.setStructure(CNN.getBytes(cnn));
-				newModel.setCreateTime(new Date());
-				modelDao.insert(newModel);
+				JSONObject test = request.getJSONObject("test");
+				List<Data> testData = null;
+				if (test != null && testData == null) {
+					Dataset testDataset = getDataset(userId, test);
+					testData = getData(testDataset);
+				}
+				if (test != null) {
+					stepCheck(cnn, null, testData, i + step);
+				}
 			}
 		}
 
 		JSONObject test = request.getJSONObject("test");
 		if (test != null) {
 
-			Dataset dataset = getDataset(test);
+			Dataset dataset = getDataset(userId, test);
 			List<Data> data = getData(dataset);
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
@@ -209,7 +224,56 @@ public class CnnAgent {
 		return result;
 	}
 
-	private Dataset getDataset(JSONObject json) throws MLException {
+	private void stepCheck(CNN cnn, List<Data> trainData, List<Data> testData, Integer count) {
+
+		Double trainCorrectRate = null;
+		Double testCorrectRate = null;
+		if (trainData != null) trainCorrectRate = stepCheck(cnn, trainData);
+		if (testData != null) testCorrectRate = stepCheck(cnn, testData);
+
+		System.out.println("Training count: " + count +
+				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate)) +
+				(testCorrectRate == null ? "" : ("\tTrCR:" + testCorrectRate)));
+	}
+
+	private Double stepCheck(CNN cnn, List<Data> data) {
+
+		if (data == null) return null;
+		Double[] correctRates = new Double[data.size()];
+		for (int index = 0; index < data.size(); index++) {
+			// 载入数据
+			switch (data.get(index).getType()) {
+			case "json":
+				Double[][][] resultData = cnn.predict(JSONObject.parseObject(data.get(index).getData()));
+				if (resultData == null) continue;
+				// 输出预测
+				Double max = Double.NEGATIVE_INFINITY;
+				Double sum = 0.0;
+				for (int i = 0; i < resultData[0][0].length; i++) {
+					sum += resultData[0][0][i];
+					if (resultData[0][0][i] > max) {
+						max = resultData[0][0][i];
+					}
+				}
+				JSONArray target = JSONObject.parseObject(data.get(index).getData()).getJSONArray("target");
+				Integer correctIndex = 0;
+				for (int i = 0; i < target.size(); i++) {
+					if (target.getInteger(i) == 1) {
+						correctIndex = i;
+						break;
+					}
+				}
+				correctRates[index] = resultData[0][0][correctIndex] / sum;
+				break;
+			default:
+				break;
+			}
+		}
+
+		return Statistic.avg(correctRates);
+	}
+
+	private Dataset getDataset(String userId, JSONObject json) throws MLException {
 
 		Dataset dataset;
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
@@ -220,7 +284,7 @@ public class CnnAgent {
 		} else {
 			String datasetName = json.getString("datasetName");
 			if (datasetName != null) {
-				dataset = datasetDao.selectById(datasetId);
+				dataset = datasetDao.selectByKey(datasetName, userId);
 				if (dataset == null) throw new MLException("dataset不存在");
 			} else {
 				throw new MLException("未指定dataset");
