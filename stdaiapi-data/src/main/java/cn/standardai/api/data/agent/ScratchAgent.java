@@ -203,7 +203,7 @@ public class ScratchAgent {
 
 		List<JSONObject> datalist = new ArrayList<JSONObject>();
 		for (int i = 1; i <= 165; i++) {
-			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + i + ".bmp");
+			Integer[][][] data = Image2Data.getGray("~/Documents/yale/s" + i + ".bmp");
 			Integer[] target = new Integer[165];
 			for (int j = 0; j < target.length; j++) {
 				if (j == (i - 1) / 11) {
