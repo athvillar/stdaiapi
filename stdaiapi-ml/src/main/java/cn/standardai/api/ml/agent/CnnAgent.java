@@ -239,19 +239,20 @@ public class CnnAgent {
 
 	private void stepCheck(String modelTemplateName, CNN cnn, List<Data> trainData, List<Data> testData, Integer count) {
 
-		Double trainCorrectRate = null;
-		Double testCorrectRate = null;
+		Double[] trainCorrectRate = null;
+		Double[] testCorrectRate = null;
 		if (trainData != null) trainCorrectRate = stepCheck(cnn, trainData);
 		if (testData != null) testCorrectRate = stepCheck(cnn, testData);
 
 		System.out.println(modelTemplateName + "\tTrCnt: " + count +
-				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate)) +
-				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate)));
+				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate[0] + "," + trainCorrectRate[1])) +
+				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate[0] + "," + testCorrectRate[1])));
 	}
 
-	private Double stepCheck(CNN cnn, List<Data> data) {
+	private Double[] stepCheck(CNN cnn, List<Data> data) {
 
 		if (data == null) return null;
+		Double[] correctRatesWithWeigth = new Double[data.size()];
 		Double[] correctRates = new Double[data.size()];
 		for (int index = 0; index < data.size(); index++) {
 			// 载入数据
@@ -262,10 +263,12 @@ public class CnnAgent {
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Double sum = 0.0;
+				Integer maxIndex = -1;
 				for (int i = 0; i < resultData[0][0].length; i++) {
 					sum += resultData[0][0][i];
 					if (resultData[0][0][i] > max) {
 						max = resultData[0][0][i];
+						maxIndex = i;
 					}
 				}
 				JSONArray target = JSONObject.parseObject(data.get(index).getData()).getJSONArray("target");
@@ -276,14 +279,22 @@ public class CnnAgent {
 						break;
 					}
 				}
-				correctRates[index] = resultData[0][0][correctIndex] / sum;
+				correctRatesWithWeigth[index] = resultData[0][0][correctIndex] / sum;
+				if (maxIndex == correctIndex) {
+					correctRates[index] = 1.0;
+				} else {
+					correctRates[index] = 0.0;
+				}
 				break;
 			default:
 				break;
 			}
 		}
 
-		return Statistic.avg(correctRates);
+		Double[] correctRate = new Double[2];
+		correctRate[0] = Statistic.avg(correctRates);
+		correctRate[1] = Statistic.avg(correctRatesWithWeigth);
+		return correctRate;
 	}
 
 	private Dataset getDataset(String userId, JSONObject json) throws MLException {
