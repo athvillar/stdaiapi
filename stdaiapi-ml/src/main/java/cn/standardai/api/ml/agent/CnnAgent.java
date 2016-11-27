@@ -102,6 +102,7 @@ public class CnnAgent {
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 			String parentModelId = null;
+			Integer dataCount = 0;
 			try {
 				if (label != null) {
 					// 有label，找到此label的最近模型
@@ -113,6 +114,7 @@ public class CnnAgent {
 						// 有模型，使用最新模型继续训练
 						cnn = CNN.getInstance(models.get(0).getStructure());
 						parentModelId = models.get(0).getModelId();
+						dataCount = models.get(0).getDataCount();
 					}
 				} else {
 					cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
@@ -154,7 +156,8 @@ public class CnnAgent {
 					parentModelId = newModel.getModelId();
 					newModel.setLabel(label);
 					newModel.setDatasetId(dataset.getDatasetId());
-					newModel.setDataCount(trainData.size());
+					dataCount += batchSize * step;
+					newModel.setDataCount(dataCount);
 					newModel.setBatchSize(batchSize);
 					newModel.setBatchCount(step);
 					newModel.setStructure(CNN.getBytes(cnn));
@@ -190,7 +193,7 @@ public class CnnAgent {
 							// 无模型，新建模型
 							cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
 						} else {
-							// 有模型，使用最新模型继续训练
+							// 有模型，使用最新模型
 							cnn = CNN.getInstance(models.get(0).getStructure());
 						}
 					} else {
@@ -213,7 +216,6 @@ public class CnnAgent {
 					Double[][][] resultData = cnn.predict(JSONObject.parseObject(data1.getData()));
 					if (resultData == null) continue;
 					Double max = Double.NEGATIVE_INFINITY;
-					Double sum = 0.0;
 					Integer maxIndex = -1;
 					for (int i = 0; i < resultData[0][0].length; i++) {
 						data1ResultJSONArray.add(resultData[0][0][i]);
