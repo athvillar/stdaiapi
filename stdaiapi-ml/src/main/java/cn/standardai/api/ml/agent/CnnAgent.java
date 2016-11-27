@@ -102,7 +102,6 @@ public class CnnAgent {
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 			String parentModelId = null;
-			Integer dataCount = 0;
 			try {
 				if (label != null) {
 					// 有label，找到此label的最近模型
@@ -114,7 +113,6 @@ public class CnnAgent {
 						// 有模型，使用最新模型继续训练
 						cnn = CNN.getInstance(models.get(0).getStructure());
 						parentModelId = models.get(0).getModelId();
-						dataCount = models.get(0).getDataCount();
 					}
 				} else {
 					cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
@@ -156,8 +154,7 @@ public class CnnAgent {
 					parentModelId = newModel.getModelId();
 					newModel.setLabel(label);
 					newModel.setDatasetId(dataset.getDatasetId());
-					dataCount += batchSize * step;
-					newModel.setDataCount(dataCount);
+					newModel.setDataCount(trainData.size());
 					newModel.setBatchSize(batchSize);
 					newModel.setBatchCount(step);
 					newModel.setStructure(CNN.getBytes(cnn));
@@ -193,7 +190,7 @@ public class CnnAgent {
 							// 无模型，新建模型
 							cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
 						} else {
-							// 有模型，使用最新模型
+							// 有模型，使用最新模型继续训练
 							cnn = CNN.getInstance(models.get(0).getStructure());
 						}
 					} else {
@@ -216,6 +213,7 @@ public class CnnAgent {
 					Double[][][] resultData = cnn.predict(JSONObject.parseObject(data1.getData()));
 					if (resultData == null) continue;
 					Double max = Double.NEGATIVE_INFINITY;
+					Double sum = 0.0;
 					Integer maxIndex = -1;
 					for (int i = 0; i < resultData[0][0].length; i++) {
 						data1ResultJSONArray.add(resultData[0][0][i]);
@@ -241,20 +239,19 @@ public class CnnAgent {
 
 	private void stepCheck(String modelTemplateName, CNN cnn, List<Data> trainData, List<Data> testData, Integer count) {
 
-		Double[] trainCorrectRate = null;
-		Double[] testCorrectRate = null;
+		Double trainCorrectRate = null;
+		Double testCorrectRate = null;
 		if (trainData != null) trainCorrectRate = stepCheck(cnn, trainData);
 		if (testData != null) testCorrectRate = stepCheck(cnn, testData);
 
 		System.out.println(modelTemplateName + "\tTrCnt: " + count +
-				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate[0] + "," + trainCorrectRate[1])) +
-				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate[0] + "," + testCorrectRate[1])));
+				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate)) +
+				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate)));
 	}
 
-	private Double[] stepCheck(CNN cnn, List<Data> data) {
+	private Double stepCheck(CNN cnn, List<Data> data) {
 
 		if (data == null) return null;
-		Double[] correctRatesWithWeigth = new Double[data.size()];
 		Double[] correctRates = new Double[data.size()];
 		for (int index = 0; index < data.size(); index++) {
 			// 载入数据
@@ -265,12 +262,10 @@ public class CnnAgent {
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Double sum = 0.0;
-				Integer maxIndex = -1;
 				for (int i = 0; i < resultData[0][0].length; i++) {
 					sum += resultData[0][0][i];
 					if (resultData[0][0][i] > max) {
 						max = resultData[0][0][i];
-						maxIndex = i;
 					}
 				}
 				JSONArray target = JSONObject.parseObject(data.get(index).getData()).getJSONArray("target");
@@ -281,22 +276,14 @@ public class CnnAgent {
 						break;
 					}
 				}
-				correctRatesWithWeigth[index] = resultData[0][0][correctIndex] / sum;
-				if (maxIndex == correctIndex) {
-					correctRates[index] = 1.0;
-				} else {
-					correctRates[index] = 0.0;
-				}
+				correctRates[index] = resultData[0][0][correctIndex] / sum;
 				break;
 			default:
 				break;
 			}
 		}
 
-		Double[] correctRate = new Double[2];
-		correctRate[0] = Statistic.avg(correctRates);
-		correctRate[1] = Statistic.avg(correctRatesWithWeigth);
-		return correctRate;
+		return Statistic.avg(correctRates);
 	}
 
 	private Dataset getDataset(String userId, JSONObject json) throws MLException {
