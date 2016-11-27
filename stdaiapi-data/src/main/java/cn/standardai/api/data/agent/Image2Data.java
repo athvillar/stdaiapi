@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
  */
 public class Image2Data {
 
+	/*
 	public static void main(String[] args) {
 		String file = "/Users/athvillar/Downloads/q1.jpg";
 		try {
@@ -34,6 +35,7 @@ public class Image2Data {
 			e.printStackTrace();
 		}
 	}
+	*/
 
 	public static Integer[][][] getRGB(String filepath) throws IOException{
 
