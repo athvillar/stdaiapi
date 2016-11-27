@@ -104,8 +104,8 @@ public class CNN {
 					forward();
 					backward();
 				}
-				adjust(1);
-				// TODO adjust(batchNums.length);
+				// TODO adjust(1);
+				adjust(batchNums.length);
 			} else if (this.batchData.size() != 0) {
 				int[] batchNums = randBatchNums(batchSize, batchData.size());
 				clearError();
@@ -115,8 +115,8 @@ public class CNN {
 					forward();
 					backward();
 				}
-				adjust(1);
-				// TODO adjust(batchNums.length);
+				// TODO adjust(1);
+				adjust(batchNums.length);
 			}
 		} while (trainingCount < batchCount);
 	}
