@@ -169,7 +169,7 @@ public class CnnAgent {
 					testData = getData(testDataset);
 				}
 				if (test != null) {
-					stepCheck(cnn, null, testData, i + step);
+					stepCheck(modelTemplate.getModelTemplateName(), cnn, null, testData, i + step);
 				}
 			}
 		}
@@ -204,36 +204,49 @@ public class CnnAgent {
 			}
 
 			// 载入数据
-			JSONArray resultJSONArray = new JSONArray();
+			JSONArray dataResultJSONArray = new JSONArray();
 			for (Data data1 : data) {
 				switch (data1.getType()) {
 				case "json":
+					JSONArray data1ResultJSONArray = new JSONArray();
+					JSONObject data1ResultJSONObject = new JSONObject();
 					Double[][][] resultData = cnn.predict(JSONObject.parseObject(data1.getData()));
 					if (resultData == null) continue;
+					Double max = Double.NEGATIVE_INFINITY;
+					Double sum = 0.0;
+					Integer maxIndex = -1;
 					for (int i = 0; i < resultData[0][0].length; i++) {
-						resultJSONArray.add(resultData[0][0][i]);
+						data1ResultJSONArray.add(resultData[0][0][i]);
+						if (resultData[0][0][i] > max) {
+							max = resultData[0][0][i];
+							maxIndex = i;
+						}
 					}
+					data1ResultJSONObject.put("maxIndex", maxIndex);
+					data1ResultJSONObject.put("maxScore", max);
+					data1ResultJSONObject.put("scores", data1ResultJSONArray);
+					dataResultJSONArray.add(data1ResultJSONObject);
 					break;
 				default:
 					break;
 				}
 			}
-			result.put("predict", resultJSONArray);
+			result.put("predict", dataResultJSONArray);
 		}
 
 		return result;
 	}
 
-	private void stepCheck(CNN cnn, List<Data> trainData, List<Data> testData, Integer count) {
+	private void stepCheck(String modelTemplateName, CNN cnn, List<Data> trainData, List<Data> testData, Integer count) {
 
 		Double trainCorrectRate = null;
 		Double testCorrectRate = null;
 		if (trainData != null) trainCorrectRate = stepCheck(cnn, trainData);
 		if (testData != null) testCorrectRate = stepCheck(cnn, testData);
 
-		System.out.println("Training count: " + count +
+		System.out.println(modelTemplateName + "\tTrCnt: " + count +
 				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate)) +
-				(testCorrectRate == null ? "" : ("\tTrCR:" + testCorrectRate)));
+				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate)));
 	}
 
 	private Double stepCheck(CNN cnn, List<Data> data) {
