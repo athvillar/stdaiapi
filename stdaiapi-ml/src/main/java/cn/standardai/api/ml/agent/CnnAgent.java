@@ -172,7 +172,7 @@ public class CnnAgent {
 					testData = getData(testDataset);
 				}
 				if (test != null) {
-					stepCheck(modelTemplate.getModelTemplateName(), cnn, null, testData, i + step);
+					stepCheck(modelTemplate.getModelTemplateName(), cnn, trainData, testData, i + step);
 				}
 			}
 		}
@@ -271,7 +271,8 @@ public class CnnAgent {
 		if (trainData != null) trainCorrectRate = stepCheck(cnn, trainData);
 		if (testData != null) testCorrectRate = stepCheck(cnn, testData);
 
-		System.out.println(modelTemplateName + "\tTrCnt: " + count +
+		System.out.println("" + DateUtil.format(new Date(), DateUtil.YYYY__MM__DD__HH__MM__SS) + " " +
+				modelTemplateName + " TrCnt: " + count +
 				(trainCorrectRate == null ? "" : ("\tTrCR:" + trainCorrectRate[0] + "," + trainCorrectRate[1])) +
 				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate[0] + "," + testCorrectRate[1])));
 	}
