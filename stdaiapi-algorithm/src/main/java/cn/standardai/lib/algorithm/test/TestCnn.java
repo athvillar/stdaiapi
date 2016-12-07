@@ -6,6 +6,7 @@ import cn.standardai.lib.algorithm.cnn.CNN;
 import cn.standardai.lib.algorithm.cnn.ConvLayer;
 import cn.standardai.lib.algorithm.cnn.FCLayer;
 import cn.standardai.lib.algorithm.cnn.Filter;
+import cn.standardai.lib.algorithm.cnn.Layer;
 import cn.standardai.lib.base.function.Statistic;
 import cn.standardai.tool.Image2Data;
 
@@ -16,10 +17,10 @@ public class TestCnn {
 	 */
 	public static void main(String[] args) {
 		try {
-			test15Faces();
+			//test15Faces();
 			//test2Faces();
 			//test44();
-			//testChangeW();
+			testChangeW();
 			//testYale();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -362,12 +363,12 @@ public class TestCnn {
 		"{" +
 		"  \"layers\" : [" +
 		"    {\"type\": \"INPUT\", \"width\": 4, \"height\": 4, \"depth\": 2 }," +
-		"    {\"type\": \"CONV\", \"depth\": 6, \"stride\": 1, \"padding\":1, \"learningRate\": 0.0003, \"aF\": \"sigmoid\"," +
+		"    {\"type\": \"CONV\", \"depth\": 6, \"stride\": 1, \"padding\":1, \"learningRate\": 0.03, \"aF\": \"sigmoid\"," +
 		"      \"filter\": {\"width\":3, \"height\":3}" +
 		"    }," +
-		//"    {\"type\": \"RELU\", \"function\": \"max\"}," +
+		"    {\"type\": \"RELU\", \"function\": \"max\"}," +
 		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
-		"    {\"type\": \"FC\", \"depth\": 2, \"learningRate\": 0.0003, \"aF\": \"sigmoid\" }" +
+		"    {\"type\": \"FC\", \"depth\": 2, \"learningRate\": 0.03, \"aF\": \"sigmoid\" }" +
 		"  ]" +
 		"}";
 
@@ -414,6 +415,8 @@ public class TestCnn {
 		//cnn.addData(JSONObject.parseObject(data2));
 		// 训练
 		cnn.train(10, 100);
+		cnn.forward();
+		cnn.backward();
 
 		// 预测
 		Double[][][] temp = cnn.predict(JSONObject.parseObject(data1)).clone();
@@ -429,8 +432,13 @@ public class TestCnn {
 		}
 		// 改变某个权重
 		Double e = 0.00000001;
-		Double oldW = ((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).filters.get(0).w[0][0][0];
-		((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).filters.get(0).w[0][0][0] = oldW + e;
+		Integer testI = 0;
+		Integer testJ = 0;
+		Integer testK = 0;
+		ConvLayer thisLayer = (ConvLayer)cnn.layers.get(cnn.layers.size() - 1);
+		Layer prevLayer = cnn.layers.get(cnn.layers.size() - 2);
+		Double oldW = thisLayer.filters.get(0).w[testI][testJ][testK];
+		thisLayer.filters.get(0).w[testI][testJ][testK] = oldW + e;
 		temp = cnn.predict(JSONObject.parseObject(data1)).clone();
 		for (int i = 0; i < temp.length; i++) {
 			for (int j = 0; j < temp[i].length; j++) {
@@ -439,7 +447,7 @@ public class TestCnn {
 				}
 			}
 		}
-		((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).filters.get(0).w[0][0][0] = oldW - e;
+		thisLayer.filters.get(0).w[testI][testJ][testK] = oldW - e;
 		temp = cnn.predict(JSONObject.parseObject(data1)).clone();
 		for (int i = 0; i < temp.length; i++) {
 			for (int j = 0; j < temp[i].length; j++) {
@@ -448,21 +456,27 @@ public class TestCnn {
 				}
 			}
 		}
-		for (int i = 0; i < predict0.length; i++) {
-			for (int j = 0; j < predict0[i].length; j++) {
-				for (int k = 0; k < predict0[i][j].length; k++) {
+		for (int i = 0; i < thisLayer.width; i++) {
+			for (int j = 0; j < thisLayer.height; j++) {
+				for (int k = 0; k < thisLayer.depth; k++) {
 					Double sum = 0.0;
-					for (int i2 = 0; i2 < ((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).kernelWidth; i2++) {
-						for (int j2 = 0; j2 < ((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).kernelHeight; j2++) {
-							for (int k2 = 0; k2 < ((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).filters.get(k).depth; k2++) {
-								//if (i == 0 && j == 0 && k == 0 && k2 == 0) {
-								System.out.println("i,j,k:[" + i + "][" + j + "][" + k + "]\ti2,j2,k2:[" + i2 + "][" + j2 + "][" + k2 + "]");
-									sum += ((ConvLayer)cnn.layers.get(cnn.layers.size() - 1)).error[i][j][k] * cnn.layers.get(cnn.layers.size() - 2).data[i2][j2][k2];
-								//}
+					for (int i2 = 0; i2 < thisLayer.kernelWidth; i2++) {
+						for (int j2 = 0; j2 < thisLayer.kernelHeight; j2++) {
+							for (int k2 = 0; k2 < thisLayer.filters.get(k).depth; k2++) {
+								if (i * thisLayer.stride + i2 < thisLayer.padding) {}
+								else if (i * thisLayer.stride + i2 >= thisLayer.padding + prevLayer.width) {}
+								else if (j * thisLayer.stride + j2 < thisLayer.padding) {}
+								else if (j * thisLayer.stride + j2 >= thisLayer.padding + prevLayer.height) {}
+								else {
+									if (i2 == testI && j2 == testJ && k2 == testK && k == 0) {
+										//System.out.println("i,j,k:[" + i + "][" + j + "][" + k + "]\ti2,j2,k2:[" + i2 + "][" + j2 + "][" + k2 + "]");
+										sum += thisLayer.error[i][j][k] * prevLayer.data[i * thisLayer.stride + i2 - thisLayer.padding][j * thisLayer.stride + j2 - thisLayer.padding][k2];
+									}
+								}
 							}
 						}
 					}
-					System.out.println("\n\npredict1:" + predict1[i][j][k]);
+					System.out.println("\npredict1:" + predict1[i][j][k]);
 					System.out.println("predict2:" + predict2[i][j][k]);
 					System.out.println("dc/dw=" + ((predict2[i][j][k] - predict1[i][j][k]) / e / 2) + ",\ta*error=" + (sum));
 				}

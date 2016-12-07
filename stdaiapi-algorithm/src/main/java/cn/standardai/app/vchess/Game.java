@@ -60,7 +60,7 @@ public class Game {
 		int stepCount = 0;
 		// 走法
 		Step step = null;
-		// 上一部走法走法
+		// 上一部走法
 		Step lastStep = null;
 
 		// 开始下棋

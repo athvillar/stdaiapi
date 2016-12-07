@@ -121,7 +121,7 @@ public class CNN {
 		} while (trainingCount < batchCount);
 	}
 
-	private void forward() {
+	public void forward() {
 		for (int i = 0; i < layers.size(); i++) {
 			if (i != 0) layers.get(i).exec(layers.get(i - 1));
 			//layers.get(i).print();
@@ -129,7 +129,7 @@ public class CNN {
 		}
 	}
 
-	private void backward() {
+	public void backward() {
 		layers.get(layers.size() - 1).calcError();
 		for (int i = layers.size() - 1; i >= 1; i--) {
 			if (i >= 2) layers.get(i).calcPrevError(layers.get(i - 1));

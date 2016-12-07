@@ -142,7 +142,7 @@ public class Player {
 			ArrayList<ArrayList<Step>> nextPotentialMoveGroups = getPotentialMoveGroups(newBoard, Board.getOppositeSide(side), priorProb * newSteps.get(i).prob);
 			if (nextPotentialMoveGroups == null || nextPotentialMoveGroups.size() == 0) {
 				ArrayList<Step> moveGroup = new ArrayList<Step>();
-				// 将本 走法放入队列
+				// 将本走法放入队列
 				moveGroup.add(newSteps.get(i));
 				// 若下一步棋没有可以下的，以本步棋为最终结果
 				potentialMoveGroups.add(moveGroup);

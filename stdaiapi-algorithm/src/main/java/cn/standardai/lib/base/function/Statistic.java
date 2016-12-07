@@ -80,6 +80,21 @@ public class Statistic {
 		return maxIndex;
 	}
 
+	public static Integer maxIndex(Double[] input) {
+		if (input == null || input.length == 0) {
+			return null;
+		}
+		double max = input[0];
+		int maxIndex = 0;
+		for (int i = 0; i < input.length; i++) {
+			if (input[i] > max) {
+				max = input[i];
+				maxIndex = i;
+			}
+		}
+		return maxIndex;
+	}
+
 	/**
 	 * 计算数组平均值
 	 * @param input
