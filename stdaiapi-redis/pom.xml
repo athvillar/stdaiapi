@@ -5,8 +5,8 @@
 	<packaging>jar</packaging>
 	<name>stdaiapi-redis</name>
 	<parent>
-		<groupId>com.kingdy</groupId>
-		<artifactId>parkos</artifactId>
+		<groupId>cn.standardai</groupId>
+		<artifactId>stdaiapi</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
