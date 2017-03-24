@@ -11,6 +11,15 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <url>http://repo.spring.io/snapshot</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <url>http://repo.spring.io/milestone</url>
+        </repository>
 		<repository>
 			<id>dev-nexus</id>
 			<url>http://123.56.253.228:11084/content/groups/public</url>
@@ -20,6 +29,14 @@
 		</repository>
 	</repositories>
 	<pluginRepositories>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <url>http://repo.spring.io/snapshot</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <url>http://repo.spring.io/milestone</url>
+         </pluginRepository>
 		<pluginRepository>
 			<id>dev-nexus</id>
 			<url>http://123.56.253.228:11084/content/groups/public/</url>
