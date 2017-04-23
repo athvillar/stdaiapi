@@ -5,4 +5,4 @@ server.port=10101
 server.context-path=/math
 
 # dev, qa, prod, home
-spring.profiles.active=dev
+spring.profiles.active=prod

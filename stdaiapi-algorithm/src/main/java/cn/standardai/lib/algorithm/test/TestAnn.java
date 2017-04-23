@@ -6,6 +6,10 @@ package cn.standardai.lib.algorithm.test;
 
 import cn.standardai.lib.algorithm.ann.BPNetwork;
 import cn.standardai.lib.base.function.Dual;
+import cn.standardai.lib.base.function.activate.Sigmoid;
+import cn.standardai.lib.base.function.base.DerivableFunction;
+import cn.standardai.lib.base.function.base.PartialDerivableFunction;
+import cn.standardai.lib.base.function.cost.CrossEntropy;
 
 /**
  * 神经网络测试类
@@ -48,10 +52,10 @@ public class TestAnn {
 		double[] predict;
 
 		// 创建网络
-		int[] num = {40, 20,20,20, 3};
-		// TDOO
-		BPNetwork bpnet = null;
-		//BPNetwork bpnet = new BPNetwork(num, 0.1, 3000, -0.5, 0.5, 1);
+		int[] num = {40, 20, 20, 20, 3};
+		DerivableFunction af = new Sigmoid(0.5);
+		PartialDerivableFunction cf = new CrossEntropy();
+		BPNetwork bpnet = new BPNetwork(num, 0.1, -0.5, 0.5, af, cf);
 
 		// 训练
 		bpnet.train(input, expectation);

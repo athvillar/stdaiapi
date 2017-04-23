@@ -31,10 +31,7 @@ public class BPNetwork implements Cloneable {
 	private FinishCondition finishCondition = FinishCondition.MAX_TRAIN;
 	
 	// 训练样例集合
-	private List<Sample> samples;
-	
-	// batch size
-	private int batchSize;
+	private List<Sample> trainingSamples;
 
 	// 网络输入
 	private double[] x;
@@ -73,7 +70,10 @@ public class BPNetwork implements Cloneable {
 	private PartialDerivableFunction cF;
 
 	// 最大训练次数
-	private int maxTrain = 1000;
+	private int maxTrain;
+
+	// batch size
+	private int batchSize;
 
 	// 训练次数
 	private int epochCnt = 0;
@@ -99,7 +99,8 @@ public class BPNetwork implements Cloneable {
 	 * @param maxTrain
 	 * 最大训练次数
 	 */
-	public BPNetwork(int[] neuronNumber, double η, double minW, double maxW, DerivableFunction af, PartialDerivableFunction cf) {
+	public BPNetwork(int[] neuronNumber, double η, double minW, double maxW,
+			DerivableFunction af, PartialDerivableFunction cf) {
 
 		super();
 
@@ -126,6 +127,8 @@ public class BPNetwork implements Cloneable {
 			b = new double[neuronNumber.length][maxNeuronNum];
 			o = new double[neuronNumber.length][maxNeuronNum];
 			δ = new double[neuronNumber.length][maxNeuronNum];
+			nablaw = new double[neuronNumber.length][maxNeuronNum];
+			nablab = new double[neuronNumber.length][maxNeuronNum];
 		}
 
 		this.minW = minW;
@@ -137,6 +140,14 @@ public class BPNetwork implements Cloneable {
 
 		// 初始化
 		init();
+	}
+
+	public BPNetwork(int[] neuronNumber, double η, double minW, double maxW,
+			DerivableFunction af, PartialDerivableFunction cf, int maxTrain, int batchSize) {
+
+		this(neuronNumber, η, minW, maxW, af, cf);
+		this.maxTrain = maxTrain;
+		this.batchSize = batchSize;
 	}
 
 	/**
@@ -178,41 +189,45 @@ public class BPNetwork implements Cloneable {
 			throw new AnnException(AnnException.ERRMSG.TRAINING_EXAMPLE_ERR);
 		}
 
-		/*
-		do {
-			trainCnt++;
-			// 对于每一个训练样例
-			for (int index = 0; index < input.length; index++) {
-				// 输入训练样例
-				inputTrainingExample(input[index], expectation[index]);
-				// 输出前向传播
-				forwardPropagation();
-				// 误差反向传播
-				backPropagation();
-				// 根据误差调整权值
-				adjustWeight();
-			}
-		} while (!canFinish());
-		*/
-
 		// 导入训练样例
-		importTrainingExample(input, expectation, samples);
+		importTrainingSamples(input, expectation);
 
 		do {
+			// 1 epoch
 			epochCnt++;
-			List<Sample> batchSamples = pickBatch(samples, batchSize);
-			// 对于每一个训练样例
-			for (int index = 0; index < batchSamples.size(); index++) {
-				// 输入训练样例
-				inputTrainingExample(batchSamples.get(index));
-				// 输出前向传播
-				forwardPropagation();
-				// 误差反向传播
-				backPropagation();
-			}
-			// 根据误差调整权值
-			adjustWeight(batchSamples.size());
+			int correctCount = 0;
+			List<Integer> idx = new LinkedList<Integer>();
+			int trainingSetSize = this.trainingSamples.size();
+			for (int i = 0; i < trainingSetSize; i++) idx.add(i);
+			do {
+				// 1 batch
+				List<Sample> batchSamples = pickBatch(idx, this.batchSize);
+				// 初始化梯度
+				initNabla();
+				// 对于每一个训练样例
+				for (int index = 0; index < batchSamples.size(); index++) {
+					// 1 training sample
+					// 输入训练样例
+					inputTrainingExample(batchSamples.get(index));
+					// 输出前向传播
+					forwardPropagation();
+					// 误差反向传播
+					backPropagation();
+				}
+				// 根据误差调整权值
+				adjustWeight(batchSamples.size());
+			} while (idx.size() > 0);
+			//System.out.println("correct rate:" + 1.0 * correctCount / this.trainingSamples.size());
 		} while (!canFinish());
+	}
+
+	private void initNabla() {
+		for (int i = layers.length - 1; i > 0; i--) {
+			for (int j = 0; j < layers[i].getN(); j++) {
+				nablaw[i][j] = 0.0;
+				nablab[i][j] = 0.0;
+			}
+		}
 	}
 
 	/**
@@ -242,32 +257,28 @@ public class BPNetwork implements Cloneable {
 	 * @param samples
 	 * 训练样例集合
 	 */
-	private void importTrainingExample(double[][] input, double[][] expectation, List<Sample> samples) {
+	private void importTrainingSamples(double[][] input, double[][] expectation) {
 
-		samples = new LinkedList<Sample>();
+		this.trainingSamples = new LinkedList<Sample>();
 
 		for (int i = 0; i < input.length; i++) {
 			Sample sample = new Sample(input[i], expectation[i]);
-			samples.add(sample);
+			this.trainingSamples.add(sample);
 		}
 	}
 
 	/**
 	 * 选择训练样例进入batch
-	 * @param samples
-	 * 训练样例集合
-	 * @param batchSize
-	 * batch size
 	 */
-	private List<Sample> pickBatch(List<Sample> samples, int batchSize) {
+	private List<Sample> pickBatch(List<Integer> idx, int batchSize) {
 
 		List<Sample> batchSamples = new LinkedList<Sample>();
 
-		for (int i = 0; samples.size() == 0 || i < batchSize; i++) {
+		for (int i = 0; i < batchSize && idx.size() > 0; i++) {
 			// 随机选出训练数据
-			int index = (int)Math.floor((Math.random() * samples.size()));
-			batchSamples.add(samples.get(index));
-			samples.remove(index);
+			int index = (int)Math.floor((Math.random() * idx.size()));
+			batchSamples.add(this.trainingSamples.get(idx.get(index)));
+			idx.remove(index);
 		}
 
 		return batchSamples;
@@ -283,7 +294,6 @@ public class BPNetwork implements Cloneable {
 	private void inputTrainingExample(Sample sample) {
 		// 将训练样例输入网络
 		x = sample.getInput();
-
 		// 建立Cost函数
 		cF.setParam(sample.getExpectation());
 	}
@@ -354,10 +364,9 @@ public class BPNetwork implements Cloneable {
 			if (i == layers.length - 1) {
 				// 计算输出层误差
 				for (int j = 0; j < layers[i].getN(); j++) {
-					// 第j个节点误差 = 激励函数的导数 * Cost函数的偏导数 = 节点输出的导数 * (实际输出 - 期望输出)
-					//δ[i][j] = aF.getDerivativeY(o[i][j]) * (exp[j] - o[i][j]); TODO 前一个batch的error被覆盖？
+					// 第j个节点误差 = 激励函数的导数 * Cost函数的偏导数
 					δ[i][j] = aF.getDerivativeY(o[i][j]) * cF.getDerivativeX(o[i], j);
-					// 计算w的梯度 TODO 不需要初始化为0？
+					// 计算w的梯度
 					nablaw[i][j] += δ[i][j] * o[i - 1][j];
 					// 计算b的梯度
 					nablab[i][j] += δ[i][j];
@@ -367,7 +376,7 @@ public class BPNetwork implements Cloneable {
 				for (int j = 0; j < layers[i].getN(); j++) {
 					// 第j个节点误差 = 节点输出的导数 * 下一层误差加权之和
 					δ[i][j] = aF.getDerivativeY(o[i][j]) * getSumOfMultiply(wout[i][j], δ[i + 1], layers[i + 1].getN());
-					// 计算w的梯度 TODO o需要加激励导数？
+					// 计算w的梯度
 					nablaw[i][j] += δ[i][j] * o[i - 1][j];
 					// 计算b的梯度
 					nablab[i][j] += δ[i][j];

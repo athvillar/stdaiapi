@@ -19,4 +19,20 @@ public class Softmax extends Function {
 
 		return result;
 	}
+
+	public static double[] getY(double[] x) {
+
+		if (x == null) return null;
+
+		double sum = 0;
+		for (int i = 0; i < x.length; i++) {
+			sum += Math.exp(x[i]);
+		}
+		double[] result = new double[x.length];
+		for (int i = 0; i < x.length; i++) {
+			result[i] = Math.exp(x[i]) / sum;
+		}
+
+		return result;
+	}
 }
