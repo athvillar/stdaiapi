@@ -1,4 +1,4 @@
-package cn.standardai.lib.algorithm.rnn;
+package cn.standardai.lib.algorithm.rnn.std;
 
 import java.util.ArrayList;
 import java.util.List;

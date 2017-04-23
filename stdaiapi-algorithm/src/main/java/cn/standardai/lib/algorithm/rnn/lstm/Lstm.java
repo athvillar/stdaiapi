@@ -1,4 +1,4 @@
-package cn.standardai.lib.algorithm.rnn;
+package cn.standardai.lib.algorithm.rnn.lstm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import cn.standardai.lib.base.function.base.DerivableFunction;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 
-public class RNN {
+public class Lstm {
 
 	private Integer volumeSize;
 
@@ -40,7 +40,7 @@ public class RNN {
 
 	public DerivableFunction aF = new Tanh();
 
-	public RNN(Integer volumeSize, Integer hiddenSize) {
+	public Lstm(Integer volumeSize, Integer hiddenSize) {
 		this.volumeSize = volumeSize;
 		this.hiddenSize = hiddenSize;
 		this.y = new Double[volumeSize];

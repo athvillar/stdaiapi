@@ -1,4 +1,4 @@
-package cn.standardai.lib.algorithm.rnn;
+package cn.standardai.lib.algorithm.rnn.std;
 
 public class RNNException extends Exception {
 
