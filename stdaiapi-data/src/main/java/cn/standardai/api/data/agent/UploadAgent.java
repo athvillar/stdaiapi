@@ -1,11 +1,17 @@
 package cn.standardai.api.data.agent;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
@@ -107,6 +113,74 @@ public class UploadAgent {
 
 		// make result
 		result.put("datasetId", datasetId);
+		return result;
+	}
+
+	public JSONObject saveUploadFile(MultipartFile[] uploadfiles) {
+		JSONObject result = new JSONObject();
+
+		boolean hasFailure = false;
+		for (int i = 0; i < uploadfiles.length; i++) {
+			JSONObject subResult = new JSONObject();
+			subResult = regularUploadFile(uploadfiles[i]);
+			if (!"success".equals(subResult.getString("result")))
+				hasFailure = true;
+		}
+
+		if (hasFailure) {
+			result.put("result", "warn");
+			result.put("message", "部分文件上传失败");
+		} else {
+			result.put("result", "success");
+		}
+		return result;
+	}
+
+	private JSONObject regularUploadFile(MultipartFile inputFile) {
+		JSONObject result = new JSONObject();
+		// output file buffer
+		BufferedOutputStream outputFileBuffer = null;
+		// output file
+		FileOutputStream outputFile = null;
+		// input file name
+		String inputFileName = inputFile.getOriginalFilename();
+		// output file path
+		String outputFilePath = Context.getProp().getLocal().getUploadTemp() + inputFileName;
+		if (!inputFile.isEmpty()) {
+			try {
+				outputFile = new FileOutputStream(new File(outputFilePath));
+				outputFileBuffer = new BufferedOutputStream(outputFile);
+				outputFileBuffer.write(inputFile.getBytes());
+				result.put("result", "success");
+			} catch (Exception e) {
+				result.put("result", "failure");
+				result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+			} finally {
+				if (outputFileBuffer != null) {
+					try {
+						outputFileBuffer.close();
+						outputFileBuffer = null;
+					} catch (Exception e) {
+						outputFileBuffer = null;
+						result.put("result", "failure");
+						result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+					}
+				}
+				if (outputFile != null) {
+					try {
+						outputFile.close();
+						outputFile = null;
+					} catch (Exception e) {
+						outputFile = null;
+						result.put("result", "failure");
+						result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+					}
+				}
+			}
+		} else {
+			result.put("result", "failure");
+			result.put("message", "File was empty");
+		}
 		return result;
 	}
 
