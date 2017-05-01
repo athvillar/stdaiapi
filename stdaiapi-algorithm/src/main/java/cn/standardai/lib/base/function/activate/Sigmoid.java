@@ -19,6 +19,10 @@ public class Sigmoid extends DerivableFunction {
 
 	public double k = 1;
 
+	public Sigmoid() {
+		super();
+	}
+
 	public Sigmoid(double k) {
 		super();
 		this.k = k;
@@ -33,6 +37,20 @@ public class Sigmoid extends DerivableFunction {
 	public double getY(double x) {
 		// y = 1 / (1 + e ^ (-kx))
 		return 1 / (1 + Math.exp(-k * x));
+	}
+
+	/**
+	 * 计算函数值
+	 * @param x
+	 * x
+	 * @return y
+	 */
+	public double[] getY(double[] x) {
+		double[] y = new double[x.length];
+		for (int i = 0; i < x.length; i++) {
+			y[i] = getY(x[i]);
+		}
+		return y;
 	}
 
 	/**

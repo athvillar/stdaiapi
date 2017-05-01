@@ -46,6 +46,14 @@ public abstract class DerivableFunction extends Function implements Storable {
 	 */
 	public abstract double getDerivativeX(double x);
 
+	public Double[] getDerivativeX(Double[] x) {
+		Double[] result = new Double[x.length];
+		for (int i = 0; i < x.length; i++) {
+			result[i] = getDerivativeX(x[i]);
+		}
+		return result;
+	}
+
 	/**
 	 * 计算导数值
 	 * @param y

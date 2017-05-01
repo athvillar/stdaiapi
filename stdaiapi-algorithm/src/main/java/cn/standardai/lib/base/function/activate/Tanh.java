@@ -42,13 +42,13 @@ public class Tanh extends DerivableFunction {
 
 	@Override
 	public double getDerivativeX(double x) {
-		// TODO Auto-generated method stub
-		return 0;
+		// 由于getDerivativeY的存在，可以简化求getDerivativeX 
+		return getDerivativeY(getY(x));
 	}
 
 	@Override
 	public double getDerivativeY(double y) {
-		// TODO Auto-generated method stub
-		return 0;
+		// y' = 1 - y ^ 2
+		return 1 - y * y;
 	}
 }
