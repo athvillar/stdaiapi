@@ -7,7 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -38,6 +40,26 @@ public class UploadService extends BaseService {
 			if (agent != null) agent.done();
 		}
 		logger.info("stdaiapi-data 结束数据上传 (" + result.toJSONString() + ")");
+		return result.toString();
+	}
+	
+
+	@RequestMapping(value = "/file", method = RequestMethod.POST)
+	public String uploadFile(@RequestParam("files") MultipartFile[] uploadfiles) {
+		logger.info("stdaiapi-data 收到文件上传请求 ...");
+		UploadAgent agent = null;
+		JSONObject result = null;
+		try {
+			agent = new UploadAgent();
+			result = agent.saveUploadFile(uploadfiles);
+			result = successResponse(result);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data 结束文件上传 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

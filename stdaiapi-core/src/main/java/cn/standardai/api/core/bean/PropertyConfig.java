@@ -24,6 +24,8 @@ public class PropertyConfig {
 		private String parkId;
 		
 		private String db;
+		
+		private String uploadTemp;
 
 		public String getParkId() {
 			return parkId;
@@ -39,6 +41,14 @@ public class PropertyConfig {
 
 		public void setDb(String db) {
 			this.db = db;
+		}
+
+		public String getUploadTemp() {
+			return uploadTemp;
+		}
+
+		public void setUploadTemp(String uploadTemp) {
+			this.uploadTemp = uploadTemp;
 		}
 	}
 	
