@@ -18,12 +18,20 @@ public class Lstm {
 
 	private int stepCount = 0;
 
-	// grad threshold
-	private double dth = 10;
-
 	private double lastLoss = 0;
 
+	// grad threshold
+	private double dth = 5;
+
 	private double η = 1;
+
+	private double dη = 0.9;
+
+	private double maxη = 1;
+
+	private double e = 0.001;
+
+	private int watchEpoch = 5;
 
 	public DerivableFunction σ = new Sigmoid();
 
@@ -72,6 +80,15 @@ public class Lstm {
 		this.b_y = MatrixUtil.random(inputSize, -1, 1);
 	}
 
+	public void setParam(double dth, double η, double dη, double maxη, double e, int watchEpoch) {
+		this.dth = dth;
+		this.η = η;
+		this.dη = dη;
+		this.maxη = maxη;
+		this.e = e;
+		this.watchEpoch = watchEpoch;
+	}
+
 	public void train(Double[][] xs, Integer[] ys, int epoch) throws LstmException {
 		if (xs.length != ys.length) throw new LstmException("训练数据长度错误");
 		//this.cF.setParam(ys);
@@ -79,35 +96,6 @@ public class Lstm {
 			epochCount++;
 			train1(xs, ys);
 		} while (epochCount < epoch);
-	}
-
-	public Integer[] predict(Double[][] xs, int step) throws LstmException {
-
-		Double[] h_t1 = MatrixUtil.create(layerSize, 0);
-		Double[] c_t1 = MatrixUtil.create(layerSize, 0);
-		for (int i = 0; i < xs.length - 1; i++) {
-			LstmCache cache1 = forward(xs[i], h_t1, c_t1);
-			h_t1 = cache1.h_t;
-			c_t1 = cache1.c_t;
-		}
-
-		Integer[] result = new Integer[step];
-		Double[] xPredict = xs[xs.length - 1];
-		for (int i = 0; i < step; i++) {
-
-			LstmCache cache1 = forward(xPredict, h_t1, c_t1);
-			//MatrixUtil.print(cache1.a);
-
-			h_t1 = cache1.h_t;
-			c_t1 = cache1.c_t;
-			xPredict = cache1.a;
-
-			Roulette r = new Roulette(cache1.a);
-			result[i] = r.getY();
-			//System.out.print(r.getY());
-		}
-
-		return result;
 	}
 
 	public void train1(Double[][] xs, Integer[] ys) throws LstmException {
@@ -140,11 +128,10 @@ public class Lstm {
 			loss[i] /= -ys.length;
 			totalLoss += loss[i];
 		}
-		if (epochCount % 5 == 0) {
-			System.out.println("epoch " + epochCount + ", Loss: " + totalLoss);
-		}
-
 		adjustLearningRate(totalLoss);
+		if (epochCount % watchEpoch == 0) {
+			System.out.println("epoch " + epochCount + ", Loss: " + totalLoss + ", η: " + η);
+		}
 
 		LstmDCache dCache = new LstmDCache();
 		dCache.dcNext = MatrixUtil.create(layerSize, 0);
@@ -154,15 +141,33 @@ public class Lstm {
 		}
 	}
 
-	private void adjustLearningRate(double totalLoss) {
+	public Integer[] predict(Double[][] xs, int step) throws LstmException {
 
-		if (totalLoss >= lastLoss) {
-			η *= 1.2;
-			if (η > 1) η = 1;
-		} else {
-			η *= 0.95;
+		Double[] h_t1 = MatrixUtil.create(layerSize, 0);
+		Double[] c_t1 = MatrixUtil.create(layerSize, 0);
+		for (int i = 0; i < xs.length - 1; i++) {
+			LstmCache cache1 = forward(xs[i], h_t1, c_t1);
+			h_t1 = cache1.h_t;
+			c_t1 = cache1.c_t;
 		}
-		lastLoss = totalLoss;
+
+		Integer[] result = new Integer[step];
+		Double[] xPredict = xs[xs.length - 1];
+		for (int i = 0; i < step; i++) {
+
+			LstmCache cache1 = forward(xPredict, h_t1, c_t1);
+			//MatrixUtil.print(cache1.a);
+
+			h_t1 = cache1.h_t;
+			c_t1 = cache1.c_t;
+			xPredict = cache1.a;
+
+			Roulette r = new Roulette(cache1.a);
+			result[i] = r.getY();
+			//System.out.print(r.getY());
+		}
+
+		return result;
 	}
 
 	public LstmCache forward(Double[] x_t, Double[] h_t1, Double[] c_t1) throws LstmException {
@@ -274,6 +279,27 @@ public class Lstm {
 		} catch (MatrixException e) {
 			throw new LstmException(e.getMessage());
 		}
+	}
+
+	private void adjustLearningRate(double totalLoss) {
+
+		if (lastLoss == 0) {
+			lastLoss = totalLoss;
+			return;
+		}
+		if (totalLoss >= lastLoss) {
+			//η *= (totalLoss / lastLoss);
+			//η *= 1.2;
+			//if (η > 0.1) η = 0.1;
+		} else {
+			if (totalLoss / lastLoss > e) {
+				η /= dη;
+			} else {
+				η *= dη;
+			}
+		}
+		if (η > maxη) η = maxη;
+		lastLoss = totalLoss;
 	}
 
 	private Double[] AdjustParam(Double[] p, Double[] dp) throws MatrixException {

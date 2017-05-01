@@ -16,7 +16,7 @@ public class TestRnnLstm {
 	}
 
 	private static String[] words = {
-			"hello world",
+			"name,hanqing ",
 			"i have a dream."
 	};
 	public static void testWord() throws Exception {
@@ -28,13 +28,14 @@ public class TestRnnLstm {
 		Double[][] xs = getX(xWords, dic);
 		Integer[] ys = getY(yWords, dic);
 
-		Lstm lstm = new Lstm(50, dic.length, dic.length);
-		lstm.train(xs, ys, 500);
+		Lstm lstm = new Lstm(80, dic.length, dic.length);
+		lstm.setParam(4, 1, 0.9, 1, 0.85, 100);
+		lstm.train(xs, ys, 1000);
 		System.out.println("Training finished!");
 
-		String hint = xWords.substring(0, 2);
+		String hint = xWords.substring(0, 5);
 		Double[][] predictXs = getX(hint, dic);
-		Integer[] result = lstm.predict(predictXs, 8);
+		Integer[] result = lstm.predict(predictXs, xWords.length());
 		for (int i = 0; i < result.length; i++) {
 			System.out.print(dic[result[i]]);
 		}
