@@ -14,8 +14,8 @@ import cn.standardai.api.dao.bean.User;
 
 public class JDAgent {
 
-	private static String basePath = "/";
-	//private static String basePath = "/Users/athvillar/Documents/JData/";
+	//private static String basePath = "/";
+	private static String basePath = "/Users/athvillar/Documents/JData/";
 
 	private static String rawFile1 = "raw/JData_User.csv";
 
@@ -49,7 +49,7 @@ public class JDAgent {
 			break;
 		case "comment":
 			rawData = CsvParser.parse(new String[] { basePath + rawFile3 }, null, null, null, new int[] {1,2,3,4}, false, false);
-			for (int i = 0; i < rawData.length; i++) {
+		for (int i = 0; i < rawData.length; i++) {
 				dao.insertComment(rawData[i][0], rawData[i][1], rawData[i][2], Double.parseDouble(rawData[i][3]));
 			}
 			break;

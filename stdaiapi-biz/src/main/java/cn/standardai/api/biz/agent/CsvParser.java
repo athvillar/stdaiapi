@@ -23,25 +23,6 @@ import javax.imageio.ImageIO;
  */
 public class CsvParser {
 
-	private static final int width = 28;
-
-	private static final int height = 28;
-
-	public static void main(String[] args) {
-
-		String inFile1 = "/Users/athvillar/Downloads/JData/JData_Action_201602.csv";
-		String inFile2 = "/Users/athvillar/Downloads/JData/JData_Action_201603.csv";
-		String inFile3 = "/Users/athvillar/Downloads/JData/JData_Action_201604.csv";
-		String inFiles[] = { inFile1, inFile2, inFile3 };
-		int[] keyIndice = {0};
-		String[] values = {"287842.0"};
-		int[] includeIndice = {0,1,4};
-		String outFile = "/Users/athvillar/Documents/W_JData_Action_" + values[0] + ".csv";
-		String[][] result = parse(inFiles, outFile, keyIndice, values, includeIndice, false, true);
-
-		return;
-	}
-
 	public static String[][] parse(String[] inFileNames, String outFileName,
 			int[] keyIndice, String[] values,
 			int[] includeIndice, boolean keep1stRow,
