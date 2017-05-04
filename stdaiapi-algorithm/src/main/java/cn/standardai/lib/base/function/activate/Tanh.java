@@ -18,9 +18,12 @@ public class Tanh extends DerivableFunction {
 	 * @return y
 	 */
 	public double getY(double x) {
+		if (x > 400) return 1 - Math.exp(-200);
+		if (x < -400) return Math.exp(-200) - 1;
 		Double v1 = Math.exp(x);
 		Double v2 = Math.exp(-x);
 		return (v1 - v2) / (v1 + v2);
+		//return Math.tanh(x);
 	}
 
 	@Override

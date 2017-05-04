@@ -11,17 +11,18 @@ public class TestMatrix {
 
 	public static void main(String[] args) {
 		try {
+			System.out.println(Math.log(Double.MAX_VALUE));
 			//testPlus11();
 			//testPlus22();
-			testMinus11();
-			testMinus22();
+			//testMinus11();
+			//testMinus22();
 			//testMultiply22();
 			//testMultiply12();
 			//testMultiplyTC11();
 			//testMultiplyCT12();
 			//testMultiplyCT11();
-			//testElementMultiply11();
-			//testElementMultiply22();
+			testElementMultiply11();
+			testElementMultiply22();
 			//testDevide();
 			//testTranspose();
 			//testConcatenate();
@@ -109,16 +110,18 @@ public class TestMatrix {
 	public static void testElementMultiply11() throws MatrixException {
 		Double[] m1 = {3D, 5D, 7D};
 		Double[] m2 = {4D, 6D, 8D};
-		Double[] m = MatrixUtil.elementMultiply(m1, m2);
-		// [ 12.0, 30.0, 56.0 ]
+		Double[] m3 = {2D, 1D, -1D};
+		Double[] m = MatrixUtil.elementMultiply(m1, m2, m3);
+		// [ 24.0, 30.0, -56.0 ]
 		MatrixUtil.print(m);
 	}
 
 	public static void testElementMultiply22() throws MatrixException {
 		Double[][] m1 = {{2D,3D,7D},{7D,4D,1D}};
 		Double[][] m2 = {{4D,5D,6D},{10D,20D,30D}};
-		Double[][] m = MatrixUtil.elementMultiply(m1, m2);
-		// [ [ 8.0, 15.0, 42.0 ], [ 70.0, 80.0, 30.0 ] ]
+		Double[][] m3 = {{3D,7D,2D},{8D,1D,4D}};
+		Double[][] m = MatrixUtil.elementMultiply(m1, m2, m3);
+		// [ [ 24.0, 105.0, 84.0 ], [ 560.0, 80.0, 120.0 ] ]
 		MatrixUtil.print(m);
 	}
 

@@ -4,19 +4,19 @@ public class LstmCache {
 
 	public Double[] X;
 
-	public Double[] f_t;
+	public Double[] hf;
 
-	public Double[] i_t;
+	public Double[] hi;
 
-	public Double[] o_t;
+	public Double[] ho;
 
-	public Double[] c__t;
+	public Double[] hc;
 
-	public Double[] c_t1;
+	public Double[] cOld;
 
-	public Double[] c_t;
+	public Double[] c;
 
-	public Double[] h_t;
+	public Double[] h;
 
 	public Double[] a;
 }

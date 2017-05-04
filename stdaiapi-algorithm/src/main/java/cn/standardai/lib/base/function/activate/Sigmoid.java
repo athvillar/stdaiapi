@@ -36,6 +36,8 @@ public class Sigmoid extends DerivableFunction {
 	 */
 	public double getY(double x) {
 		// y = 1 / (1 + e ^ (-kx))
+		if (x > 200) return 1 - Math.exp(-100);
+		if (x < -200) return Math.exp(-100);
 		return 1 / (1 + Math.exp(-k * x));
 	}
 

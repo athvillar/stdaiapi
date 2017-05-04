@@ -174,73 +174,90 @@ public class MatrixUtil {
 		return result;
 	}
 
-	public static Double[] elementMultiply(Double[] m1, Double[] m2) throws MatrixException {
+	public static Double[] elementMultiply(Double[] ... m) throws MatrixException {
 
-		if (m1 == null || m2 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
-		if (m1.length != m2.length) throw new MatrixException(MatrixException.ERRMSG.LENTH_DISMATCH);
-
-		// multiply
-		Double[] result = new Double[m1.length];
-		for (int i = 0; i < m1.length; i++) {
-			result[i] = m1[i] * m2[i];
+		if (m == null || m[0] == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		int len = m[0].length;
+		for (Double[] m1 : m) {
+			if (m1 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+			if (m1.length != len) throw new MatrixException(MatrixException.ERRMSG.LENTH_DISMATCH);
 		}
 
-		return result;
-	}
-
-	public static Double[][] elementMultiply(Double[][] m1, Double[][] m2) throws MatrixException {
-
-		if (m1 == null || m2 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
-		if (m1.length != m2.length) throw new MatrixException(MatrixException.ERRMSG.LENTH_DISMATCH);
-		if (m1[0].length != m2[0].length) throw new MatrixException(MatrixException.ERRMSG.LENTH_DISMATCH);
-
-		// multiply
-		Double[][] result = new Double[m1.length][m1[0].length];
-		for (int i = 0; i < m1.length; i++) {
-			for (int j = 0; j < m1[0].length; j++) {
-				result[i][j] = m1[i][j] * m2[i][j];
+		Double[] result = create(len, 1.0);
+		for (int i = 0; i < result.length; i++) {
+			for (int j = 0; j < m.length; j++) {
+				result[i] *= m[j][i];
 			}
 		}
 
 		return result;
 	}
 
-	public static Double[][] devide(Double[][] m1, double devider) throws MatrixException {
+	public static Double[][] elementMultiply(Double[][] ... m) throws MatrixException {
 
-		if (m1 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		if (m == null || m[0] == null || m[0][0] == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		int lenM = m[0].length;
+		int lenN = m[0][0].length;
+		for (Double[][] m1 : m) {
+			if (m1 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+			if (m1.length != lenM) throw new MatrixException(MatrixException.ERRMSG.LENTH_DISMATCH);
+			for (Double[] m11 : m1) {
+				if (m11 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+				if (m11.length != lenN) throw new MatrixException(MatrixException.ERRMSG.LENTH_DISMATCH);
+			}
+		}
+
+		Double[][] result = create(lenM, lenN, 1.0);
+		for (int i = 0; i < lenM; i++) {
+			for (int j = 0; j < lenN; j++) {
+				for (int k = 0; k < m.length; k++) {
+					result[i][j] *= m[k][i][j];
+				}
+			}
+		}
+
+		return result;
+	}
+
+	public static Double[][] devide(Double[][] m, double devider) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
 		if (devider == 0) throw new MatrixException(MatrixException.ERRMSG.ZERO_DEVIDE);
 
-		for (int i = 0; i < m1.length; i++) {
-			for (int j = 0; j < m1[0].length; j++) {
-				m1[i][j] /= devider;
+		Double[][] result = new Double[m.length][m[0].length];
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[0].length; j++) {
+				result[i][j] = m[i][j] / devider;
 			}
 		}
 
-		return m1;
+		return result;
 	}
 
 	public static Double[][] multiply(Double[][] m, double muliplier) throws MatrixException {
 
 		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
 
+		Double[][] result = new Double[m.length][m[0].length];
 		for (int i = 0; i < m.length; i++) {
 			for (int j = 0; j < m[0].length; j++) {
-				m[i][j] *= muliplier;
+				result[i][j] = m[i][j] * muliplier;
 			}
 		}
 
-		return m;
+		return result;
 	}
 
 	public static Double[] multiply(Double[] m, double muliplier) throws MatrixException {
 
 		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
 
+		Double[] result = new Double[m.length];
 		for (int i = 0; i < m.length; i++) {
-			m[i] *= muliplier;
+			result[i] = m[i] * muliplier;
 		}
 
-		return m;
+		return result;
 	}
 
 	public static Double[][] transpose(Double[][] m1) throws MatrixException {
@@ -248,6 +265,20 @@ public class MatrixUtil {
 		if (m1 == null) return null;
 
 		Double[][] result = new Double[m1[0].length][m1.length];
+		for (int i = 0; i < m1.length; i++) {
+			for (int j = 0; j < m1[0].length; j++) {
+				result[j][i] = m1[i][j];
+			}
+		}
+
+		return result;
+	}
+
+	public static Object[][] transpose(Object[][] m1) throws MatrixException {
+
+		if (m1 == null) return null;
+
+		Object[][] result = new Object[m1[0].length][m1.length];
 		for (int i = 0; i < m1.length; i++) {
 			for (int j = 0; j < m1[0].length; j++) {
 				result[j][i] = m1[i][j];

@@ -62,6 +62,14 @@ public abstract class DerivableFunction extends Function implements Storable {
 	 */
 	public abstract double getDerivativeY(double y);
 
+	public Double[] getDerivativeY(Double[] y) {
+		Double[] result = new Double[y.length];
+		for (int i = 0; i < y.length; i++) {
+			result[i] = getDerivativeY(y[i]);
+		}
+		return result;
+	}
+
 	public abstract byte getSerial();
 
 	public static DerivableFunction getInstance(byte[] bytes) throws StorageException {

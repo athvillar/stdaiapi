@@ -16,9 +16,7 @@ public class Lstm {
 
 	private int epochCount = 0;
 
-	private int stepCount = 0;
-
-	private double lastLoss = 0;
+	private double lastLoss = Double.MAX_VALUE;
 
 	// grad threshold
 	private double dth = 5;
@@ -68,16 +66,22 @@ public class Lstm {
 		this.layerSize = layerSize;
 		this.inputSize = inputSize;
 		this.outputSize = outputSize;
-		this.w_f = MatrixUtil.random(layerSize + inputSize, layerSize, -1, 1);
-		this.b_f = MatrixUtil.random(layerSize, -1, 1);
-		this.w_i = MatrixUtil.random(layerSize + inputSize, layerSize, -1, 1);
-		this.b_i = MatrixUtil.random(layerSize, -1, 1);
-		this.w_c = MatrixUtil.random(layerSize + inputSize, layerSize, -1, 1);
-		this.b_c = MatrixUtil.random(layerSize, -1, 1);
-		this.w_o = MatrixUtil.random(layerSize + inputSize, layerSize, -1, 1);
-		this.b_o = MatrixUtil.random(layerSize, -1, 1);
-		this.w_y = MatrixUtil.random(layerSize, inputSize, -1, 1);
-		this.b_y = MatrixUtil.random(inputSize, -1, 1);
+		// TODO
+		this.w_f = MatrixUtil.random(layerSize + inputSize, layerSize, -1.0 / Math.sqrt((layerSize + inputSize) * layerSize), 1.0 / Math.sqrt((layerSize + inputSize) * layerSize));
+		//this.w_f = MatrixUtil.random(layerSize + inputSize, layerSize, 0, 1.0 / Math.sqrt((layerSize + inputSize)));
+		this.b_f = MatrixUtil.create(layerSize, 0);
+		this.w_i = MatrixUtil.random(layerSize + inputSize, layerSize, -1.0 / Math.sqrt((layerSize + inputSize) * layerSize), 1.0 / Math.sqrt((layerSize + inputSize) * layerSize));
+		//this.w_i = MatrixUtil.random(layerSize + inputSize, layerSize, 0, 1.0 / Math.sqrt((layerSize + inputSize)));
+		this.b_i = MatrixUtil.create(layerSize, 0);
+		this.w_c = MatrixUtil.random(layerSize + inputSize, layerSize, -1.0 / Math.sqrt((layerSize + inputSize) * layerSize), 1.0 / Math.sqrt((layerSize + inputSize) * layerSize));
+		//this.w_c = MatrixUtil.random(layerSize + inputSize, layerSize, 0, 1.0 / Math.sqrt((layerSize + inputSize)));
+		this.b_c = MatrixUtil.create(layerSize, 0);
+		this.w_o = MatrixUtil.random(layerSize + inputSize, layerSize, -1.0 / Math.sqrt((layerSize + inputSize) * layerSize), 1.0 / Math.sqrt((layerSize + inputSize) * layerSize));
+		//this.w_o = MatrixUtil.random(layerSize + inputSize, layerSize, 0, 1.0 / Math.sqrt((layerSize + inputSize)));
+		this.b_o = MatrixUtil.create(layerSize, 0);
+		this.w_y = MatrixUtil.random(layerSize, inputSize, -1.0 / Math.sqrt(inputSize * layerSize), 1.0 / Math.sqrt(layerSize * inputSize));
+		this.w_y = MatrixUtil.random(layerSize, inputSize, 0, 1.0 / Math.sqrt(layerSize));
+		this.b_y = MatrixUtil.create(inputSize, 0);
 	}
 
 	public void setParam(double dth, double η, double dη, double maxη, double e, int watchEpoch) {
@@ -91,26 +95,25 @@ public class Lstm {
 
 	public void train(Double[][] xs, Integer[] ys, int epoch) throws LstmException {
 		if (xs.length != ys.length) throw new LstmException("训练数据长度错误");
-		//this.cF.setParam(ys);
+		double gain;
 		do {
 			epochCount++;
-			train1(xs, ys);
-		} while (epochCount < epoch);
+			gain = train1(xs, ys);
+		} while (epochCount < epoch || (epoch == -1 && gain >= 0));
 	}
 
-	public void train1(Double[][] xs, Integer[] ys) throws LstmException {
+	public double train1(Double[][] xs, Integer[] ys) throws LstmException {
 
 		Double[] loss = MatrixUtil.create(outputSize, 0);
 		List<LstmCache> cache = new ArrayList<LstmCache>();
 
-		Double[] h_t1 = MatrixUtil.create(layerSize, 0);
-		Double[] c_t1 = MatrixUtil.create(layerSize, 0);
+		Double[] hOld = MatrixUtil.create(layerSize, 0);
+		Double[] cOld = MatrixUtil.create(layerSize, 0);
 		for (int i = 0; i < ys.length; i++) {
-			stepCount++;
-			LstmCache cache1 = forward(xs[i], h_t1, c_t1);
+			LstmCache cache1 = forward(xs[i], hOld, cOld);
 			cache.add(cache1);
-			h_t1 = cache1.h_t;
-			c_t1 = cache1.c_t;
+			hOld = cache1.h.clone();
+			cOld = cache1.c.clone();
 
 			// cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
 			for (int j = 0; j < loss.length; j++) {
@@ -120,7 +123,7 @@ public class Lstm {
 					loss[j] += Math.log10(1 - cache1.a[j]);
 				}
 			}
-			//MatrixUtil.print(loss);
+			//MatrixUtil.print(cache1.a);
 		}
 
 		double totalLoss = 0;
@@ -128,9 +131,11 @@ public class Lstm {
 			loss[i] /= -ys.length;
 			totalLoss += loss[i];
 		}
-		adjustLearningRate(totalLoss);
+
 		if (epochCount % watchEpoch == 0) {
-			System.out.println("epoch " + epochCount + ", Loss: " + totalLoss + ", η: " + η);
+			//adjustLearningRate(totalLoss);
+			//MatrixUtil.print(w_i[1]);
+			System.out.println("Epoch " + epochCount + ",\tLoss: " + totalLoss + ",\tη: " + η);
 		}
 
 		LstmDCache dCache = new LstmDCache();
@@ -139,6 +144,11 @@ public class Lstm {
 		for (int i = cache.size() - 1; i >= 0; i--) {
 			backward(ys[i], dCache, cache.get(i));
 		}
+
+		double gain = lastLoss - totalLoss;
+		lastLoss = totalLoss;
+
+		return gain;
 	}
 
 	public Integer[] predict(Double[][] xs, int step) throws LstmException {
@@ -147,8 +157,8 @@ public class Lstm {
 		Double[] c_t1 = MatrixUtil.create(layerSize, 0);
 		for (int i = 0; i < xs.length - 1; i++) {
 			LstmCache cache1 = forward(xs[i], h_t1, c_t1);
-			h_t1 = cache1.h_t;
-			c_t1 = cache1.c_t;
+			h_t1 = cache1.h.clone();
+			c_t1 = cache1.c.clone();
 		}
 
 		Integer[] result = new Integer[step];
@@ -156,50 +166,48 @@ public class Lstm {
 		for (int i = 0; i < step; i++) {
 
 			LstmCache cache1 = forward(xPredict, h_t1, c_t1);
-			//MatrixUtil.print(cache1.a);
 
-			h_t1 = cache1.h_t;
-			c_t1 = cache1.c_t;
-			xPredict = cache1.a;
+			h_t1 = cache1.h.clone();
+			c_t1 = cache1.c.clone();
+			xPredict = cache1.a.clone();
 
 			Roulette r = new Roulette(cache1.a);
 			result[i] = r.getY();
-			//System.out.print(r.getY());
 		}
 
 		return result;
 	}
 
-	public LstmCache forward(Double[] x_t, Double[] h_t1, Double[] c_t1) throws LstmException {
+	public LstmCache forward(Double[] x_t, Double[] hOld, Double[] cOld) throws LstmException {
 
 		try {
 			LstmCache cache1 = new LstmCache();
 
 			// Concatenate input
-			cache1.X = MatrixUtil.concatenate(h_t1, x_t);
+			cache1.X = MatrixUtil.concatenate(hOld, x_t);
 
 			// Step 1, forget gate layer
 			// f_t = sigmoid(w_f . [h_t-1, x_t] + b_f)
-			cache1.f_t = this.σ.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_f), b_f));
+			cache1.hf = this.σ.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_f), b_f));
 
 			// Step 2, input gate layer
 			// i_t = sigmoid(w_i . [h_t-1, x_t] + b_i)
-			cache1.i_t = this.σ.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_i), b_i));
+			cache1.hi = this.σ.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_i), b_i));
 			// c__t = tanh(w_c . [h_t-1, x_t] + b_c)
-			cache1.c__t = this.tanh.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_c), b_c));
+			cache1.hc = this.tanh.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_c), b_c));
 			// c_t = f_t * c_t-1 + i_t * c__t
-			cache1.c_t = MatrixUtil.plus(MatrixUtil.elementMultiply(cache1.f_t, c_t1), MatrixUtil.elementMultiply(cache1.i_t, cache1.c__t));
-			cache1.c_t1 = c_t1;
+			cache1.c = MatrixUtil.plus(MatrixUtil.elementMultiply(cache1.hf, cOld), MatrixUtil.elementMultiply(cache1.hi, cache1.hc));
+			cache1.cOld = cOld.clone();
 
 			// Step 3, output
 			// o_t = sigmoid(w_o . [h_t-1, x_t] + b_o)
-			cache1.o_t = this.σ.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_o), b_o));
+			cache1.ho = this.σ.getY(MatrixUtil.plus(MatrixUtil.multiply(cache1.X, w_o), b_o));
 			// h_t = o_t * tanh(c_t)
-			cache1.h_t = MatrixUtil.elementMultiply(cache1.o_t, this.tanh.getY(cache1.c_t));
+			cache1.h = MatrixUtil.elementMultiply(cache1.ho, this.tanh.getY(cache1.c));
 			// y = w_y . [h_t, x_t] + b_y
-			Double[] y_t = MatrixUtil.plus(MatrixUtil.multiply(cache1.h_t, w_y), b_y);
+			Double[] y = MatrixUtil.plus(MatrixUtil.multiply(cache1.h, w_y), b_y);
 			// probability = softmax(y)
-			cache1.a = Softmax.getY(y_t);
+			cache1.a = Softmax.getY(y);
 
 			return cache1;
 
@@ -208,7 +216,7 @@ public class Lstm {
 		}
 	}
 
-	public void backward(int y, LstmDCache dCache, LstmCache cache1) throws LstmException {
+	public Double[] backward(int y, LstmDCache dCache, LstmCache cache1) throws LstmException {
 
 		try {
 			Double[] dy = new Double[cache1.a.length];
@@ -217,53 +225,48 @@ public class Lstm {
 			}
 			dy[y] -= 1;
 
-			Double[][] dwy = MatrixUtil.multiplyTC(cache1.h_t, dy);
-			Double[] dby = dy;
+			Double[][] dwy = MatrixUtil.multiplyTC(cache1.h, dy);
+			Double[] dby = dy.clone();
 			Double[] dh = MatrixUtil.plus(MatrixUtil.multiplyCT(dy, w_y), dCache.dhNext);
 
 			// Gradient for ho in h = ho * tanh(c)
-			Double[] dho = MatrixUtil.elementMultiply(this.tanh.getY(cache1.c_t), dh);
-			dho = MatrixUtil.elementMultiply(this.σ.getDerivativeX(cache1.o_t), dho);
+			Double[] dho = MatrixUtil.elementMultiply(this.tanh.getY(cache1.c), dh, this.σ.getDerivativeY(cache1.ho));
 
 			// Gradient for c in h = ho * tanh(c)
-			Double[] dc = MatrixUtil.elementMultiply(MatrixUtil.elementMultiply(cache1.o_t, dh),
-					this.tanh.getDerivativeX(cache1.c_t));
+			Double[] dc = MatrixUtil.elementMultiply(cache1.ho, dh, this.tanh.getDerivativeX(cache1.c));
 			dc = MatrixUtil.plus(dc, dCache.dcNext);
 
 			// Gradient for hf in c = hf * c_old + hi * hc
-			Double[] dhf = MatrixUtil.elementMultiply(cache1.c_t1, dc);
-			dhf = MatrixUtil.elementMultiply(this.σ.getDerivativeX(cache1.f_t), dhf);
+			Double[] dhf = MatrixUtil.elementMultiply(cache1.cOld, dc, this.σ.getDerivativeY(cache1.hf));
 
 			// Gradient for hi in c = hf * c_old + hi * hc
-			Double[] dhi = MatrixUtil.elementMultiply(cache1.c__t, dc);
-			dhi = MatrixUtil.elementMultiply(this.σ.getDerivativeX(cache1.i_t), dhi);
+			Double[] dhi = MatrixUtil.elementMultiply(cache1.hc, dc, this.σ.getDerivativeY(cache1.hi));
 
 			// Gradient for hc in c = hf * c_old + hi * hc
-			Double[] dhc = MatrixUtil.elementMultiply(cache1.i_t, dc);
-			dhc = MatrixUtil.elementMultiply(this.tanh.getDerivativeX(cache1.c__t), dhc);
+			Double[] dhc = MatrixUtil.elementMultiply(cache1.hi, dc, this.tanh.getDerivativeY(cache1.hc));
 
 			// Gate gradient
 			Double[][] dwf = MatrixUtil.multiplyTC(cache1.X, dhf);
-			Double[] dbf = dhf;
+			Double[] dbf = dhf.clone();
 			Double[] dXf = MatrixUtil.multiplyCT(dhf, w_f);
 
 			Double[][] dwi = MatrixUtil.multiplyTC(cache1.X, dhi);
-			Double[] dbi = dhi;
+			Double[] dbi = dhi.clone();
 			Double[] dXi = MatrixUtil.multiplyCT(dhi, w_i);
 
 			Double[][] dwo = MatrixUtil.multiplyTC(cache1.X, dho);
-			Double[] dbo = dho;
+			Double[] dbo = dho.clone();
 			Double[] dXo = MatrixUtil.multiplyCT(dho, w_o);
 
 			Double[][] dwc = MatrixUtil.multiplyTC(cache1.X, dhc);
-			Double[] dbc = dhc;
+			Double[] dbc = dhc.clone();
 			Double[] dXc = MatrixUtil.multiplyCT(dhc, w_c);
 
 			Double[] dX = MatrixUtil.plus(dXf, dXi, dXo, dXc);
 
 			dCache.dhNext = VectorUtil.subVector(dX, layerSize);
 			// Gradient for c_old in c = hf * c_old + hi * hc
-			dCache.dcNext = MatrixUtil.elementMultiply(cache1.f_t, dc);
+			dCache.dcNext = MatrixUtil.elementMultiply(cache1.hf, dc);
 
 			// Upgrade weights & biases
 			w_f = AdjustParam(w_f, dwf);
@@ -276,6 +279,8 @@ public class Lstm {
 			b_c = AdjustParam(b_c, dbc);
 			w_y = AdjustParam(w_y, dwy);
 			b_y = AdjustParam(b_y, dby);
+
+			return cache1.hc;
 		} catch (MatrixException e) {
 			throw new LstmException(e.getMessage());
 		}
@@ -283,23 +288,24 @@ public class Lstm {
 
 	private void adjustLearningRate(double totalLoss) {
 
-		if (lastLoss == 0) {
-			lastLoss = totalLoss;
-			return;
-		}
-		if (totalLoss >= lastLoss) {
-			//η *= (totalLoss / lastLoss);
+		if (totalLoss > lastLoss) {
+			// Bad
+			//η *= (totalLoss / lastLoss / 0.999);
 			//η *= 1.2;
 			//if (η > 0.1) η = 0.1;
-		} else {
+			//η /= dη;
+			//η *= dη;
+		} else if (totalLoss < lastLoss) {
+			// Good
+			//η *= dη;
+			//η *= (totalLoss / lastLoss * 0.999);
 			if (totalLoss / lastLoss > e) {
-				η /= dη;
+				//η /= dη;
 			} else {
-				η *= dη;
+				//η *= dη;
 			}
 		}
 		if (η > maxη) η = maxη;
-		lastLoss = totalLoss;
 	}
 
 	private Double[] AdjustParam(Double[] p, Double[] dp) throws MatrixException {
@@ -316,6 +322,5 @@ public class Lstm {
 			dp = MatrixUtil.multiply(dp, dth / l2Norm);
 		}
 		return MatrixUtil.minus(p, MatrixUtil.multiply(dp, η));
-		//return MatrixUtil.plus(p, dp);
 	}
 }
