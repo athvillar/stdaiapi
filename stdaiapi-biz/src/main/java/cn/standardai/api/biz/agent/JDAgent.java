@@ -14,8 +14,8 @@ import cn.standardai.api.dao.bean.User;
 
 public class JDAgent {
 
-	//private static String basePath = "/";
-	private static String basePath = "/Users/athvillar/Documents/JData/";
+	private static String basePath = "/";
+	//private static String basePath = "/Users/athvillar/Documents/JData/";
 
 	private static String rawFile1 = "raw/JData_User.csv";
 
