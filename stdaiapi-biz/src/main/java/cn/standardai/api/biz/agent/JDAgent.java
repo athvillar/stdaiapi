@@ -6,6 +6,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.util.CryptUtil;
+import cn.standardai.api.core.util.DateUtil;
 import cn.standardai.api.dao.JDDao;
 import cn.standardai.api.dao.UserDao;
 import cn.standardai.api.dao.base.DaoHandler;
@@ -53,10 +54,25 @@ public class JDAgent {
 			}
 			break;
 		case "action1":
+			rawData = CsvParser.parse(new String[] { basePath + rawFile4 }, null, null, null, null, false, false);
+			for (int i = 0; i < rawData.length; i++) {
+				dao.insertAction(rawData[i][0], rawData[i][1], DateUtil.parse(rawData[i][2], DateUtil.YYYY_MM_DD),
+						rawData[i][3], rawData[i][4], rawData[i][5], rawData[i][6]);
+			}
 			break;
 		case "action2":
+			rawData = CsvParser.parse(new String[] { basePath + rawFile5 }, null, null, null, null, false, false);
+			for (int i = 0; i < rawData.length; i++) {
+				dao.insertAction(rawData[i][0], rawData[i][1], DateUtil.parse(rawData[i][2], DateUtil.YYYY_MM_DD),
+						rawData[i][3], rawData[i][4], rawData[i][5], rawData[i][6]);
+			}
 			break;
 		case "action3":
+			rawData = CsvParser.parse(new String[] { basePath + rawFile6 }, null, null, null, null, false, false);
+			for (int i = 0; i < rawData.length; i++) {
+				dao.insertAction(rawData[i][0], rawData[i][1], DateUtil.parse(rawData[i][2], DateUtil.YYYY_MM_DD),
+						rawData[i][3], rawData[i][4], rawData[i][5], rawData[i][6]);
+			}
 			break;
 		}
 	}
