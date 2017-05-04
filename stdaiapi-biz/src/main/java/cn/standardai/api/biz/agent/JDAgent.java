@@ -49,7 +49,7 @@ public class JDAgent {
 		case "comment":
 			rawData = CsvParser.parse(new String[] { basePath + rawFile3 }, null, null, null, new int[] {1,2,3,4}, false, false);
 			for (int i = 0; i < rawData.length; i++) {
-				dao.insertSku(rawData[i][0], rawData[i][1], rawData[i][2], rawData[i][3], rawData[i][4], rawData[i][5]);
+				dao.insertComment(rawData[i][0], rawData[i][1], rawData[i][2], Double.parseDouble(rawData[i][3]));
 			}
 			break;
 		case "action1":
