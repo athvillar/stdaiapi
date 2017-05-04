@@ -1,7 +1,15 @@
 package cn.standardai.api.biz.agent;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -54,30 +62,84 @@ public class JDAgent {
 			}
 			break;
 		case "action1":
-			rawData = CsvParser.parse(new String[] { basePath + rawFile4 }, null, null, null, null, false, false);
-			for (int i = 0; i < rawData.length; i++) {
-				dao.insertAction(rawData[i][0], rawData[i][1], DateUtil.parse(rawData[i][2], DateUtil.YYYY_MM_DD),
-						rawData[i][3], rawData[i][4], rawData[i][5], rawData[i][6]);
-			}
+			parse(dao, basePath + rawFile4);
 			break;
 		case "action2":
-			rawData = CsvParser.parse(new String[] { basePath + rawFile5 }, null, null, null, null, false, false);
-			for (int i = 0; i < rawData.length; i++) {
-				dao.insertAction(rawData[i][0], rawData[i][1], DateUtil.parse(rawData[i][2], DateUtil.YYYY_MM_DD),
-						rawData[i][3], rawData[i][4], rawData[i][5], rawData[i][6]);
-			}
+			parse(dao, basePath + rawFile5);
 			break;
 		case "action3":
-			rawData = CsvParser.parse(new String[] { basePath + rawFile6 }, null, null, null, null, false, false);
-			for (int i = 0; i < rawData.length; i++) {
-				dao.insertAction(rawData[i][0], rawData[i][1], DateUtil.parse(rawData[i][2], DateUtil.YYYY_MM_DD),
-						rawData[i][3], rawData[i][4], rawData[i][5], rawData[i][6]);
-			}
+			parse(dao, basePath + rawFile6);
 			break;
 		}
 	}
 
 	public void done() {
 		if (daoHandler != null) daoHandler.releaseSession();
+	}
+
+	public static void parse(JDDao dao, String inFileName) {
+
+		FileReader fr = null;
+		BufferedReader br = null;
+
+		try {
+			fr = new FileReader(inFileName);
+			br = new BufferedReader(fr);
+
+			br.readLine();
+	
+			String line;
+			boolean finish = false;
+			String[][] result = null;
+			while (true) {
+				result = new String[10000][];
+				for (int i = 0; i < 10000; i++) {
+					if ((line = br.readLine()) == null) {
+						finish = true;
+						break;
+					}
+					String[] items = line.split(",");
+					String[] result1 = new String[items.length];
+
+					for (int j = 0; j < items.length; j++) {
+						result1[j] = items[j];
+					}
+					result[i] = result1;
+				}
+				for (int i = 0; i < result.length; i++) {
+					if (result[i] == null) break; 
+					dao.insertAction(result[i][0], result[i][1], DateUtil.parse(result[i][2], DateUtil.YYYY_MM_DD),
+							result[i][3], result[i][4], result[i][5], result[i][6]);
+				}
+				if (finish) break;
+			}
+
+			closeReader(fr, br);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			closeReader(fr, br);
+		}
+	}
+
+	private static void closeReader(FileReader fr, BufferedReader br) {
+
+		if (br != null) {
+			try {
+				br.close();
+				br = null;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (fr != null) {
+			try {
+				fr.close();
+				fr = null;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
