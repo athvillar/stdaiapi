@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -92,8 +94,8 @@ public class JDAgent {
 			boolean finish = false;
 			String[][] result = null;
 			while (true) {
-				result = new String[10000][];
-				for (int i = 0; i < 10000; i++) {
+				result = new String[500][];
+				for (int i = 0; i < 500; i++) {
 					if ((line = br.readLine()) == null) {
 						finish = true;
 						break;
@@ -106,11 +108,14 @@ public class JDAgent {
 					}
 					result[i] = result1;
 				}
+				//Executor exec = Executors.newFixedThreadPool(500);
 				for (int i = 0; i < result.length; i++) {
 					if (result[i] == null) break; 
-					dao.insertAction(result[i][0], result[i][1], DateUtil.parse(result[i][2], DateUtil.YYYY_MM_DD),
-							result[i][3], result[i][4], result[i][5], result[i][6]);
+			        Thread1 t1=new Thread1(dao, result[i]); 
+			        t1.run();
+			        //exec.execute(t1);
 				}
+				//Thread.sleep(3000);
 				if (finish) break;
 			}
 
