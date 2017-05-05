@@ -89,22 +89,31 @@ public class JDAgent {
 			br = new BufferedReader(fr);
 
 			br.readLine();
-	
-			String line;
+
+			String line1 = null;
+			String line2 = null;
+			String line3 = null;
 			boolean finish = false;
 			String[][] result = null;
 			while (true) {
 				result = new String[500][];
 				for (int i = 0; i < 500; i++) {
-					if ((line = br.readLine()) == null) {
+					line1 = br.readLine();
+					line2 = br.readLine();
+					line3 = br.readLine();
+					if (line1 == null || line2 == null || line3 == null) {
 						finish = true;
 						break;
 					}
-					String[] items = line.split(",");
-					String[] result1 = new String[items.length];
+					String[] items1 = line1.split(",");
+					String[] items2 = line2.split(",");
+					String[] items3 = line3.split(",");
+					String[] result1 = new String[items1.length * 3];
 
-					for (int j = 0; j < items.length; j++) {
-						result1[j] = items[j];
+					for (int j = 0; j < items1.length; j++) {
+						result1[j] = items1[j];
+						result1[j+items1.length] = items2[j];
+						result1[j+items1.length*2] = items3[j];
 					}
 					result[i] = result1;
 				}
