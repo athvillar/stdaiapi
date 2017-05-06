@@ -38,4 +38,11 @@ public abstract class PartialDerivableFunction extends Function {
 	public void setParam(double[] param) {
 		this.param = param;
 	}
+
+	public void setParam(Double[] param) {
+		this.param = new double[param.length];
+		for (int i = 0; i < param.length; i++) {
+			this.param[i] = param[i];
+		}
+	}
 }

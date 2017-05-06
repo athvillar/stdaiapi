@@ -32,11 +32,12 @@ public class CrossEntropy extends PartialDerivableFunction {
 	public double getY(double[] x) {
 		double sum = 0;
 		// cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
-		// TODO
+		// TODO not correct
 		for (int i = 0; i < x.length; i++) {
-			sum += Math.sqrt(param[i] - x[i]);
+			sum += (param[i] * Math.log10(x[i]) + (1 - param[i]) * Math.log10(1 - x[i])) ;
 		}
-		return sum / 2;
+		// TODO not correct, this is not ∑x
+		return -sum / x.length;
 	}
 
 	/**

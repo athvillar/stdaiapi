@@ -144,11 +144,11 @@ public class Statistic {
 		if (input == null || input.length == 0) {
 			return 0;
 		}
-		int max = 0;
+		double sum = 0;
 		for (int i = 0; i < input.length; i++) {
-			max += input[i];
+			sum += input[i];
 		}
-		return max;
+		return sum;
 	}
 
 	public static <T> T maxDoubleValueKey(Map<T, Double> igMap) {

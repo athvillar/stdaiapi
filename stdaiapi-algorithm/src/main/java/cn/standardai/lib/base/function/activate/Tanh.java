@@ -18,9 +18,12 @@ public class Tanh extends DerivableFunction {
 	 * @return y
 	 */
 	public double getY(double x) {
+		if (x > 400) return 1 - Math.exp(-200);
+		if (x < -400) return Math.exp(-200) - 1;
 		Double v1 = Math.exp(x);
 		Double v2 = Math.exp(-x);
 		return (v1 - v2) / (v1 + v2);
+		//return Math.tanh(x);
 	}
 
 	@Override
@@ -42,13 +45,13 @@ public class Tanh extends DerivableFunction {
 
 	@Override
 	public double getDerivativeX(double x) {
-		// TODO Auto-generated method stub
-		return 0;
+		// 由于getDerivativeY的存在，可以简化求getDerivativeX 
+		return getDerivativeY(getY(x));
 	}
 
 	@Override
 	public double getDerivativeY(double y) {
-		// TODO Auto-generated method stub
-		return 0;
+		// y' = 1 - y ^ 2
+		return 1 - y * y;
 	}
 }
