@@ -6,6 +6,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.util.DateUtil;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
@@ -23,11 +24,11 @@ import cn.standardai.lib.algorithm.cnn.CnnException;
 import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.base.function.Statistic;
 
-public class CnnAgent {
+public class CnnAgent extends AuthAgent {
 
 	private DaoHandler daoHandler = new DaoHandler(true);
 
-	public JSONObject create(String userId, JSONObject request) throws MLException {
+	public JSONObject create(JSONObject request) throws MLException {
 
 		JSONObject structure = request.getJSONObject("structure");
 		if (structure == null) throw new MLException("缺少表达式");
@@ -82,7 +83,7 @@ public class CnnAgent {
 		return result;
 	}
 
-	public JSONObject process(String userId, String id, JSONObject request) throws MLException {
+	public JSONObject process(String id, JSONObject request) throws MLException {
 
 		ModelTemplateDao modelTemplateDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
 		ModelTemplate modelTemplate = modelTemplateDao.selectById(id);
@@ -97,7 +98,7 @@ public class CnnAgent {
 		JSONObject train = request.getJSONObject("train");
 		if (train != null) {
 
-			Dataset dataset = getDataset(userId, train);
+			Dataset dataset = getDataset(train);
 			List<Data> trainData = getData(dataset);
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
@@ -168,7 +169,7 @@ public class CnnAgent {
 				JSONObject test = request.getJSONObject("test");
 				List<Data> testData = null;
 				if (test != null && testData == null) {
-					Dataset testDataset = getDataset(userId, test);
+					Dataset testDataset = getDataset(test);
 					testData = getData(testDataset);
 				}
 				if (test != null) {
@@ -180,7 +181,7 @@ public class CnnAgent {
 		JSONObject test = request.getJSONObject("test");
 		if (test != null) {
 
-			Dataset dataset = getDataset(userId, test);
+			Dataset dataset = getDataset(test);
 			List<Data> data = getData(dataset);
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
@@ -325,7 +326,7 @@ public class CnnAgent {
 		return correctRate;
 	}
 
-	private Dataset getDataset(String userId, JSONObject json) throws MLException {
+	private Dataset getDataset(JSONObject json) throws MLException {
 
 		Dataset dataset;
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
@@ -353,11 +354,7 @@ public class CnnAgent {
 		return data;
 	}
 
-	public void done() {
-		daoHandler.releaseSession();
-	}
-
-	public JSONObject status(String userId, String id) {
+	public JSONObject status(String id) {
 		// TODO Auto-generated method stub
 		return null;
 	}

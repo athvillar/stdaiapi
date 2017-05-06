@@ -1,11 +1,17 @@
 package cn.standardai.api.core.base;
 
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-public class BaseService {
+public class BaseService<T extends AuthAgent> {
 
 	private boolean beautify = false;
+
+	protected T agent;
 
 	public enum ReturnType {SUCCESS, FAILURE, WARN};
 
@@ -168,5 +174,16 @@ public class BaseService {
 
 	public void setBeautify(boolean beautify) {
 		this.beautify = beautify;
+	}
+
+	public String getToken(HttpHeaders headers) {
+		List<String> l = headers.get("token");
+		if (l == null || l.size() == 0) return null;
+		return l.get(0);
+	}
+
+	public void initAgent(HttpHeaders headers, Class<T> cls) throws InstantiationException, IllegalAccessException {
+		this.agent = cls.newInstance();
+		this.agent.setUserId(getToken(headers));
 	}
 }

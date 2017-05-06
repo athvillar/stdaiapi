@@ -1,14 +1,11 @@
 package cn.standardai.api.data.agent;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.HttpMethod;
@@ -19,17 +16,16 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
-import cn.standardai.api.dao.TokenDao;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Data;
-import cn.standardai.api.dao.bean.Token;
 import cn.standardai.api.data.exception.DataException;
 
-public class ScratchAgent {
+public class ScratchAgent extends AuthAgent {
 
 	// TODO 未完成
 	private DaoHandler daoHandler = new DaoHandler(true);
@@ -140,7 +136,7 @@ public class ScratchAgent {
 		return result;
 	}
 
-	public JSONObject uploadLocalImages(String userId, JSONObject request) throws DataException, IOException {
+	public JSONObject uploadLocalImages(JSONObject request) throws DataException, IOException {
 
 		String datasetId = request.getString("datasetId");
 		String datasetName = request.getString("datasetName");

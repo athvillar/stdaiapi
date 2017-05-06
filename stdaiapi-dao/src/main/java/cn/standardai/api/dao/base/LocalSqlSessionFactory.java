@@ -9,7 +9,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
-import cn.standardai.api.core.bean.PropertyConfig.Mysql;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.JDDao;
@@ -20,6 +19,92 @@ import cn.standardai.api.dao.UserDao;
 import cn.standardai.api.dao.exception.DaoException;
 
 public class LocalSqlSessionFactory {
+
+	public static class Oracle {
+
+		private String driver;
+		
+		private String url;
+		
+		private String name;
+		
+		private String password;
+
+		public String getDriver() {
+			return driver;
+		}
+
+		public void setDriver(String driver) {
+			this.driver = driver;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+	}
+	
+	public static class Mysql {
+
+		private String driver;
+		
+		private String url;
+		
+		private String name;
+		
+		private String password;
+
+		public String getDriver() {
+			return driver;
+		}
+
+		public void setDriver(String driver) {
+			this.driver = driver;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+	}
 
 	private static SqlSessionFactory ssf4Mysql;
 

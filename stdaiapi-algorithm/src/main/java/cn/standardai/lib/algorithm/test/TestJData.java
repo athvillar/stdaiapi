@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
-import cn.standardai.lib.algorithm.rnn.lstm.LstmException;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 import cn.standardai.tool.CsvParser;
@@ -150,8 +150,8 @@ public class TestJData {
 		Double[][] xs = (Double[][])data.get("xs");
 		Integer[] ys = (Integer[])data.get("ys");
 		Lstm lstm = new Lstm(30, 7, 7);
-		lstm.setParam(1, 0.0001, 1, 1, 1, 10);
-		lstm.train(xs, ys, 1000);
+		lstm.setParam(1, 0.0001, 1, 1, 1, 10, 1000);
+		lstm.train(xs, ys);
 		System.out.println("Training finished!");
 
 		// 预测
@@ -160,7 +160,7 @@ public class TestJData {
 		return null;
 	}
 
-	private static void predict(Lstm lstm, Map<String, Object> data) throws LstmException {
+	private static void predict(Lstm lstm, Map<String, Object> data) throws DnnException {
 		double cRate = 0;
 		List<List<Double[]>> testXs = (List<List<Double[]>>)data.get("testXs");
 		List<List<Integer>> testYs = (List<List<Integer>>)data.get("testYs");

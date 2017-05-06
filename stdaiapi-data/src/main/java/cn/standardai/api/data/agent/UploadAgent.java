@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
@@ -22,7 +23,7 @@ import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Token;
 import cn.standardai.api.data.exception.DataException;
 
-public class UploadAgent {
+public class UploadAgent extends AuthAgent {
 
 	private DaoHandler daoHandler = new DaoHandler(true);
 

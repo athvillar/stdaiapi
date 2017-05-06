@@ -3,6 +3,8 @@ package cn.standardai.lib.algorithm.rnn.lstm;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.standardai.lib.algorithm.base.DNN;
+import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.function.Softmax;
 import cn.standardai.lib.base.function.activate.Sigmoid;
@@ -12,24 +14,26 @@ import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 import cn.standardai.lib.base.matrix.VectorUtil;
 
-public class Lstm {
+public class Lstm extends DNN {
 
 	private int epochCount = 0;
 
 	private double lastLoss = Double.MAX_VALUE;
 
 	// grad threshold
-	private double dth = 5;
+	private double dth = 1;
 
 	private double η = 1;
 
-	private double dη = 0.9;
+	private double dη = 1;
 
 	private double maxη = 1;
 
-	private double e = 0.001;
+	private double gainThreshold = 1;
 
-	private int watchEpoch = 5;
+	private int watchEpoch = 1;
+
+	private int epoch = 1;
 
 	public DerivableFunction σ = new Sigmoid();
 
@@ -84,17 +88,18 @@ public class Lstm {
 		this.b_y = MatrixUtil.create(inputSize, 0);
 	}
 
-	public void setParam(double dth, double η, double dη, double maxη, double e, int watchEpoch) {
+	public void setParam(double dth, double η, double dη, double maxη, double gainThreshold, int watchEpoch, int epoch) {
 		this.dth = dth;
 		this.η = η;
 		this.dη = dη;
 		this.maxη = maxη;
-		this.e = e;
+		this.gainThreshold = gainThreshold;
 		this.watchEpoch = watchEpoch;
+		this.epoch = epoch;
 	}
 
-	public void train(Double[][] xs, Integer[] ys, int epoch) throws LstmException {
-		if (xs.length != ys.length) throw new LstmException("训练数据长度错误");
+	public void train(Double[][] xs, Integer[] ys) throws DnnException {
+		if (xs.length != ys.length) throw new DnnException("训练数据长度错误");
 		double gain;
 		do {
 			epochCount++;
@@ -102,7 +107,7 @@ public class Lstm {
 		} while (epochCount < epoch || (epoch == -1 && gain >= 0));
 	}
 
-	public double train1(Double[][] xs, Integer[] ys) throws LstmException {
+	public double train1(Double[][] xs, Integer[] ys) throws DnnException {
 
 		Double[] loss = MatrixUtil.create(outputSize, 0);
 		List<LstmCache> cache = new ArrayList<LstmCache>();
@@ -135,6 +140,12 @@ public class Lstm {
 		if (epochCount % watchEpoch == 0) {
 			//adjustLearningRate(totalLoss);
 			//MatrixUtil.print(w_i[1]);
+			synchronized (this.indicator) {
+				if (this.containCatalog("loss")) {
+					record("loss", epochCount, totalLoss);
+				}
+				this.indicator.notify();
+			}
 			System.out.println("Epoch " + epochCount + ",\tLoss: " + totalLoss + ",\tη: " + η);
 		}
 
@@ -151,7 +162,7 @@ public class Lstm {
 		return gain;
 	}
 
-	public Integer[] predict(Double[][] xs, int step) throws LstmException {
+	public Integer[] predict(Double[][] xs, int step) throws DnnException {
 
 		Double[] h_t1 = MatrixUtil.create(layerSize, 0);
 		Double[] c_t1 = MatrixUtil.create(layerSize, 0);
@@ -178,7 +189,7 @@ public class Lstm {
 		return result;
 	}
 
-	public LstmCache forward(Double[] x_t, Double[] hOld, Double[] cOld) throws LstmException {
+	public LstmCache forward(Double[] x_t, Double[] hOld, Double[] cOld) throws DnnException {
 
 		try {
 			LstmCache cache1 = new LstmCache();
@@ -212,11 +223,11 @@ public class Lstm {
 			return cache1;
 
 		} catch (MatrixException e) {
-			throw new LstmException(e.getMessage());
+			throw new DnnException(e.getMessage());
 		}
 	}
 
-	public Double[] backward(int y, LstmDCache dCache, LstmCache cache1) throws LstmException {
+	public Double[] backward(int y, LstmDCache dCache, LstmCache cache1) throws DnnException {
 
 		try {
 			Double[] dy = new Double[cache1.a.length];
@@ -282,7 +293,7 @@ public class Lstm {
 
 			return cache1.hc;
 		} catch (MatrixException e) {
-			throw new LstmException(e.getMessage());
+			throw new DnnException(e.getMessage());
 		}
 	}
 
@@ -299,7 +310,7 @@ public class Lstm {
 			// Good
 			//η *= dη;
 			//η *= (totalLoss / lastLoss * 0.999);
-			if (totalLoss / lastLoss > e) {
+			if (totalLoss / lastLoss > gainThreshold) {
 				//η /= dη;
 			} else {
 				//η *= dη;

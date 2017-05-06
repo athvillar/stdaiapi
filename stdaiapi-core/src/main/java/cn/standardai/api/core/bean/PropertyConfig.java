@@ -3,6 +3,9 @@ package cn.standardai.api.core.bean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import cn.standardai.api.dao.base.LocalSqlSessionFactory.Mysql;
+import cn.standardai.api.dao.base.LocalSqlSessionFactory.Oracle;
+
 @Configuration
 @ConfigurationProperties()
 public class PropertyConfig {
@@ -49,92 +52,6 @@ public class PropertyConfig {
 
 		public void setUploadTemp(String uploadTemp) {
 			this.uploadTemp = uploadTemp;
-		}
-	}
-	
-	public static class Oracle {
-
-		private String driver;
-		
-		private String url;
-		
-		private String name;
-		
-		private String password;
-
-		public String getDriver() {
-			return driver;
-		}
-
-		public void setDriver(String driver) {
-			this.driver = driver;
-		}
-
-		public String getUrl() {
-			return url;
-		}
-
-		public void setUrl(String url) {
-			this.url = url;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-	}
-	
-	public static class Mysql {
-
-		private String driver;
-		
-		private String url;
-		
-		private String name;
-		
-		private String password;
-
-		public String getDriver() {
-			return driver;
-		}
-
-		public void setDriver(String driver) {
-			this.driver = driver;
-		}
-
-		public String getUrl() {
-			return url;
-		}
-
-		public void setUrl(String url) {
-			this.url = url;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
 		}
 	}
 

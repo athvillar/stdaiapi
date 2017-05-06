@@ -36,11 +36,6 @@
             <artifactId>pagehelper</artifactId>
             <version>4.1.3</version>
         </dependency>
-		<dependency>
-			<groupId>cn.standardai</groupId>
-			<artifactId>stdaiapi-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<resources>

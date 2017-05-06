@@ -46,5 +46,10 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.0-alpha4</version>
 		</dependency>
+		<dependency>
+			<groupId>cn.standardai</groupId>
+			<artifactId>stdaiapi-dao</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

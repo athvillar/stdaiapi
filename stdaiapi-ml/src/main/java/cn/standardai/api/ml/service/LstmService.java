@@ -15,58 +15,63 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
-import cn.standardai.api.ml.agent.CnnAgent;
+import cn.standardai.api.ml.agent.LstmAgent;
+import cn.standardai.api.ml.exception.MLException;
 
 @Controller
 @RestController
 @EnableAutoConfiguration
-@RequestMapping("/cnn")
-public class CnnService extends BaseService<CnnAgent> {
+@RequestMapping("/lstm")
+public class LstmService extends BaseService<LstmAgent> {
 
-	private Logger logger = LoggerFactory.getLogger(CnnService.class);
+	private Logger logger = LoggerFactory.getLogger(LstmService.class);
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String create(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-ml cnn POST start ...");
+		logger.info("stdaiapi-ml lstm POST start ...");
 		JSONObject result = null;
 		try {
-			initAgent(headers, CnnAgent.class);
+			initAgent(headers, LstmAgent.class);
 			result = agent.create(request);
 			result = successResponse(result);
+		} catch (MLException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-ml cnn POST finish (response:" + result.toJSONString() + ")");
+		logger.info("stdaiapi-ml lstm POST finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.POST)
 	public String train(@PathVariable("id") String id, @RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-ml cnn POST start (id:" + id + ", ...");
+		logger.info("stdaiapi-ml lstm/" + id + " POST start");
 		JSONObject result = null;
 		try {
-			initAgent(headers, CnnAgent.class);
+			initAgent(headers, LstmAgent.class);
 			result = agent.process(id, request);
 			result = successResponse(result);
+		} catch (MLException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-ml cnn POST finish (response:" + result.toJSONString() + ")");
+		logger.info("stdaiapi-ml lstm/" + id + " POST finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public String train(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-ml cnn GET start (id:" + id + ")");
+	public String status(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-ml lstm/" + id + " GET start");
 		JSONObject result = null;
 		try {
-			initAgent(headers, CnnAgent.class);
+			initAgent(headers, LstmAgent.class);
 			result = agent.status(id);
 			result = successResponse(result);
 		} catch (Exception e) {
@@ -75,7 +80,7 @@ public class CnnService extends BaseService<CnnAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-ml cnn GET finish (response:" + result.toJSONString() + ")");
+		logger.info("stdaiapi-ml lstm/" + id + " GET finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

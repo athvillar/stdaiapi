@@ -1,8 +1,6 @@
 package cn.standardai.api.dao.exception;
 
-import cn.standardai.api.core.exception.StdaiException;
-
-public class DaoException extends StdaiException {
+public class DaoException extends Exception {
 
 	private static final String moduleName = "DAO模块";
 

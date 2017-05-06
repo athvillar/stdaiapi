@@ -62,9 +62,9 @@ public class TestRnnLstm {
 		Integer[] ys = getY(yWords, dic);
 
 		Lstm lstm = new Lstm(30, dic.length, dic.length);
-		lstm.setParam(1, 0.001121, 1, 1, 1, 50);
+		lstm.setParam(1, 0.001121, 1, 1, 1, 50, 10000);
 		//lstm.setParam(5, 0.1, 1, 0.1, 1, 1500);
-		lstm.train(xs, ys, 10000);
+		lstm.train(xs, ys);
 		System.out.println("Training finished!");
 
 		String hint = xWords.substring(0, 1);
@@ -115,8 +115,8 @@ public class TestRnnLstm {
 		Integer[] ys = getY(yWords, dic);
 
 		Lstm lstm = new Lstm(80, dic.length, dic.length);
-		lstm.setParam(4, 1, 0.9, 1, 0.85, 1);
-		lstm.train(xs, ys, 500);
+		lstm.setParam(4, 1, 0.9, 1, 0.85, 1, 500);
+		lstm.train(xs, ys);
 		System.out.println("Training finished!");
 
 		String hint = xWords.substring(0, 5);

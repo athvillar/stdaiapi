@@ -15,25 +15,22 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
 import cn.standardai.api.data.agent.ScratchAgent;
-import cn.standardai.api.data.agent.TokenAgent;
-import cn.standardai.api.data.agent.UploadAgent;
 
 @Controller
 @RestController
 @EnableAutoConfiguration
 @RequestMapping("/scratch")
-public class ScratchService extends BaseService {
+public class ScratchService extends BaseService<ScratchAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(ScratchService.class);
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String scratch(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
 		logger.info("stdaiapi-data 收到数据抓取请求 ...");
-		ScratchAgent agent = null;
 		JSONObject result = null;
 		try {
-			agent = new ScratchAgent();
-			result = agent.uploadLocalImages(getUserIdByToken(headers), request);
+			initAgent(headers, ScratchAgent.class);
+			result = agent.uploadLocalImages(request);
 			result = successResponse(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -43,17 +40,5 @@ public class ScratchService extends BaseService {
 		}
 		logger.info("stdaiapi-data 结束数据抓取 (" + result.toJSONString() + ")");
 		return result.toString();
-	}
-
-	public String getUserIdByToken(HttpHeaders headers) throws Exception {
-
-		TokenAgent tokenAgent = new TokenAgent();
-		try {
-			return tokenAgent.getUserIdByToken(headers.get("token"));
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			if (tokenAgent != null) tokenAgent.done();
-		}
 	}
 }
