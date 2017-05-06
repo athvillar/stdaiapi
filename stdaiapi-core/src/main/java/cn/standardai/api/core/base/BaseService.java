@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.core.exception.AuthException;
+
 public class BaseService<T extends AuthAgent> {
 
 	private boolean beautify = false;
@@ -182,7 +184,7 @@ public class BaseService<T extends AuthAgent> {
 		return l.get(0);
 	}
 
-	public void initAgent(HttpHeaders headers, Class<T> cls) throws InstantiationException, IllegalAccessException {
+	public void initAgent(HttpHeaders headers, Class<T> cls) throws InstantiationException, IllegalAccessException, AuthException {
 		this.agent = cls.newInstance();
 		this.agent.setUserId(getToken(headers));
 	}

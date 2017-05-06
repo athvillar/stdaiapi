@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.StdaiException;
 import cn.standardai.api.ml.agent.CnnAgent;
 
 @Controller
@@ -33,6 +34,8 @@ public class CnnService extends BaseService<CnnAgent> {
 			initAgent(headers, CnnAgent.class);
 			result = agent.create(request);
 			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

@@ -18,7 +18,7 @@ public class AuthAgent {
 		super();
 	}
 
-	public void setUserId(String token) {
+	public void setUserId(String token) throws AuthException {
 		this.userId = getUserIdByToken(token);
 	}
 

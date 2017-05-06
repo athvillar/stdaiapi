@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.biz.agent.DatasetAgent;
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.StdaiException;
 
 @Controller
 @RestController
@@ -32,6 +33,8 @@ public class DatasetRestService extends BaseService<DatasetAgent> {
 			initAgent(headers, DatasetAgent.class);
 			agent.removeById(id);
 			result.put("result", "success");
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

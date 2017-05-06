@@ -1,6 +1,6 @@
 package cn.standardai.api.core.exception;
 
-public class AuthException extends IDException {
+public class AuthException extends StdaiException {
 
 	private static final long serialVersionUID = 1L;
 

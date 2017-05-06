@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.StdaiException;
 import cn.standardai.api.data.agent.UploadAgent;
 
 @Controller
@@ -34,6 +35,8 @@ public class UploadService extends BaseService<UploadAgent> {
 			initAgent(headers, UploadAgent.class);
 			result = agent.saveJSONData(request);
 			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -43,7 +46,6 @@ public class UploadService extends BaseService<UploadAgent> {
 		logger.info("stdaiapi-data 结束数据上传 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
-	
 
 	@RequestMapping(value = "/file", method = RequestMethod.POST)
 	public String uploadFile(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {

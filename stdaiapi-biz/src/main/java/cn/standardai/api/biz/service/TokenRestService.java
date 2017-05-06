@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.biz.agent.TokenAgent;
-import cn.standardai.api.biz.exception.BizException;
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.StdaiException;
 
 @Controller
 @RestController
@@ -35,6 +35,8 @@ public class TokenRestService extends BaseService<TokenAgent> {
 			agent = new TokenAgent();
 			result = agent.createToken(request);
 			result.put("result", "success");
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -53,7 +55,7 @@ public class TokenRestService extends BaseService<TokenAgent> {
 			initAgent(headers, TokenAgent.class);
 			agent.removeById(id);
 			result.put("result", "success");
-		} catch (BizException e) {
+		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -56,9 +56,6 @@ public class LstmAgent extends AuthAgent {
 		JSONObject train = request.getJSONObject("train");
 		if (train != null) {
 
-			Dataset dataset = getDataset(userId, train);
-			List<Data> trainData = getData(dataset);
-
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 			String parentModelId = null;
 			Integer dataCount = 0;
@@ -108,17 +105,17 @@ public class LstmAgent extends AuthAgent {
 			mg.loadParam("dLearningRate", train.getDouble("dLearningRate"));
 			mg.loadParam("maxLearningRate", train.getDouble("maxLearningRate"));
 			mg.loadParam("gainThreshold", train.getDouble("gainThreshold"));
-			mg.loadParam("watchEpoch", train.getDouble("watchEpoch"));
-			mg.loadParam("epoch", train.getDouble("epoch"));
+			mg.loadParam("watchEpoch", train.getInteger("watchEpoch"));
+			mg.loadParam("epoch", train.getInteger("epoch"));
 
-			List<Data> dataList = getData(getDataset(userId, train.getJSONObject("datasetName")));
+			List<Data> dataList = getData(getDataset(train));
 			if (dataList == null || dataList.size() == 0) {
 				throw new MLException("找不到数据(datasetName:" + train.getJSONObject("datasetName") +")");
 			}
 			switch (train.getString("datasetUsage")) {
 			case "SGLWD":
 				char[] dic = DataUtil.String2CharDic(dataList.get(0).getData());
-				String yWords = dataList.get(0).getData().substring(1) + " ";
+				String yWords = dataList.get(0).getData().substring(1) + dataList.get(0).getData().charAt(0);
 				Double[][] xs = DataUtil.getX(dataList.get(0).getData(), dic);
 				Integer[] ys = DataUtil.getY(yWords, dic);
 				mg.loadData(xs, ys);
@@ -135,7 +132,7 @@ public class LstmAgent extends AuthAgent {
 	}
 
 
-	private Dataset getDataset(String userId, JSONObject json) throws MLException {
+	private Dataset getDataset(JSONObject json) throws MLException {
 
 		Dataset dataset;
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);

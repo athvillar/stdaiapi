@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.StdaiException;
 import cn.standardai.api.data.agent.ScratchAgent;
 
 @Controller
@@ -32,6 +33,8 @@ public class ScratchService extends BaseService<ScratchAgent> {
 			initAgent(headers, ScratchAgent.class);
 			result = agent.uploadLocalImages(request);
 			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

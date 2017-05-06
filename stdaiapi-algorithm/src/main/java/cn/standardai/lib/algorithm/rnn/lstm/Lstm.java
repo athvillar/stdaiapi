@@ -105,6 +105,11 @@ public class Lstm extends DNN {
 			epochCount++;
 			gain = train1(xs, ys);
 		} while (epochCount < epoch || (epoch == -1 && gain >= 0));
+		// Finish indicator, tell monitor to stop monitoring
+		synchronized (this.indicator) {
+			finish();
+			this.indicator.notify();
+		}
 	}
 
 	public double train1(Double[][] xs, Integer[] ys) throws DnnException {
@@ -146,7 +151,6 @@ public class Lstm extends DNN {
 				}
 				this.indicator.notify();
 			}
-			System.out.println("Epoch " + epochCount + ",\tLoss: " + totalLoss + ",\tη: " + η);
 		}
 
 		LstmDCache dCache = new LstmDCache();

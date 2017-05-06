@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.lib.algorithm.base.DNN;
 import cn.standardai.lib.algorithm.exception.DnnException;
+import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
 
 public class ModelGhost implements Runnable {
@@ -53,30 +54,37 @@ public class ModelGhost implements Runnable {
 	public void run() {
 		if (this.model instanceof Lstm) {
 
+			int watchEpoch = (int)modelContext.get("watchEpoch");
 			((Lstm)this.model).setParam(
 					(double)modelContext.get("dth"),
 					(double)modelContext.get("learningRate"),
 					(double)modelContext.get("maxLearningRate"),
 					(double)modelContext.get("dth"),
 					(double)modelContext.get("gainThreshold"),
-					(int)modelContext.get("watchEpoch"),
+					watchEpoch,
 					(int)modelContext.get("epoch"));
 			ModelRunner mr = new ModelRunner(this.model, this.trainX, this.trainY);
 
 			synchronized (this.model.indicator) {
 				Executor exec = Executors.newSingleThreadExecutor();
 				exec.execute(mr);
+				int epoch = 0;
 				while (true) {
 					try {
 						this.model.indicator.wait();
-					} catch (InterruptedException e) {
-						int cnt = this.model.indicator.get("loss").size();
-						System.out.println("size:" + cnt);
-						if (cnt > 10) {
+						if (this.model.containCatalog("final")) {
 							break;
 						}
+						epoch += watchEpoch;
+						System.out.println("Epoch " + epoch + ",\tLoss: " + this.model.getValue("loss", epoch));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						break;
+					} catch (UsageException e) {
+						e.printStackTrace();
 					}
 				}
+				System.out.println("finished at epoch " + epoch);
 			}
 		}
 	}

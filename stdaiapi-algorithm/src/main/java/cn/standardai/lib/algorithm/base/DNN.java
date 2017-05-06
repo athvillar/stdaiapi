@@ -7,6 +7,8 @@ import cn.standardai.lib.algorithm.exception.UsageException;
 
 public abstract class DNN implements Monitorable {
 
+	public final String lock = "lock";
+
 	public Map<String, Map<Integer, Double>> indicator = new HashMap<String, Map<Integer, Double>>();
 
 	public void addIndicator(String catalog) {
@@ -15,6 +17,11 @@ public abstract class DNN implements Monitorable {
 
 	public boolean containCatalog(String catalog) {
 		return this.indicator.containsKey(catalog);
+	}
+
+	public void finish() throws UsageException {
+		// TODO nothing added, reserved, now just for finish indicator
+		this.indicator.put("final", new HashMap<Integer, Double>());
 	}
 
 	public void record(String catalog, Integer epoch, Double value) throws UsageException {
