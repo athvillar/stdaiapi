@@ -5,14 +5,13 @@ import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.biz.exception.BizException;
+import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.util.CryptUtil;
 import cn.standardai.api.dao.UserDao;
-import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.User;
 
-public class UserAgent {
-
-	private DaoHandler daoHandler = new DaoHandler();
+public class UserAgent extends AuthAgent {
 
 	public JSONObject getById(String userId) {
 		JSONObject result = new JSONObject();
@@ -63,12 +62,9 @@ public class UserAgent {
 		return result;
 	}
 
-	public void removeById(String userId) {
+	public void removeById(String userId) throws BizException {
+		if (!userId.equals(this.userId)) throw new BizException("没有权限");
 		UserDao dao = daoHandler.getMySQLMapper(UserDao.class);
 		dao.deleteById(userId);
-	}
-
-	public void done() {
-		if (daoHandler != null) daoHandler.releaseSession();
 	}
 }

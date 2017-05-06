@@ -3,9 +3,11 @@ package cn.standardai.api.biz.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,13 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.biz.agent.TokenAgent;
+import cn.standardai.api.biz.exception.BizException;
 import cn.standardai.api.core.base.BaseService;
 
 @Controller
 @RestController
 @EnableAutoConfiguration
 @RequestMapping("/token")
-public class TokenRestService extends BaseService {
+public class TokenRestService extends BaseService<TokenAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(TokenRestService.class);
 
@@ -43,14 +46,15 @@ public class TokenRestService extends BaseService {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public String removeToken(@PathVariable("id") String id) {
+	public String removeToken(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-biz 收到删除token请求(id=" + id + ")");
-		TokenAgent agent = null;
 		JSONObject result = new JSONObject();
 		try {
-			agent = new TokenAgent();
+			initAgent(headers, TokenAgent.class);
 			agent.removeById(id);
 			result.put("result", "success");
+		} catch (BizException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

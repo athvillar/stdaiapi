@@ -17,15 +17,12 @@ import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.TokenDao;
-import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Token;
 import cn.standardai.api.data.exception.DataException;
 
 public class UploadAgent extends AuthAgent {
-
-	private DaoHandler daoHandler = new DaoHandler(true);
 
 	public JSONObject saveJSONData(JSONObject dataRequest) throws DataException {
 
@@ -183,9 +180,5 @@ public class UploadAgent extends AuthAgent {
 			result.put("message", "File was empty");
 		}
 		return result;
-	}
-
-	public void done() {
-		daoHandler.releaseSession();
 	}
 }

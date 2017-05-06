@@ -3,9 +3,11 @@ package cn.standardai.api.biz.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,23 +15,23 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.biz.agent.UserAgent;
+import cn.standardai.api.biz.exception.BizException;
 import cn.standardai.api.core.base.BaseService;
 
 @Controller
 @RestController
 @EnableAutoConfiguration
 @RequestMapping("/user")
-public class UserRestService extends BaseService {
+public class UserRestService extends BaseService<UserAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(UserRestService.class);
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public String getUserById(@PathVariable("id") String id) {
+	public String getUserById(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-biz 收到查看用户请求(id=" + id + ")");
-		UserAgent agent = null;
 		JSONObject result = null;
 		try {
-			agent = new UserAgent();
+			initAgent(headers, UserAgent.class);
 			result = agent.getById(id);
 			result = successResponse(result);
 		} catch (Exception e) {
@@ -48,6 +50,7 @@ public class UserRestService extends BaseService {
 		UserAgent agent = null;
 		JSONObject result = new JSONObject();
 		try {
+			// TODO 没有token check，安全漏洞
 			agent = new UserAgent();
 			result = agent.upgradeById(id, request);
 		} catch (Exception e) {
@@ -61,14 +64,15 @@ public class UserRestService extends BaseService {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public String removeUserById(@PathVariable("id") String id, String tpParamName) {
+	public String removeUserById(@PathVariable("id") String id, @RequestHeader HttpHeaders headers, String tpParamName) {
 		logger.info("stdaiapi-biz 收到删除用户请求(id=" + id + ")");
-		UserAgent agent = null;
 		JSONObject result = new JSONObject();
 		try {
-			agent = new UserAgent();
+			initAgent(headers, UserAgent.class);
 			agent.removeById(id);
 			result.put("result", "success");
+		} catch (BizException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

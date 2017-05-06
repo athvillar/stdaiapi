@@ -20,15 +20,11 @@ import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
-import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.data.exception.DataException;
 
 public class ScratchAgent extends AuthAgent {
-
-	// TODO 未完成
-	private DaoHandler daoHandler = new DaoHandler(true);
 
 	public JSONObject saveJSONData(String userId, JSONObject request) throws DataException {
 
@@ -247,9 +243,5 @@ public class ScratchAgent extends AuthAgent {
 		JSONObject result = new JSONObject();
 		result.put("datasetId", datasetId);
 		return result;
-	}
-
-	public void done() {
-		daoHandler.releaseSession();
 	}
 }

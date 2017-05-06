@@ -6,17 +6,15 @@ import java.util.Calendar;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.biz.exception.BizException;
+import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.util.CryptUtil;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.TokenDao;
 import cn.standardai.api.dao.UserDao;
-import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Token;
 import cn.standardai.api.dao.bean.User;
 
-public class TokenAgent {
-
-	private DaoHandler daoHandler = new DaoHandler(true);
+public class TokenAgent extends AuthAgent {
 
 	public JSONObject createToken(JSONObject request) throws BizException {
 
@@ -49,13 +47,10 @@ public class TokenAgent {
 		return result;
 	}
 
-	public void removeById(String token) {
+	public void removeById(String token) throws BizException {
 		TokenDao dao = daoHandler.getMySQLMapper(TokenDao.class);
 		String userId = dao.selectUserIdByToken(token);
+		if (!userId.equals(this.userId)) throw new BizException("没有权限");
 		dao.deleteByUserId(userId);
-	}
-
-	public void done() {
-		if (daoHandler != null) daoHandler.releaseSession();
 	}
 }
