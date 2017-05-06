@@ -49,8 +49,7 @@ public class UserRestService extends BaseService {
 		JSONObject result = new JSONObject();
 		try {
 			agent = new UserAgent();
-			agent.upgradeById(id, request);
-			result.put("result", "success");
+			result = agent.upgradeById(id, request);
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
