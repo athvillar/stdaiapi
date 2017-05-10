@@ -27,7 +27,7 @@ public class UploadService extends BaseService<UploadAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(UploadService.class);
 
-	@RequestMapping(value = "", method = RequestMethod.POST)
+	@RequestMapping(value = "/data", method = RequestMethod.POST)
 	public String receiveData(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
 		logger.info("stdaiapi-data 收到数据上传请求 ...");
 		JSONObject result = null;
@@ -47,14 +47,16 @@ public class UploadService extends BaseService<UploadAgent> {
 		return result.toString();
 	}
 
-	@RequestMapping(value = "/file", method = RequestMethod.POST)
-	public String uploadFile(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
+	@RequestMapping(value = "/files", method = RequestMethod.POST)
+	public String uploadFiles(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
 		logger.info("stdaiapi-data 收到文件上传请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, UploadAgent.class);
 			result = agent.saveUploadFile(uploadfiles);
 			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

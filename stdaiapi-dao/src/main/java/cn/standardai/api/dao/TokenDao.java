@@ -20,6 +20,6 @@ public interface TokenDao {
 	@Insert({"INSERT INTO TOKEN (TOKEN, USERID, EXPIRETIME) VALUES (#{param.token}, #{param.userId}, #{param.expireTime})"})
 	void insert(@Param("param") Token param);
 
-	@Delete({"DELETE FROM TOKEN WHERE USERID  = #{userId}"})
+	@Delete({"DELETE FROM TOKEN WHERE USERID = #{userId}"})
 	void deleteByUserId(@Param("userId") String userId);
 }

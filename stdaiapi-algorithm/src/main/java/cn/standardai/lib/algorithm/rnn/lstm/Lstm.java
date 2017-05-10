@@ -3,8 +3,10 @@ package cn.standardai.lib.algorithm.rnn.lstm;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.standardai.lib.algorithm.base.DNN;
+import cn.standardai.lib.algorithm.base.Dnn;
+import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.DnnException;
+import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.function.Softmax;
 import cn.standardai.lib.base.function.activate.Sigmoid;
@@ -14,11 +16,17 @@ import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 import cn.standardai.lib.base.matrix.VectorUtil;
 
-public class Lstm extends DNN {
+public class Lstm extends Dnn {
 
 	private int epochCount = 0;
 
 	private double lastLoss = Double.MAX_VALUE;
+
+	public int layerSize;
+
+	public int inputSize;
+
+	public int outputSize;
 
 	// grad threshold
 	private double dth = 1;
@@ -38,12 +46,6 @@ public class Lstm extends DNN {
 	public DerivableFunction σ = new Sigmoid();
 
 	public DerivableFunction tanh = new Tanh();
-
-	public int layerSize;
-
-	public int inputSize;
-
-	public int outputSize;
 
 	// 参数
 	public Double[][] w_f;
@@ -84,7 +86,7 @@ public class Lstm extends DNN {
 		//this.w_o = MatrixUtil.random(layerSize + inputSize, layerSize, 0, 1.0 / Math.sqrt((layerSize + inputSize)));
 		this.b_o = MatrixUtil.create(layerSize, 0);
 		this.w_y = MatrixUtil.random(layerSize, inputSize, -1.0 / Math.sqrt(inputSize * layerSize), 1.0 / Math.sqrt(layerSize * inputSize));
-		this.w_y = MatrixUtil.random(layerSize, inputSize, 0, 1.0 / Math.sqrt(layerSize));
+		//this.w_y = MatrixUtil.random(layerSize, inputSize, 0, 1.0 / Math.sqrt(layerSize));
 		this.b_y = MatrixUtil.create(inputSize, 0);
 	}
 
@@ -337,5 +339,66 @@ public class Lstm extends DNN {
 			dp = MatrixUtil.multiply(dp, dth / l2Norm);
 		}
 		return MatrixUtil.minus(p, MatrixUtil.multiply(dp, η));
+	}
+
+	public static byte[] getBytes(Lstm lstm) {
+
+		int length = Integer.BYTES * 3 +
+				Double.SIZE * ((lstm.layerSize + lstm.inputSize) * lstm.layerSize * 4 +
+				(lstm.layerSize + lstm.inputSize) + lstm.layerSize * 4 + lstm.inputSize);
+		byte[] bytes = new byte[length];
+		int index = 0;
+		index += ByteUtil.putInt(bytes, lstm.layerSize, index);
+		index += ByteUtil.putInt(bytes, lstm.inputSize, index);
+		index += ByteUtil.putInt(bytes, lstm.outputSize, index);
+		index += ByteUtil.putDoubles(bytes, lstm.w_f, index);
+		index += ByteUtil.putDoubles(bytes, lstm.b_f, index);
+		index += ByteUtil.putDoubles(bytes, lstm.w_i, index);
+		index += ByteUtil.putDoubles(bytes, lstm.b_i, index);
+		index += ByteUtil.putDoubles(bytes, lstm.w_c, index);
+		index += ByteUtil.putDoubles(bytes, lstm.b_c, index);
+		index += ByteUtil.putDoubles(bytes, lstm.w_o, index);
+		index += ByteUtil.putDoubles(bytes, lstm.b_o, index);
+		index += ByteUtil.putDoubles(bytes, lstm.w_y, index);
+		index += ByteUtil.putDoubles(bytes, lstm.b_y, index);
+
+		return bytes;
+	}
+
+	public static Lstm getInstance(byte[] bytes) {
+
+		int index = 0;
+		int length = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		int layerSize = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		int inputSize = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		int outputSize = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+
+		Lstm lstm = new Lstm(layerSize, inputSize, outputSize);
+		lstm.w_f = ByteUtil.getDouble2s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.b_f = ByteUtil.getDouble1s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.w_i = ByteUtil.getDouble2s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.b_i = ByteUtil.getDouble1s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.w_c = ByteUtil.getDouble2s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.b_c = ByteUtil.getDouble1s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.w_o = ByteUtil.getDouble2s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.b_o = ByteUtil.getDouble1s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.w_y = ByteUtil.getDouble2s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+		lstm.b_y = ByteUtil.getDouble1s(bytes, index);
+		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
+
+		return lstm;
 	}
 }

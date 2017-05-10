@@ -19,7 +19,7 @@ import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Model;
 import cn.standardai.api.dao.bean.ModelTemplate;
 import cn.standardai.api.ml.exception.MLException;
-import cn.standardai.lib.algorithm.cnn.CNN;
+import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.cnn.CnnException;
 import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.base.function.Statistic;
@@ -34,7 +34,7 @@ public class CnnAgent extends AuthAgent {
 		if (structure == null) throw new MLException("缺少表达式");
 
 		try {
-			CNN.getInstance(request);
+			Cnn.getInstance(request);
 		} catch (CnnException e) {
 			throw new MLException("卷积神经网络创建失败", e);
 		}
@@ -93,7 +93,7 @@ public class CnnAgent extends AuthAgent {
 		}
 
 		JSONObject result = new JSONObject();
-		CNN cnn = null;
+		Cnn cnn = null;
 		String label = request.getString("label");
 		JSONObject train = request.getJSONObject("train");
 		if (train != null) {
@@ -103,22 +103,16 @@ public class CnnAgent extends AuthAgent {
 
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 			String parentModelId = null;
-			Integer dataCount = 0;
 			try {
-				if (label != null) {
-					// 有label，找到此label的最近模型
-					List<Model> models = modelDao.selectByLabelModelTemplateId(label, modelTemplate.getModelTemplateId());
-					if (models == null || models.size() == 0) {
-						// 无模型，新建模型
-						cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
-					} else {
-						// 有模型，使用最新模型继续训练
-						cnn = CNN.getInstance(models.get(0).getStructure());
-						parentModelId = models.get(0).getModelId();
-						dataCount = models.get(0).getDataCount();
-					}
+				// 有label，找到此label的最近模型
+				List<Model> models = modelDao.selectByModelTemplateId(modelTemplate.getModelTemplateId());
+				if (models == null || models.size() == 0) {
+					// 无模型，新建模型
+					cnn = Cnn.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
 				} else {
-					cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
+					// 有模型，使用最新模型继续训练
+					cnn = Cnn.getInstance(models.get(0).getStructure());
+					parentModelId = models.get(0).getModelId();
 				}
 			} catch (CnnException e) {
 				throw new MLException("模型创建失败", e);
@@ -155,13 +149,7 @@ public class CnnAgent extends AuthAgent {
 					newModel.setModelTemplateId(modelTemplate.getModelTemplateId());
 					newModel.setParentModelId(parentModelId);
 					parentModelId = newModel.getModelId();
-					newModel.setLabel(label);
-					newModel.setDatasetId(dataset.getDatasetId());
-					dataCount += batchSize * step;
-					newModel.setDataCount(dataCount);
-					newModel.setBatchSize(batchSize);
-					newModel.setBatchCount(step);
-					newModel.setStructure(CNN.getBytes(cnn));
+					newModel.setStructure(Cnn.getBytes(cnn));
 					newModel.setCreateTime(new Date());
 					modelDao.insert(newModel);
 				}
@@ -187,18 +175,14 @@ public class CnnAgent extends AuthAgent {
 			ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 			try {
 				if (cnn == null) {
-					if (label != null) {
-						// 有label，找到此label的最近模型
-						List<Model> models = modelDao.selectByLabelModelTemplateId(label, modelTemplate.getModelTemplateId());
-						if (models == null) {
-							// 无模型，新建模型
-							cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
-						} else {
-							// 有模型，使用最新模型
-							cnn = CNN.getInstance(models.get(0).getStructure());
-						}
+					// 有label，找到此label的最近模型
+					List<Model> models = modelDao.selectByModelTemplateId(modelTemplate.getModelTemplateId());
+					if (models == null) {
+						// 无模型，新建模型
+						cnn = Cnn.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
 					} else {
-						cnn = CNN.getInstance(JSONObject.parseObject(modelTemplate.getScript()));
+						// 有模型，使用最新模型
+						cnn = Cnn.getInstance(models.get(0).getStructure());
 					}
 				}
 			} catch (CnnException e) {
@@ -265,7 +249,7 @@ public class CnnAgent extends AuthAgent {
 		return result;
 	}
 
-	private void stepCheck(String modelTemplateName, CNN cnn, List<Data> trainData, List<Data> testData, Integer count) {
+	private void stepCheck(String modelTemplateName, Cnn cnn, List<Data> trainData, List<Data> testData, Integer count) {
 
 		Double[] trainCorrectRate = null;
 		Double[] testCorrectRate = null;
@@ -278,7 +262,7 @@ public class CnnAgent extends AuthAgent {
 				(testCorrectRate == null ? "" : ("\tTsCR:" + testCorrectRate[0] + "," + testCorrectRate[1])));
 	}
 
-	private Double[] stepCheck(CNN cnn, List<Data> data) {
+	private Double[] stepCheck(Cnn cnn, List<Data> data) {
 
 		if (data == null) return null;
 		Double[] correctRatesWithWeigth = new Double[data.size()];

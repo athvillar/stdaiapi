@@ -10,7 +10,7 @@ import cn.standardai.lib.algorithm.cnn.Layer.LayerType;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.StorageException;
 
-public class CNN {
+public class Cnn {
 
 	// TODO public
 	public List<Layer> layers = new ArrayList<Layer>();
@@ -39,7 +39,7 @@ public class CNN {
 		  ]
 		}
 	 */
-	public static CNN getInstance(JSONObject param) throws CnnException {
+	public static Cnn getInstance(JSONObject param) throws CnnException {
 
 		JSONArray layersJSONArray = param.getJSONArray("layers");
 		if (layersJSONArray == null || layersJSONArray.size() < 3) return null;
@@ -47,7 +47,7 @@ public class CNN {
 			!"FC".equalsIgnoreCase(layersJSONArray.getJSONObject(layersJSONArray.size() - 1).getString("type")))
 				return null;
 
-		CNN instance = new CNN();
+		Cnn instance = new Cnn();
 		for (int i = 0; i < layersJSONArray.size(); i++) {
 			LayerType type = Layer.parseType(layersJSONArray.getJSONObject(i).getString("type"));
 			if (type == null) return null;
@@ -194,7 +194,7 @@ public class CNN {
 		}
 	}
 
-	public static byte[] getBytes(CNN cnn) {
+	public static byte[] getBytes(Cnn cnn) {
 
 		int size = 0;
 		int layerNum = cnn.layers.size();
@@ -214,8 +214,7 @@ public class CNN {
 		int index = 0;
 		for (int i = 0; i < layerNum; i++) {
 			bytes[index++] = layersSerial[i];
-			ByteUtil.putInt(bytes, layersLength[i], index);
-			index += Integer.BYTES;
+			index += ByteUtil.putInt(bytes, layersLength[i], index);
 			System.arraycopy(layersBytes.get(i), 0, bytes, index, layersLength[i]);
 			index += layersLength[i];
 		}
@@ -223,9 +222,9 @@ public class CNN {
 		return bytes;
 	}
 
-	public static CNN getInstance(byte[] bytes) throws StorageException {
+	public static Cnn getInstance(byte[] bytes) throws StorageException {
 
-		CNN cnn = new CNN();
+		Cnn cnn = new Cnn();
 		int index = 0;
 		while (index < bytes.length) {
 			byte layerSirial = bytes[index++];

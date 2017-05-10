@@ -2,7 +2,7 @@ package cn.standardai.lib.algorithm.test;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.lib.algorithm.cnn.CNN;
+import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.cnn.ConvLayer;
 import cn.standardai.lib.algorithm.cnn.FCLayer;
 import cn.standardai.lib.algorithm.cnn.Filter;
@@ -51,7 +51,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		int[] trainingsetNums = new int[] {1, 2, 7, 12, 18, 9, 20, 21};
 		for (int i = 0; i < trainingsetNums.length; i++) {
 			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + trainingsetNums[i] + ".bmp");
@@ -141,7 +141,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		int[] trainingTargets = new int[] {1, 3, 5};
 		int[] trainingsetNums = new int[trainingTargets.length * 15];
 		int[] testsetNums = new int[165 - trainingTargets.length * 15];
@@ -297,7 +297,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		cnn.addData(JSONObject.parseObject(data1));
 		cnn.addData(JSONObject.parseObject(data2));
 		// 训练
@@ -410,7 +410,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		cnn.addData(JSONObject.parseObject(data1));
 		//cnn.addData(JSONObject.parseObject(data2));
 		// 训练
@@ -508,7 +508,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q1.jpg"), new Integer[] {0, 1});
 		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q2.png"), new Integer[] {0, 1});
 		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s1.jpg"), new Integer[] {1, 0});
@@ -556,7 +556,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q1.jpg"), new Integer[] {0, 1, 0, 0});
 		//cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q2.png"), new Integer[] {0, 1});
 		//cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s1.jpg"), new Integer[] {1, 0, 0, 0});
@@ -621,7 +621,7 @@ public class TestCnn {
 		"}";
 
 		// 创建网络
-		CNN cnn = CNN.getInstance(JSONObject.parseObject(param));
+		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		for (int i = 1; i <= 165; i++) {
 			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + i + ".bmp");
 			Integer[] target = new Integer[15];

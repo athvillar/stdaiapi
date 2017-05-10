@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.biz.agent.UserAgent;
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.AuthException;
 import cn.standardai.api.core.exception.StdaiException;
 
 @Controller
@@ -47,14 +48,40 @@ public class UserRestService extends BaseService<UserAgent> {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.POST)
-	public String upgradeUserById(@PathVariable("id") String id, @RequestBody JSONObject request) {
+	public String upgradeUserById(@PathVariable("id") String id, @RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
 		logger.info("stdaiapi-biz 收到更新用户请求(id=" + id + ", request=" + request + ")");
-		UserAgent agent = null;
 		JSONObject result = new JSONObject();
 		try {
-			// TODO 没有token check，安全漏洞
-			agent = new UserAgent();
-			result = agent.upgradeById(id, request);
+			initAgent(headers, UserAgent.class);
+		} catch (AuthException e) {
+			// 验证失败，注册用户
+			UserAgent agent = new UserAgent();
+			try {
+				result = agent.create(id, request);
+			} catch (StdaiException e2) {
+				result = makeResponse(ReturnType.FAILURE, null, e2.getMessage());
+				return result.toString();
+			} catch (Exception e2) {
+				e.printStackTrace();
+				result = makeResponse(ReturnType.FAILURE, null, e2.getMessage());
+				return result.toString();
+			} finally {
+				if (agent != null) agent.done();
+				if (this.agent != null) this.agent.done();
+			}
+			return result.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+			if (agent != null) agent.done();
+			if (this.agent != null) this.agent.done();
+			return result.toString();
+		}
+		try {
+			// 验证成功，更新用户
+			result = agent.updateById(id, request);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -66,7 +93,7 @@ public class UserRestService extends BaseService<UserAgent> {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public String removeUserById(@PathVariable("id") String id, @RequestHeader HttpHeaders headers, String tpParamName) {
+	public String removeUserById(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-biz 收到删除用户请求(id=" + id + ")");
 		JSONObject result = new JSONObject();
 		try {

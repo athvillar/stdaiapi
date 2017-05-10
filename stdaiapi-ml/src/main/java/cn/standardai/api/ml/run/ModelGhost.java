@@ -6,16 +6,19 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import cn.standardai.api.dao.base.DaoHandler;
-import cn.standardai.lib.algorithm.base.DNN;
+import cn.standardai.api.dao.bean.Model;
+import cn.standardai.api.ml.bean.DnnModel.Status;
+import cn.standardai.api.ml.daohandler.ModelHandler;
+import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
 
 public class ModelGhost implements Runnable {
 
-	private DaoHandler daoHandler;
+	private DaoHandler daoHandler = new DaoHandler(true);
 
-	private DNN model;
+	private Dnn model;
 
 	private Object trainX;
 
@@ -37,7 +40,7 @@ public class ModelGhost implements Runnable {
 		return;
 	}
 
-	public void loadModel(DNN model) {
+	public void loadModel(Dnn model) {
 		this.model = model;
 	}
 
@@ -52,8 +55,8 @@ public class ModelGhost implements Runnable {
 
 	@Override
 	public void run() {
-		if (this.model instanceof Lstm) {
 
+		if (this.model instanceof Lstm) {
 			int watchEpoch = (int)modelContext.get("watchEpoch");
 			((Lstm)this.model).setParam(
 					(double)modelContext.get("dth"),
@@ -86,18 +89,26 @@ public class ModelGhost implements Runnable {
 				}
 				System.out.println("finished at epoch " + epoch);
 			}
+
+			ModelHandler mh = new ModelHandler(daoHandler);
+			Model model = new Model();
+			model.setModelId(modelContext.get("modelId").toString());
+			model.setStatus(Status.Normal.status);
+			mh.updateModelById(model);
 		}
+
+		done();
 	}
 
 	private class ModelRunner implements Runnable {
 
-		private DNN model;
+		private Dnn model;
 
 		private Object trainX;
 
 		private Object trainY;
 
-		public ModelRunner (DNN model, Object trainX, Object trainY) {
+		public ModelRunner(Dnn model, Object trainX, Object trainY) {
 			this.model = model;
 			this.trainX = trainX;
 			this.trainY = trainY;
@@ -114,5 +125,9 @@ public class ModelGhost implements Runnable {
 				}
 			}
 		}
+	}
+
+	public void done() {
+		daoHandler.releaseSession();
 	}
 }

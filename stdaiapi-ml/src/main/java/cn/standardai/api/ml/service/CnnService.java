@@ -65,7 +65,7 @@ public class CnnService extends BaseService<CnnAgent> {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public String train(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
+	public String status(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-ml cnn GET start (id:" + id + ")");
 		JSONObject result = null;
 		try {

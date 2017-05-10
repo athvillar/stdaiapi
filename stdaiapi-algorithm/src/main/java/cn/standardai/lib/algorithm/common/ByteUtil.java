@@ -2,11 +2,12 @@ package cn.standardai.lib.algorithm.common;
 
 public class ByteUtil {
 
-	public static void putInt(byte[] bytes, int value, int off) {
+	public static int putInt(byte[] bytes, int value, int off) {
 		for (int i = 0; i < Integer.BYTES; i++) {
 			bytes[off + i] = (byte) value;
 			value = value >> 8;
 		}
+		return Integer.BYTES;
 	}
 
 	public static int getInt(byte[] bytes, int off) {
@@ -18,12 +19,13 @@ public class ByteUtil {
 		return value;
 	}
 
-	public static void putDouble(byte[] bytes, double value, int off) {
+	public static int putDouble(byte[] bytes, double value, int off) {
 		long l = Double.doubleToLongBits(value);
 		for (int i = 0; i < Double.BYTES; i++) {
 			bytes[off + i] = new Long(l).byteValue();
 			l = l >> 8;
 		}
+		return Double.BYTES;
 	}
 
     public static double getDouble(byte[] bytes, int off) {
@@ -45,4 +47,53 @@ public class ByteUtil {
         l |= ((long) bytes[off + 7] << 56);
         return Double.longBitsToDouble(l);
     }
+
+	public static int putDoubles(byte[] bytes, Double[][] ds, int index) {
+		int length = index;
+		if (ds == null || ds[0] == null) return 0;
+		length += ByteUtil.putInt(bytes, ds.length, length);
+		length += ByteUtil.putInt(bytes, ds[0].length, length);
+		for (int i = 0; i < ds.length; i++) {
+			for (int j = 0; j < ds[i].length; j++) {
+				length += ByteUtil.putDouble(bytes, ds[i][j], length);
+			}
+		}
+		return length - index;
+	}
+
+	public static int putDoubles(byte[] bytes, Double[] ds, int index) {
+		int length = index;
+		if (ds == null) return 0;
+		length += ByteUtil.putInt(bytes, ds.length, length);
+		for (int i = 0; i < ds.length; i++) {
+			length += ByteUtil.putDouble(bytes, ds[i], index);
+		}
+		return length - index;
+	}
+
+	public static Double[][] getDouble2s(byte[] bytes, int index) {
+		int m = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		int n = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		Double[][] ds = new Double[m][n];
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				ds[i][j] = ByteUtil.getDouble(bytes, index);
+				index += Double.BYTES;
+			}
+		}
+		return ds;
+	}
+
+	public static Double[] getDouble1s(byte[] bytes, int index) {
+		int m = ByteUtil.getInt(bytes, index);
+		index += Integer.BYTES;
+		Double[] ds = new Double[m];
+		for (int i = 0; i < m; i++) {
+			ds[i] = ByteUtil.getDouble(bytes, index);
+			index += Double.BYTES;
+		}
+		return ds;
+	}
 }

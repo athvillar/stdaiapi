@@ -27,8 +27,11 @@ public interface DatasetDao {
 	@Select({"SELECT * FROM DATASET WHERE USERID = #{userId}"})
 	List<Dataset> selectByUserId(@Param("userId") String userId);
 
-	@Insert({"INSERT INTO DATASET (DATASETID, DATASETNAME, USERID, FORMAT) ",
-		"VALUES (#{param.datasetId}, #{param.datasetName}, #{param.userId}, #{param.format})"})
+	@Insert({"INSERT INTO DATASET (DATASETID, DATASETNAME, USERID, FORMAT, KEYWORDS,",
+		"TITLES, DATADICID1, DATADICID2, DATADICID3, SHAREPOLICY, CREATETIME) ",
+		"VALUES (#{param.datasetId}, #{param.datasetName}, #{param.userId}, #{param.format},",
+		"#{param.keywords}, #{param.titles}, #{param.dataDicId1}, #{param.dataDicId2},",
+		"#{param.dataDicId3}, #{param.sharePolicy}, NOW())"})
 	void insert(@Param("param") Dataset param);
 
 	@Update({"UPDATE DATASET SET DATASETNAME = #{param.datasetName} WHERE DATASETID = #{param.datasetId}"})

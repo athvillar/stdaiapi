@@ -50,7 +50,7 @@ public class TokenAgent extends AuthAgent {
 	public void removeById(String token) throws BizException {
 		TokenDao dao = daoHandler.getMySQLMapper(TokenDao.class);
 		String userId = dao.selectUserIdByToken(token);
-		if (!userId.equals(this.userId)) throw new BizException("没有权限");
+		if (userId == null || !userId.equals(this.userId)) throw new BizException("没有权限");
 		dao.deleteByUserId(userId);
 	}
 }

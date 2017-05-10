@@ -1,16 +1,24 @@
 package cn.standardai.api.dao.bean;
 
+import java.util.Date;
+
 public class Project {
-	
-	private String projectId;//项目编号
-	
-	private String projectName;//项目名称
-	
-	private String costMoney;//所需金额
-	
-	private String raiseMoney;//已筹金额
-	
-	private String releaseDate;//发布时间
+
+	private String projectId;
+
+	private String projectName;
+
+	private String description;
+
+	private String costMoney;
+
+	private String supportedMoney;
+
+	private Date releaseTime;
+
+	private Date startTime;
+
+	private Character status;
 
 	public String getProjectId() {
 		return projectId;
@@ -28,6 +36,14 @@ public class Project {
 		this.projectName = projectName;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getCostMoney() {
 		return costMoney;
 	}
@@ -36,20 +52,35 @@ public class Project {
 		this.costMoney = costMoney;
 	}
 
-	public String getRaiseMoney() {
-		return raiseMoney;
+	public String getSupportedMoney() {
+		return supportedMoney;
 	}
 
-	public void setRaiseMoney(String raiseMoney) {
-		this.raiseMoney = raiseMoney;
+	public void setSupportedMoney(String supportedMoney) {
+		this.supportedMoney = supportedMoney;
 	}
 
-	public String getReleaseDate() {
-		return releaseDate;
+	public Date getReleaseTime() {
+		return releaseTime;
 	}
 
-	public void setReleaseDate(String releaseDate) {
-		this.releaseDate = releaseDate;
+	public void setReleaseTime(Date releaseTime) {
+		this.releaseTime = releaseTime;
 	}
-	
+
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	public Character getStatus() {
+		return status;
+	}
+
+	public void setStatus(Character status) {
+		this.status = status;
+	}	
 }
