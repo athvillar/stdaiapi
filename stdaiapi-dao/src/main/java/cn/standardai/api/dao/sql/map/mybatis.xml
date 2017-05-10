@@ -48,4 +48,8 @@
 			</dataSource>
 		</environment>
 	</environments>
+	
+   <mappers>
+      <mapper resource="cn/standardai/api/dao/sql/map/DataDicData.xml"/>
+   </mappers>
 </configuration>
