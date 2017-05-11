@@ -150,7 +150,7 @@ public class TestJData {
 		Double[][] xs = (Double[][])data.get("xs");
 		Integer[] ys = (Integer[])data.get("ys");
 		Lstm lstm = new Lstm(30, 7, 7);
-		lstm.setParam(1, 0.0001, 1, 1, 1, 10, 1000);
+		//lstm.setParam(1, 0.0001, 1, 1, 1, 10, 1000);
 		lstm.train(xs, ys);
 		System.out.println("Training finished!");
 

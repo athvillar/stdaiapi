@@ -1,12 +1,14 @@
 package cn.standardai.lib.algorithm.rnn.lstm;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.DnnException;
-import cn.standardai.lib.algorithm.exception.StorageException;
+import cn.standardai.lib.algorithm.rnn.lstm.LstmData.Delay;
 import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.function.Softmax;
 import cn.standardai.lib.base.function.activate.Sigmoid;
@@ -39,9 +41,13 @@ public class Lstm extends Dnn {
 
 	private double gainThreshold = 1;
 
-	private int watchEpoch = 1;
+	private Integer epoch;
 
-	private int epoch = 1;
+	private Long trainSecond;
+
+	private Integer batchSize;
+
+	private Integer watchEpoch;
 
 	public DerivableFunction σ = new Sigmoid();
 
@@ -90,17 +96,159 @@ public class Lstm extends Dnn {
 		this.b_y = MatrixUtil.create(inputSize, 0);
 	}
 
-	public void setParam(double dth, double η, double dη, double maxη, double gainThreshold, int watchEpoch, int epoch) {
-		this.dth = dth;
-		this.η = η;
-		this.dη = dη;
-		this.maxη = maxη;
-		this.gainThreshold = gainThreshold;
+	public void setParam(Double dth, Double η, Double dη, Double maxη,
+			Double gainThreshold, Integer epoch, Long trainSecond, Integer batchSize, Integer watchEpoch) {
+		if (dth != null) this.dth = dth;
+		if (dth != null) this.η = η;
+		if (dη != null) this.dη = dη;
+		if (maxη != null) this.maxη = η;
+		if (gainThreshold != null) this.gainThreshold = gainThreshold;
+		this.epoch = epoch;
+		this.trainSecond = trainSecond;
+		this.batchSize = batchSize;
 		this.watchEpoch = watchEpoch;
+		if (this.epoch == null && this.trainSecond == null) this.epoch = 1;
+	}
+
+	public void setLearningRate(Double η) {
+		if (η != null) this.η = η;
+	}
+
+	public void setEpoch(Integer epoch) {
 		this.epoch = epoch;
 	}
 
-	public void train(Double[][] xs, Integer[] ys) throws DnnException {
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public void setWatchEpoch(Integer watchEpoch) {
+		this.watchEpoch = watchEpoch;
+	}
+
+	public void train(LstmData[] data) throws DnnException, MatrixException {
+
+		double gain;
+		long startTime = new Date().getTime();
+		List<Integer> indice = initIndice(data.length);
+		while (true) {
+			epochCount++;
+			boolean watch = false;
+			if (watchEpoch != null && epochCount % watchEpoch == 0) {
+				watch = true;
+			}
+			List<Integer> indiceCopy = new LinkedList<Integer>();
+			indiceCopy.addAll(indice);
+			while (indiceCopy.size() != 0) {
+				Integer[] batchIndice = getNextBatchIndex(indiceCopy, batchSize);
+				gain = train1(data, batchIndice, watch);
+				watch = false;
+			}
+			if (epoch != null && epochCount >= epoch) break;
+			if (trainSecond != null && (new Date().getTime() - startTime) >= trainSecond) break;
+		}
+		// Finish indicator, tell monitor to stop monitoring
+		synchronized (this.indicator) {
+			finish();
+			this.indicator.notify();
+		}
+	}
+
+	public double train1(LstmData[] data, Integer[] indice, boolean watch) throws DnnException, MatrixException {
+
+		Double[] loss = MatrixUtil.create(indice.length, 0.0);
+		LstmDCache dCache = new LstmDCache();
+		for (int i = 0; i < indice.length; i++) {
+			// 1 sample in batch
+			LstmData data1 = data[indice[i]];
+			// Forward
+			List<LstmCache> cache = new ArrayList<LstmCache>();
+			Double[] hOld = MatrixUtil.create(layerSize, 0);
+			Double[] cOld = MatrixUtil.create(layerSize, 0);
+			for (int j = 0; j < data1.x.length; j++) {
+				LstmCache cache1 = forward(data1.x[j], hOld, cOld);
+				cache.add(cache1);
+				hOld = cache1.h.clone();
+				cOld = cache1.c.clone();
+			}
+			if (data1.yDelay == Delay.YES) {
+				for (int j = 0; j < data1.y.length - 1; j++) {
+					LstmCache cache1 = forward(MatrixUtil.create(inputSize, 0.0), hOld, cOld);
+					cache.add(cache1);
+					hOld = cache1.h.clone();
+					cOld = cache1.c.clone();
+				}
+			}
+
+			// cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
+			for (int j = 0; j < data1.y.length; j++) {
+				// 对每一个输出y
+				for (int k = 0; k < outputSize; k++) {
+					if (data1.y[j] == k) {
+						loss[i] += Math.log10(cache.get(cache.size() - data1.y.length + j).a[k]);
+					} else {
+						loss[i] += Math.log10(1 - cache.get(j).a[k]);
+					}
+				}
+			}
+			//loss[i] /= -data1.y.length;
+			loss[i] *= -1;
+
+			dCache.dcNext = MatrixUtil.create(layerSize, 0);
+			dCache.dhNext = MatrixUtil.create(layerSize, 0);
+			for (int j = data1.y.length - 1; j >= 0; j--) {
+				backward(data1.y[j], dCache, cache.get(cache.size() - data1.y.length + j));
+			}
+		}
+		double totalLoss = MatrixUtil.sum(loss) / indice.length;
+		normalizeD(dCache, indice.length);
+		adjectParam(dCache);
+
+		if (watch) {
+			//adjustLearningRate(totalLoss);
+			//MatrixUtil.print(w_i[1]);
+			synchronized (this.indicator) {
+				if (this.containCatalog("loss")) {
+					record("loss", epochCount, totalLoss);
+				}
+				this.indicator.notify();
+			}
+			System.out.println("Epoch: " + epochCount + ", Loss: " + totalLoss);
+		}
+
+		double gain = lastLoss - totalLoss;
+		lastLoss = totalLoss;
+
+		return gain;
+	}
+
+	private void normalizeD(LstmDCache dCache, int size) throws MatrixException {
+		dCache.dwf = MatrixUtil.devide(dCache.dwf, new Double(size));
+		dCache.dbf = MatrixUtil.devide(dCache.dbf, new Double(size));
+		dCache.dwi = MatrixUtil.devide(dCache.dwi, new Double(size));
+		dCache.dbi = MatrixUtil.devide(dCache.dbi, new Double(size));
+		dCache.dwo = MatrixUtil.devide(dCache.dwo, new Double(size));
+		dCache.dbo = MatrixUtil.devide(dCache.dbo, new Double(size));
+		dCache.dwc = MatrixUtil.devide(dCache.dwc, new Double(size));
+		dCache.dbc = MatrixUtil.devide(dCache.dbc, new Double(size));
+		dCache.dwy = MatrixUtil.devide(dCache.dwy, new Double(size));
+		dCache.dby = MatrixUtil.devide(dCache.dby, new Double(size));
+	}
+
+	private void adjectParam(LstmDCache dCache) throws MatrixException {
+		w_f = AdjustParam(w_f, dCache.dwf);
+		b_f = AdjustParam(b_f, dCache.dbf);
+		w_i = AdjustParam(w_i, dCache.dwi);
+		b_i = AdjustParam(b_i, dCache.dbi);
+		w_o = AdjustParam(w_o, dCache.dwo);
+		b_o = AdjustParam(b_o, dCache.dbo);
+		w_c = AdjustParam(w_c, dCache.dwc);
+		b_c = AdjustParam(b_c, dCache.dbc);
+		w_y = AdjustParam(w_y, dCache.dwy);
+		b_y = AdjustParam(b_y, dCache.dby);
+	}
+
+	public void train(Double[][] xs, Integer[] ys) throws DnnException, MatrixException {
 		if (xs.length != ys.length) throw new DnnException("训练数据长度错误");
 		double gain;
 		do {
@@ -114,7 +262,7 @@ public class Lstm extends Dnn {
 		}
 	}
 
-	public double train1(Double[][] xs, Integer[] ys) throws DnnException {
+	public double train1(Double[][] xs, Integer[] ys) throws DnnException, MatrixException {
 
 		Double[] loss = MatrixUtil.create(outputSize, 0);
 		List<LstmCache> cache = new ArrayList<LstmCache>();
@@ -140,11 +288,12 @@ public class Lstm extends Dnn {
 
 		double totalLoss = 0;
 		for (int i = 0; i < loss.length; i++) {
-			loss[i] /= -ys.length;
+			//loss[i] /= -ys.length;
+			loss[i] *= -1;
 			totalLoss += loss[i];
 		}
 
-		if (epochCount % watchEpoch == 0) {
+		if (watchEpoch != null && epochCount % watchEpoch == 0) {
 			//adjustLearningRate(totalLoss);
 			//MatrixUtil.print(w_i[1]);
 			synchronized (this.indicator) {
@@ -153,6 +302,7 @@ public class Lstm extends Dnn {
 				}
 				this.indicator.notify();
 			}
+			System.out.println("Epoch: " + epochCount + ", Loss: " + totalLoss);
 		}
 
 		LstmDCache dCache = new LstmDCache();
@@ -161,6 +311,7 @@ public class Lstm extends Dnn {
 		for (int i = cache.size() - 1; i >= 0; i--) {
 			backward(ys[i], dCache, cache.get(i));
 		}
+		adjectParam(dCache);
 
 		double gain = lastLoss - totalLoss;
 		lastLoss = totalLoss;
@@ -233,7 +384,7 @@ public class Lstm extends Dnn {
 		}
 	}
 
-	public Double[] backward(int y, LstmDCache dCache, LstmCache cache1) throws DnnException {
+	public void backward(int y, LstmDCache dCache, LstmCache cache1) throws DnnException {
 
 		try {
 			Double[] dy = new Double[cache1.a.length];
@@ -286,18 +437,17 @@ public class Lstm extends Dnn {
 			dCache.dcNext = MatrixUtil.elementMultiply(cache1.hf, dc);
 
 			// Upgrade weights & biases
-			w_f = AdjustParam(w_f, dwf);
-			b_f = AdjustParam(b_f, dbf);
-			w_i = AdjustParam(w_i, dwi);
-			b_i = AdjustParam(b_i, dbi);
-			w_o = AdjustParam(w_o, dwo);
-			b_o = AdjustParam(b_o, dbo);
-			w_c = AdjustParam(w_c, dwc);
-			b_c = AdjustParam(b_c, dbc);
-			w_y = AdjustParam(w_y, dwy);
-			b_y = AdjustParam(b_y, dby);
+			dCache.dwf = (dCache.dwf == null) ? dwf : MatrixUtil.plus(dCache.dwf, dwf);
+			dCache.dbf = (dCache.dbf == null) ? dbf : MatrixUtil.plus(dCache.dbf, dbf);
+			dCache.dwi = (dCache.dwi == null) ? dwi : MatrixUtil.plus(dCache.dwi, dwi);
+			dCache.dbi = (dCache.dbi == null) ? dbi : MatrixUtil.plus(dCache.dbi, dbi);
+			dCache.dwo = (dCache.dwo == null) ? dwo : MatrixUtil.plus(dCache.dwo, dwo);
+			dCache.dbo = (dCache.dbo == null) ? dbo : MatrixUtil.plus(dCache.dbo, dbo);
+			dCache.dwc = (dCache.dwc == null) ? dwc : MatrixUtil.plus(dCache.dwc, dwc);
+			dCache.dbc = (dCache.dbc == null) ? dbc : MatrixUtil.plus(dCache.dbc, dbc);
+			dCache.dwy = (dCache.dwy == null) ? dwy : MatrixUtil.plus(dCache.dwy, dwy);
+			dCache.dby = (dCache.dby == null) ? dby : MatrixUtil.plus(dCache.dby, dby);
 
-			return cache1.hc;
 		} catch (MatrixException e) {
 			throw new DnnException(e.getMessage());
 		}
@@ -400,5 +550,28 @@ public class Lstm extends Dnn {
 		index += lstm.w_f.length * lstm.w_f[0].length * Double.BYTES;
 
 		return lstm;
+	}
+
+	private List<Integer> initIndice(int length) {
+		List<Integer> indice = new LinkedList<Integer>();
+		for (int i = 0; i < length; i++) {
+			indice.add(i);
+		}
+		return indice;
+	}
+
+	private Integer[] getNextBatchIndex(List<Integer> indice, Integer number) {
+		if (number == null) number = indice.size();
+		Integer[] batchIndice = new Integer[Math.min(indice.size(), number)];
+		for (int i = 0; i < batchIndice.length; i++) {
+			int randNumber = new Double(Math.random() * indice.size()).intValue();
+			batchIndice[i] = indice.get(randNumber);
+			indice.remove(randNumber);
+		}
+		return batchIndice;
+	}
+
+	public void reset() {
+		this.epochCount = 0;
 	}
 }

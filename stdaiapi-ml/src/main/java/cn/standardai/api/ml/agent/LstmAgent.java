@@ -6,13 +6,16 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.dao.bean.Data;
+import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.ml.bean.DnnModel;
 import cn.standardai.api.ml.daohandler.DataHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
 import cn.standardai.api.ml.exception.MLException;
 import cn.standardai.api.ml.run.ModelGhost;
 import cn.standardai.lib.algorithm.common.DataUtil;
+import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
+import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 
 public class LstmAgent extends AuthAgent {
 
@@ -68,7 +71,7 @@ public class LstmAgent extends AuthAgent {
 	 *   }
 	 * }
 	 */
-	public JSONObject process(String id, JSONObject request) throws MLException {
+	public JSONObject process(String id, JSONObject request) throws MLException, DnnException {
 
 		String parentModelId = request.getString("parent");
 		DnnModel model = mh.findModel(userId, id, id, parentModelId);
@@ -78,6 +81,8 @@ public class LstmAgent extends AuthAgent {
 
 		JSONObject train = request.getJSONObject("train");
 		JSONObject test = request.getJSONObject("test");
+		char[] dic = null;
+		Dataset dataset = null;
 		if (train != null) {
 			// 训练网络
 			ModelGhost mg = new ModelGhost();
@@ -89,31 +94,55 @@ public class LstmAgent extends AuthAgent {
 			mg.loadParam("gainThreshold", train.getDouble("gainThreshold"));
 			mg.loadParam("watchEpoch", train.getInteger("watchEpoch"));
 			mg.loadParam("epoch", train.getInteger("epoch"));
+			mg.loadParam("batchSize", train.getInteger("batchSize"));
+			mg.loadParam("trainSecond", train.getLong("trainSecond"));
 
-			List<Data> dataList = dh.getData(dh.getDataset(userId, train));
+			List<Data> dataList = dh.getData(dataset = dh.getDataset(userId, train));
 			if (dataList == null || dataList.size() == 0) {
 				throw new MLException("找不到数据(datasetName:" + train.getJSONObject("datasetName") +")");
 			}
 			switch (train.getString("datasetUsage")) {
 			case "SGLWD":
-				char[] dic = DataUtil.String2CharDic(dataList.get(0).getData());
-				String yWords = dataList.get(0).getData().substring(1) + dataList.get(0).getData().charAt(0);
-				Double[][] xs = DataUtil.getX(dataList.get(0).getData(), dic);
-				Integer[] ys = DataUtil.getY(yWords, dic);
-				mg.loadData(xs, ys);
+				int trainTime = 1;
+				int epochSize = 800;
+				int xLength = 50;
+				String paragraph = dataList.get(0).getData();
+				dic = DataUtil.String2CharDic(dataList.get(0).getData());
+
+				for (int i2 = 0; i2 < trainTime; i2++) {
+					int totalLength = paragraph.length();
+					LstmData[] data = new LstmData[epochSize];
+					for (int i = 0; i < epochSize; i++) {
+						int start = new Double(Math.random() * (totalLength - xLength)).intValue();
+						String xWords = paragraph.substring(start, start + xLength);
+						String yWords = xWords.substring(1) + paragraph.substring(start + xLength, start + xLength + 1);
+						Double[][] xs = getX(xWords, dic);
+						Integer[] ys = getY(yWords, dic);
+						data[i] = new LstmData(xs, ys, LstmData.Delay.NO);
+					}
+					// TODO delete this
+					mg.loadDic(dic);
+
+					mg.loadData(data);
+				}
+
 				break;
 			default:
 				throw new MLException("不支持的数据使用方式(datasetUsage:" + train.getString("datasetUsage") + ")");
 			}
 
 			Boolean newFlag = request.getBoolean("new");
+			// TODO
+			model.setDataDicId(null);
+			model.setDatasetId(dataset.getDatasetId());
 			mh.upgradeModel2Training(model, newFlag);
 
 			// 训练
 			mg.invoke();
+
 		} else if (test != null) {
 			String hint = test.getString("hint");
-			Double[][] predictXs = getX("I", dic);
+			Double[][] predictXs = getX(hint, dic);
 			Integer[] predictYs = lstm.predict(predictXs, 100);
 			for (int i = 0; i < predictYs.length; i++) {
 				System.out.print(dic[predictYs[i]]);
@@ -144,5 +173,44 @@ public class LstmAgent extends AuthAgent {
 	public JSONObject status(String id) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private static Integer[] getY(String words, char[] dic) {
+		char[] c = words.toCharArray();
+		return getY(c, dic);
+	}
+
+	private static Integer[] getY(char[] words, char[] dic) {
+		Integer[] result = new Integer[words.length];
+		for (int i = 0; i < result.length; i++) {
+			for (int j = 0; j < dic.length; j++) {
+				if (words[i] == dic[j]) {
+					result[i] = j;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	private static Double[][] getX(String words, char[] dic) {
+		char[] c = words.toCharArray();
+		return getX(c, dic);
+	}
+
+	private static Double[][] getX(char[] words, char[] dic) {
+		Double[][] result = new Double[words.length][dic.length];
+		for (int i = 0; i < result.length; i++) {
+			Double[] result1 = new Double[dic.length];
+			for (int j = 0; j < dic.length; j++) {
+				if (words[i] == dic[j]) {
+					result1[j] = 1.0;
+				} else {
+					result1[j] = 0.0;
+				}
+			}
+			result[i] = result1;
+		}
+		return result;
 	}
 }

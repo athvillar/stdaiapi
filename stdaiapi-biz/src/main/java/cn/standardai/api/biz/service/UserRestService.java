@@ -73,7 +73,6 @@ public class UserRestService extends BaseService<UserAgent> {
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
-			if (agent != null) agent.done();
 			if (this.agent != null) this.agent.done();
 			return result.toString();
 		}

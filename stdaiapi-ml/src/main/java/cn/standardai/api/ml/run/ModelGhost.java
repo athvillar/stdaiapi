@@ -13,6 +13,8 @@ import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
+import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
+import cn.standardai.lib.base.matrix.MatrixException;
 
 public class ModelGhost implements Runnable {
 
@@ -20,11 +22,12 @@ public class ModelGhost implements Runnable {
 
 	private Dnn model;
 
-	private Object trainX;
-
-	private Object trainY;
+	private LstmData[] data;
 
 	private Map<String, Object> modelContext;
+
+	// TODO delete this
+	private char[] dic;
 
 	public ModelGhost() {
 		this.modelContext = new HashMap<String, Object>();
@@ -40,13 +43,16 @@ public class ModelGhost implements Runnable {
 		return;
 	}
 
+	public void loadDic(char[] dic) {
+		this.dic = dic;
+	}
+
 	public void loadModel(Dnn model) {
 		this.model = model;
 	}
 
-	public void loadData(Object trainX, Object trainY) {
-		this.trainX = trainX;
-		this.trainY = trainY;
+	public void loadData(LstmData[] data) {
+		this.data = data;
 	}
 
 	public void loadParam(String key, Object value) {
@@ -57,16 +63,18 @@ public class ModelGhost implements Runnable {
 	public void run() {
 
 		if (this.model instanceof Lstm) {
-			int watchEpoch = (int)modelContext.get("watchEpoch");
+			Integer watchEpoch = (Integer)modelContext.get("watchEpoch");
 			((Lstm)this.model).setParam(
-					(double)modelContext.get("dth"),
-					(double)modelContext.get("learningRate"),
-					(double)modelContext.get("maxLearningRate"),
-					(double)modelContext.get("dth"),
-					(double)modelContext.get("gainThreshold"),
-					watchEpoch,
-					(int)modelContext.get("epoch"));
-			ModelRunner mr = new ModelRunner(this.model, this.trainX, this.trainY);
+					(Double)modelContext.get("dth"),
+					(Double)modelContext.get("learningRate"),
+					(Double)modelContext.get("dLearningRate"),
+					(Double)modelContext.get("maxLearningRate"),
+					(Double)modelContext.get("gainThreshold"),
+					(Integer)modelContext.get("epoch"),
+					(Long)modelContext.get("trainSecond"),
+					(Integer)modelContext.get("batchSize"),
+					watchEpoch);
+			ModelRunner mr = new ModelRunner(this.model, this.data);
 
 			synchronized (this.model.indicator) {
 				Executor exec = Executors.newSingleThreadExecutor();
@@ -90,11 +98,27 @@ public class ModelGhost implements Runnable {
 				System.out.println("finished at epoch " + epoch);
 			}
 
+			String hint = " ";
+			Double[][] predictXs = getX(hint, dic);
+			Integer[] result;
+			try {
+				result = ((Lstm)this.model).predict(predictXs, 100);
+				for (int i = 0; i < result.length; i++) {
+					System.out.print(dic[result[i]]);
+				}
+				System.out.println("");
+			} catch (DnnException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 			ModelHandler mh = new ModelHandler(daoHandler);
 			Model model = new Model();
 			model.setModelId(modelContext.get("modelId").toString());
+			model.setStructure(Lstm.getBytes((Lstm)this.model));
 			model.setStatus(Status.Normal.status);
-			mh.updateModelById(model);
+			mh.updateModelStructureById(model);
 		}
 
 		done();
@@ -104,23 +128,19 @@ public class ModelGhost implements Runnable {
 
 		private Dnn model;
 
-		private Object trainX;
+		private LstmData[] data;
 
-		private Object trainY;
-
-		public ModelRunner(Dnn model, Object trainX, Object trainY) {
+		public ModelRunner(Dnn model, LstmData[] data) {
 			this.model = model;
-			this.trainX = trainX;
-			this.trainY = trainY;
+			this.data = data;
 		}
 
 		@Override
 		public void run() {
 			if (this.model instanceof Lstm) {
 				try {
-					((Lstm)this.model).train((Double[][])trainX, (Integer[])trainY);
-				} catch (DnnException e) {
-					// TODO Auto-generated catch block
+					((Lstm)this.model).train(data);
+				} catch (DnnException | MatrixException e) {
 					e.printStackTrace();
 				}
 			}
@@ -129,5 +149,27 @@ public class ModelGhost implements Runnable {
 
 	public void done() {
 		daoHandler.releaseSession();
+	}
+
+	// TODO delete this
+	private static Double[][] getX(String words, char[] dic) {
+		char[] c = words.toCharArray();
+		return getX(c, dic);
+	}
+
+	private static Double[][] getX(char[] words, char[] dic) {
+		Double[][] result = new Double[words.length][dic.length];
+		for (int i = 0; i < result.length; i++) {
+			Double[] result1 = new Double[dic.length];
+			for (int j = 0; j < dic.length; j++) {
+				if (words[i] == dic[j]) {
+					result1[j] = 1.0;
+				} else {
+					result1[j] = 0.0;
+				}
+			}
+			result[i] = result1;
+		}
+		return result;
 	}
 }

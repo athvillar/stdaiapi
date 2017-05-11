@@ -114,6 +114,8 @@ public class ModelHandler {
 			model.setUserId(dnnModel.getUserId());
 			model.setParentModelId(dnnModel.getModelId());
 			model.setStatus(Status.Training.status);
+			model.setDatasetId(dnnModel.getDatasetId());
+			model.setDataDicId(dnnModel.getDataDicId());
 			model.setStructure(null);
 			model.setCreateTime(new Date());
 			model.setUpdateTime(new Date());
@@ -142,8 +144,13 @@ public class ModelHandler {
 		}
 	}
 
-	public void updateModelById(Model model) {
+	public void updateModelStatusById(Model model) {
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		modelDao.updateStatusById(model);
+	}
+
+	public void updateModelStructureById(Model model) {
+		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
+		modelDao.updateStructureById(model);
 	}
 }

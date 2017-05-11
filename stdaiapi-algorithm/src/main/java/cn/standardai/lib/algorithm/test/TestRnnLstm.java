@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
+import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 
 public class TestRnnLstm {
 
@@ -13,8 +14,8 @@ public class TestRnnLstm {
 	 */
 	public static void main(String[] args) {
 		try {
-			testSentence();
-			//testAction();
+			test121_sentence();
+			//testM21_count1();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -37,6 +38,12 @@ public class TestRnnLstm {
 			+ "flush all the toxins and fat."
 	};
 
+	private static String[][] word12M = {
+			{"1","one"},
+			{"2","two"},
+			{"3","three"},
+	};
+
 	private static Integer[][] action = {
 			{ 1, 1, 1 },
 			{ 1, 1, 6 },
@@ -51,42 +58,92 @@ public class TestRnnLstm {
 			{ 1, 4, 5 }
 	};
 
-	public static void testSentence() throws Exception {
+	public static void test121_sentence() throws Exception {
 
 		//char[] dic = getEnglishDic();
 		//char[] dic = getNumberDic();
-		String xWords = words[2];
-		char[] dic = getDic(xWords);
-		String yWords = xWords.substring(1) + " ";
-		Double[][] xs = getX(xWords, dic);
-		Integer[] ys = getY(yWords, dic);
+		int trainTime = 3000;
+		int epochSize = 40;
+		int xLength = 13;
+		String paragraph = words[2];
+		char[] dic = getDic(paragraph);
+		Lstm lstm = new Lstm(10, dic.length, dic.length);
 
-		Lstm lstm = new Lstm(30, dic.length, dic.length);
-		lstm.setParam(1, 0.001121, 1, 1, 1, 50, 10000);
-		//lstm.setParam(5, 0.1, 1, 0.1, 1, 1500);
-		lstm.train(xs, ys);
+		for (int i2 = 0; i2 < trainTime; i2++) {
+			int totalLength = paragraph.length();
+			LstmData[] data = new LstmData[epochSize];
+			for (int i = 0; i < epochSize; i++) {
+				int start = new Double(Math.random() * (totalLength - xLength)).intValue();
+				String xWords = paragraph.substring(start, start + xLength);
+				String yWords = xWords.substring(1) + paragraph.substring(start + xLength, start + xLength + 1);
+				Double[][] xs = getX(xWords, dic);
+				Integer[] ys = getY(yWords, dic);
+				data[i] = new LstmData(xs, ys, LstmData.Delay.NO);
+			}
+
+			lstm.reset();
+			lstm.setLearningRate(0.3);
+			lstm.setEpoch(2);
+			lstm.setBatchSize(epochSize);
+			lstm.setWatchEpoch(2);
+			lstm.train(data);
+		}
+
 		System.out.println("Training finished!");
 
-		String hint = xWords.substring(0, 1);
-		Double[][] predictXs = getX("I", dic);
+		String hint = " ";
+		Double[][] predictXs = getX(hint, dic);
 		Integer[] result = lstm.predict(predictXs, 100);
 		for (int i = 0; i < result.length; i++) {
 			System.out.print(dic[result[i]]);
 		}
 		System.out.println("");
+	}
 
-		predictXs = getX(" ", dic);
-		result = lstm.predict(predictXs, 100);
-		for (int i = 0; i < result.length; i++) {
-			System.out.print(dic[result[i]]);
-		}
-		System.out.println("");
+	public static void testM21_count1() throws Exception {
 
-		predictXs = getX("sunjing", dic);
-		result = lstm.predict(predictXs, 100);
-		for (int i = 0; i < result.length; i++) {
-			System.out.print(dic[result[i]]);
+		char[] dic = getNumberDic();
+		String[] xString = new String[20];
+		LstmData[] data = new LstmData[xString.length];
+		for (int i = 0; i < xString.length; i++) {
+			xString[i] = new Double(Math.random()).toString().replace('-', '9').replace('.', '9').substring(2, 7);
+			Double[][] xs = getX(xString[i], dic);
+			Integer[] ys = new Integer[] {0};
+			//for (char c : xString[i].toCharArray()) {
+			//	if (c == '1') ys[0]++;
+			//}
+			ys[0] = Integer.parseInt(xString[i].substring(2, 3));
+			//if (ys[0] > 10) ys[0] = 10;
+			LstmData data1 = new LstmData(xs, ys, LstmData.Delay.YES);
+			data[i] = data1;
 		}
+
+		Lstm lstm = new Lstm(4, dic.length, dic.length);
+		lstm.setLearningRate(0.4);
+		lstm.setEpoch(1000);
+		lstm.setBatchSize(20);
+		lstm.setWatchEpoch(5);
+		lstm.train(data);
+		System.out.println("Training finished!");
+
+		double correct = 0.0;
+		int totalPredictCount = 100;
+		String[] predictXString = new String[totalPredictCount];
+		for (int i = 0; i < predictXString.length; i++) {
+			predictXString[i] = new Double(Math.random()).toString().replace('-', '9').replace('.', '9').substring(2, 7);
+			Double[][] predictXs = getX(predictXString[i], dic);
+			Integer[] predictYs = new Integer[] {0};
+			//for (char c : predictXString[i].toCharArray()) {
+			//	if (c == '1') predictYs[0]++;
+			//}
+			predictYs[0] = Integer.parseInt(predictXString[i].substring(2, 3));
+			//if (predictYs[0] > 10) predictYs[0] = 10;
+			Integer[] result = lstm.predict(predictXs, 1);
+			if (result[0] == predictYs[0]) {
+				correct++;
+			}
+		}
+		System.out.println("Correct rate: " + correct / totalPredictCount);
 	}
 
 	private static char[] getDic(String s) {
@@ -103,28 +160,6 @@ public class TestRnnLstm {
 			i++;
 		}
 		return dic;
-	}
-
-	public static void testAction() throws Exception {
-
-		char[] dic = getEnglishDic();
-		//char[] dic = getNumberDic();
-		String xWords = words[0];
-		String yWords = xWords.substring(1) + "X";
-		Double[][] xs = getX(xWords, dic);
-		Integer[] ys = getY(yWords, dic);
-
-		Lstm lstm = new Lstm(80, dic.length, dic.length);
-		lstm.setParam(4, 1, 0.9, 1, 0.85, 1, 500);
-		lstm.train(xs, ys);
-		System.out.println("Training finished!");
-
-		String hint = xWords.substring(0, 5);
-		Double[][] predictXs = getX(hint, dic);
-		Integer[] result = lstm.predict(predictXs, xWords.length());
-		for (int i = 0; i < result.length; i++) {
-			System.out.print(dic[result[i]]);
-		}
 	}
 
 	private static Integer[] getY(String words, char[] dic) {

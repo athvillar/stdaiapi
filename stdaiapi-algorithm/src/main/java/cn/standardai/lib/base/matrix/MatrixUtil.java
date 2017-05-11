@@ -33,6 +33,28 @@ public class MatrixUtil {
 		return sum;
 	}
 
+	public static double sum(Double[] m) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		double sum = 0.0;
+		for (int i = 0; i < m.length; i++) {
+			sum += m[i];
+		}
+		return sum;
+	}
+
+	public static double sum(Double[][] m) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		double sum = 0.0;
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[i].length; j++) {
+				sum += m[i][j];
+			}
+		}
+		return sum;
+	}
+
 	public static Double[][] plus(Double[][] m1, Double[][] m2) throws MatrixException {
 
 		if (m1 == null || m2 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
@@ -229,6 +251,19 @@ public class MatrixUtil {
 			for (int j = 0; j < m[0].length; j++) {
 				result[i][j] = m[i][j] / devider;
 			}
+		}
+
+		return result;
+	}
+
+	public static Double[] devide(Double[] m, double devider) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		if (devider == 0) throw new MatrixException(MatrixException.ERRMSG.ZERO_DEVIDE);
+
+		Double[] result = new Double[m.length];
+		for (int i = 0; i < m.length; i++) {
+			result[i] = m[i] / devider;
 		}
 
 		return result;

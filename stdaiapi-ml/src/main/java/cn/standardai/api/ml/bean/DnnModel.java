@@ -43,6 +43,8 @@ public class DnnModel {
 
 	private String datasetId;
 
+	private String dataDicId;
+
 	private byte[] structure;
 
 	private Date createTime;
@@ -117,5 +119,13 @@ public class DnnModel {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+	public String getDataDicId() {
+		return dataDicId;
+	}
+
+	public void setDataDicId(String dataDicId) {
+		this.dataDicId = dataDicId;
 	}
 }

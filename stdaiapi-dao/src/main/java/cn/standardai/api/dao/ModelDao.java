@@ -30,12 +30,18 @@ public interface ModelDao {
 	List<Model> selectByIdModelTemplateId(@Param("modelId") String modelId, @Param("modelTemplateId") String modelTemplateId);
 
 	@Insert({"INSERT INTO MODEL ",
-		"(MODELID, MODELTEMPLATEID, USERID, PARENTMODELID, STRUCTURE, CREATETIME, UPDATETIME) ",
-		"VALUES (#{param.modelId}, #{param.modelTemplateId}, #{param.userId}, #{param.parentModelId}, #{param.structure}, #{param.createTime}, #{param.createTime})"})
+		"(MODELID, MODELTEMPLATEID, USERID, STATUS, DATASETID, DATADICID,",
+		"PARENTMODELID, STRUCTURE, CREATETIME, UPDATETIME) ",
+		"VALUES (#{param.modelId}, #{param.modelTemplateId}, #{param.userId}, ",
+		"#{param.status}, #{param.datasetId}, #{param.dataDicId},",
+		"#{param.parentModelId}, #{param.structure}, #{param.createTime}, #{param.createTime})"})
 	void insert(@Param("param") Model param);
 
 	@Select({"UPDATE MODEL SET STATUS = #{param.status}, UPDATETIME = NOW() WHERE MODELID = #{param.modelId}"})
 	List<Model> updateStatusById(@Param("param") Model param);
+
+	@Select({"UPDATE MODEL SET STRUCTURE = #{param.structure}, STATUS = #{param.status}, UPDATETIME = NOW() WHERE MODELID = #{param.modelId}"})
+	List<Model> updateStructureById(@Param("param") Model param);
 
 	@Delete({"DELETE FROM MODEL WHERE MODELID = #{modelId}"})
 	void deleteById(@Param("modelId") String modelId);
