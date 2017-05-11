@@ -2,22 +2,14 @@ package cn.standardai.api.dao;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-
 import cn.standardai.api.dao.bean.DataDicData;
+import cn.standardai.api.dao.bean.Image;
 
 public interface DataDicDataDao {
 
-	@Select({"SELECT * FROM DATADICDATA WHERE DATADICID = #{dataDicId}"})
-	List<DataDicData> selectById(@Param("dataDicId") String dataDicId);
+	List<DataDicData> selectById(String dataDicId);
 
-	@Insert({"INSERT INTO DATADICDATA (DATADICID, KEY, VALUE) ",
-		"VALUES (#{param.dataDicId}, #{param.key}, #{param.value})"})
-	void insert(@Param("param") DataDicData param);
+	void insert(List<Image> param);
 
-	@Delete({"DELETE FROM DATADICDATA WHERE DATADICID = #{dataDicId}"})
-	void deleteByDatasetId(@Param("dataDicId") String dataDicId);
+	void deleteByDatasetId(String dataDicId);
 }
