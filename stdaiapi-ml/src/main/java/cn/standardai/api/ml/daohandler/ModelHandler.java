@@ -153,4 +153,10 @@ public class ModelHandler {
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		modelDao.updateStructureById(model);
 	}
+
+	public List<Model> findModels(String userId) {
+		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
+		List<Model> models = modelDao.selectByUserId(userId);
+		return models;
+	}
 }

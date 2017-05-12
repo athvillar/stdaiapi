@@ -86,4 +86,24 @@ public class LstmService extends BaseService<LstmAgent> {
 		logger.info("stdaiapi-ml lstm/" + id + " GET finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
+
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String list(@RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-ml lstm GET start");
+		JSONObject result = null;
+		try {
+			initAgent(headers, LstmAgent.class);
+			result = agent.list();
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-ml lstm GET finish (response:" + result.toJSONString() + ")");
+		return result.toString();
+	}
 }

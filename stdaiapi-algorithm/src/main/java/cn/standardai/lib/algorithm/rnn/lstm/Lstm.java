@@ -99,7 +99,7 @@ public class Lstm extends Dnn {
 	public void setParam(Double dth, Double η, Double dη, Double maxη,
 			Double gainThreshold, Integer epoch, Long trainSecond, Integer batchSize, Integer watchEpoch) {
 		if (dth != null) this.dth = dth;
-		if (dth != null) this.η = η;
+		if (η != null) this.η = η;
 		if (dη != null) this.dη = dη;
 		if (maxη != null) this.maxη = η;
 		if (gainThreshold != null) this.gainThreshold = gainThreshold;
@@ -110,12 +110,20 @@ public class Lstm extends Dnn {
 		if (this.epoch == null && this.trainSecond == null) this.epoch = 1;
 	}
 
+	public void setDth(Double dth) {
+		if (dth != null) this.dth = dth;
+	}
+
 	public void setLearningRate(Double η) {
 		if (η != null) this.η = η;
 	}
 
 	public void setEpoch(Integer epoch) {
 		this.epoch = epoch;
+	}
+
+	public void setTrainSecond(Long trainSecond) {
+		this.trainSecond = trainSecond;
 	}
 
 	public void setBatchSize(Integer batchSize) {
@@ -196,9 +204,21 @@ public class Lstm extends Dnn {
 
 			dCache.dcNext = MatrixUtil.create(layerSize, 0);
 			dCache.dhNext = MatrixUtil.create(layerSize, 0);
+			for (int j = cache.size() - 1; j >= 0; j--) {
+				if (cache.size() - j - 1 < data1.y.length) {
+					backward(data1.y[j - cache.size() + data1.y.length], dCache, cache.get(j));
+				} else {
+					backward(null, dCache, cache.get(j));
+				}
+			}
+			/*
 			for (int j = data1.y.length - 1; j >= 0; j--) {
 				backward(data1.y[j], dCache, cache.get(cache.size() - data1.y.length + j));
 			}
+			for (int j = cache.size() - data1.y.length - 1; j >= 0; j--) {
+				backward(null, dCache, cache.get(j));
+			}
+			*/
 		}
 		double totalLoss = MatrixUtil.sum(loss) / indice.length;
 		normalizeD(dCache, indice.length);
@@ -222,7 +242,7 @@ public class Lstm extends Dnn {
 		return gain;
 	}
 
-	private void normalizeD(LstmDCache dCache, int size) throws MatrixException {
+	public void normalizeD(LstmDCache dCache, int size) throws MatrixException {
 		dCache.dwf = MatrixUtil.devide(dCache.dwf, new Double(size));
 		dCache.dbf = MatrixUtil.devide(dCache.dbf, new Double(size));
 		dCache.dwi = MatrixUtil.devide(dCache.dwi, new Double(size));
@@ -235,7 +255,7 @@ public class Lstm extends Dnn {
 		dCache.dby = MatrixUtil.devide(dCache.dby, new Double(size));
 	}
 
-	private void adjectParam(LstmDCache dCache) throws MatrixException {
+	public void adjectParam(LstmDCache dCache) throws MatrixException {
 		w_f = AdjustParam(w_f, dCache.dwf);
 		b_f = AdjustParam(b_f, dCache.dbf);
 		w_i = AdjustParam(w_i, dCache.dwi);
@@ -384,14 +404,23 @@ public class Lstm extends Dnn {
 		}
 	}
 
-	public void backward(int y, LstmDCache dCache, LstmCache cache1) throws DnnException {
+	public void backward(Integer y, LstmDCache dCache, LstmCache cache1) throws DnnException {
 
 		try {
-			Double[] dy = new Double[cache1.a.length];
-			for (int i = 0; i < dy.length; i++) {
-				dy[i] = cache1.a[i];
+			Double[] dy = null;
+			if (y == null) {
+				dy = MatrixUtil.create(cache1.a.length, 0.0);
+				//dy = new Double[cache1.a.length];
+				//for (int i = 0; i < dy.length; i++) {
+				//	dy[i] = cache1.a[i] - 1;
+				//}
+			} else {
+				dy = new Double[cache1.a.length];
+				for (int i = 0; i < dy.length; i++) {
+					dy[i] = cache1.a[i];
+				}
+				dy[y] -= 1;
 			}
-			dy[y] -= 1;
 
 			Double[][] dwy = MatrixUtil.multiplyTC(cache1.h, dy);
 			Double[] dby = dy.clone();

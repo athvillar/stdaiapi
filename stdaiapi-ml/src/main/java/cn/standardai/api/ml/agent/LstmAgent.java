@@ -2,11 +2,14 @@ package cn.standardai.api.ml.agent;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Dataset;
+import cn.standardai.api.dao.bean.Model;
 import cn.standardai.api.ml.bean.DnnModel;
 import cn.standardai.api.ml.daohandler.DataHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
@@ -211,6 +214,19 @@ public class LstmAgent extends AuthAgent {
 			}
 			result[i] = result1;
 		}
+		return result;
+	}
+
+	public JSONObject list() {
+		List<Model> models = mh.findModels(userId);
+		JSONObject result = new JSONObject();
+		JSONArray jsonModels = new JSONArray();
+		for (int i = 0; i < models.size(); i++) {
+			JSONObject jsonModel = new JSONObject();
+			jsonModel = (JSONObject) JSON.toJSON(models.get(0));
+			jsonModels.add(jsonModel);
+		}
+		result.put("models", jsonModels);
 		return result;
 	}
 }

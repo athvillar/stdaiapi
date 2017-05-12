@@ -23,6 +23,9 @@ public interface ModelDao {
 	@Select({"SELECT * FROM MODEL WHERE MODELID = #{modelId}"})
 	Model selectById(@Param("modelId") String modelId);
 
+	@Select({"SELECT * FROM MODEL WHERE USERID = #{userId}"})
+	List<Model> selectByUserId(@Param("userId") String userId);
+
 	@Select({"SELECT * FROM MODEL WHERE MODELTEMPLATEID = #{modelTemplateId} ORDER BY CREATETIME DESC"})
 	List<Model> selectByModelTemplateId(@Param("modelTemplateId") String modelTemplateId);
 

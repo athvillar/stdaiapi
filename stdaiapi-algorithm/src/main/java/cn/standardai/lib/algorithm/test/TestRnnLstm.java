@@ -14,8 +14,8 @@ public class TestRnnLstm {
 	 */
 	public static void main(String[] args) {
 		try {
-			test121_sentence();
-			//testM21_count1();
+			//test121_sentence();
+			testM21_count1();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -44,30 +44,16 @@ public class TestRnnLstm {
 			{"3","three"},
 	};
 
-	private static Integer[][] action = {
-			{ 1, 1, 1 },
-			{ 1, 1, 6 },
-			{ 1, 2, 1 },
-			{ 1, 2, 6 },
-			{ 1, 3, 1 },
-			{ 1, 3, 6 },
-			{ 1, 3, 5 },
-			{ 1, 3, 4 },
-			{ 1, 4, 1 },
-			{ 1, 4, 6 },
-			{ 1, 4, 5 }
-	};
-
 	public static void test121_sentence() throws Exception {
 
 		//char[] dic = getEnglishDic();
 		//char[] dic = getNumberDic();
-		int trainTime = 3000;
-		int epochSize = 40;
+		int trainTime = 1;
+		int epochSize = 6;
 		int xLength = 13;
-		String paragraph = words[2];
+		String paragraph = words[0];
 		char[] dic = getDic(paragraph);
-		Lstm lstm = new Lstm(10, dic.length, dic.length);
+		Lstm lstm = new Lstm(3, dic.length, dic.length);
 
 		for (int i2 = 0; i2 < trainTime; i2++) {
 			int totalLength = paragraph.length();
@@ -82,10 +68,10 @@ public class TestRnnLstm {
 			}
 
 			lstm.reset();
-			lstm.setLearningRate(0.3);
-			lstm.setEpoch(2);
+			lstm.setLearningRate(2.0);
+			lstm.setEpoch(20000);
 			lstm.setBatchSize(epochSize);
-			lstm.setWatchEpoch(2);
+			lstm.setWatchEpoch(10);
 			lstm.train(data);
 		}
 
@@ -119,8 +105,8 @@ public class TestRnnLstm {
 		}
 
 		Lstm lstm = new Lstm(4, dic.length, dic.length);
-		lstm.setLearningRate(0.4);
-		lstm.setEpoch(1000);
+		lstm.setLearningRate(0.1);
+		lstm.setEpoch(5000);
 		lstm.setBatchSize(20);
 		lstm.setWatchEpoch(5);
 		lstm.train(data);
