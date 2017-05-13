@@ -35,8 +35,9 @@ public class ModelGhost implements Runnable {
 
 	public void invoke() {
 
-		this.model.addIndicator("loss");
-		this.model.addIndicator("correctRate");
+		this.model.addIndicator("trainLoss");
+		this.model.addIndicator("testLoss");
+		this.model.addIndicator("verifyLoss");
 		Executor exec = Executors.newSingleThreadExecutor();
 		exec.execute(this);
 

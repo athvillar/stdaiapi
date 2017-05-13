@@ -14,4 +14,13 @@ public class VectorUtil {
 		}
 		return result;
 	}
+
+	public static Double[] subVector(Double[] v, int start, int len) throws MatrixException {
+
+		Double[] result = new Double[len];
+		for (int i = 0; i < len; i++) {
+			result[i] = v[start + i];
+		}
+		return result;
+	}
 }

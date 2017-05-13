@@ -14,7 +14,7 @@ import cn.standardai.lib.base.function.base.DerivableFunction;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 
-public class DeepLstm extends Dnn {
+public class DeepLstm extends Dnn<LstmData> {
 
 	private Lstm[] lstms;
 
@@ -36,16 +36,18 @@ public class DeepLstm extends Dnn {
 
 	public DerivableFunction tanh = new Tanh();
 
-	public DeepLstm(int[] layerSize, int inputSize, int outputSize, int middleSize) {
+	public DeepLstm(int[] layerSize, int inputSize, int outputSize) {
+		this.inputSize = inputSize;
+		this.outputSize = outputSize;
 		this.lstms = new Lstm[layerSize.length];
-		this.lstms[0] = new Lstm(layerSize[0], inputSize, middleSize);
-		this.lstms[1] = new Lstm(layerSize[1], middleSize, outputSize);
+		this.lstms[0] = new Lstm(layerSize[0], inputSize, 0);
+		this.lstms[1] = new Lstm(layerSize[1], layerSize[0], outputSize);
 	}
 
-	public void train(LstmData[] data) throws DnnException, MatrixException {
+	public void train() throws DnnException, MatrixException {
 
 		long startTime = new Date().getTime();
-		List<Integer> indice = initIndice(data.length);
+		List<Integer> indice = initIndice(getTrainDataCnt());
 		while (true) {
 			epochCount++;
 			boolean watch = false;
@@ -56,7 +58,7 @@ public class DeepLstm extends Dnn {
 			indiceCopy.addAll(indice);
 			while (indiceCopy.size() != 0) {
 				Integer[] batchIndice = getNextBatchIndex(indiceCopy, batchSize);
-				train1(data, batchIndice, watch);
+				train1(batchIndice, watch);
 				watch = false;
 			}
 			if (epoch != null && epochCount >= epoch) break;
@@ -69,114 +71,161 @@ public class DeepLstm extends Dnn {
 		}
 	}
 
-	public void train1(LstmData[] data, Integer[] indice, boolean watch) throws DnnException, MatrixException {
+	public void train1(Integer[] indice, boolean watch) throws DnnException, MatrixException {
 
-		Double[] loss = MatrixUtil.create(indice.length, 0.0);
-		LstmDCache dCache = new LstmDCache();
-		for (int i = 0; i < indice.length; i++) {
+		Double[] trainLoss = MatrixUtil.create(indice.length, 0.0);
+		LstmDCache dCacheTrain1 = new LstmDCache();
+		LstmDCache dCacheTrain2 = new LstmDCache();
+		for (int trainDataIndex = 0; trainDataIndex < indice.length; trainDataIndex++) {
 			// 1 sample in batch
-			LstmData data1 = data[indice[i]];
+			LstmData trainData1 = getTrainData(indice[trainDataIndex]);
 			// Forward lstm1
-			List<LstmCache> cache1 = new ArrayList<LstmCache>();
-			Double[] hOld1 = MatrixUtil.create(lstms[0].layerSize, 0);
-			Double[] cOld1 = MatrixUtil.create(lstms[0].layerSize, 0);
-			for (int j = 0; j < data1.x.length; j++) {
-				LstmCache cache11 = lstms[0].forward(data1.x[j], hOld1, cOld1);
-				cache1.add(cache11);
-				hOld1 = cache11.h.clone();
-				cOld1 = cache11.c.clone();
+			List<LstmCache> cacheTrain1 = new ArrayList<LstmCache>();
+			Double[] hOldTrain1 = MatrixUtil.create(lstms[0].layerSize, 0);
+			Double[] cOldTrain1 = MatrixUtil.create(lstms[0].layerSize, 0);
+			for (int j = 0; j < trainData1.x.length; j++) {
+				LstmCache cacheTemp = lstms[0].forward(trainData1.x[j], hOldTrain1, cOldTrain1);
+				cacheTrain1.add(cacheTemp);
+				hOldTrain1 = cacheTemp.h.clone();
+				cOldTrain1 = cacheTemp.c.clone();
 			}
 
 			// Forward lstm2
-			List<LstmCache> cache2 = new ArrayList<LstmCache>();
-			Double[] hOld2 = MatrixUtil.create(lstms[1].layerSize, 0);
-			Double[] cOld2 = MatrixUtil.create(lstms[1].layerSize, 0);
-			for (int j = 0; j < cache1.size(); j++) {
-				LstmCache cache21 = lstms[1].forward(cache1.get(j).h, hOld2, cOld2);
-				cache2.add(cache21);
-				hOld2 = cache21.h.clone();
-				cOld2 = cache21.c.clone();
+			List<LstmCache> cacheTrain2 = new ArrayList<LstmCache>();
+			Double[] hOldTrain2 = MatrixUtil.create(lstms[1].layerSize, 0);
+			Double[] cOldTrain2 = MatrixUtil.create(lstms[1].layerSize, 0);
+			for (int j = 0; j < cacheTrain1.size(); j++) {
+				LstmCache cacheTemp = lstms[1].forward(cacheTrain1.get(j).h, hOldTrain2, cOldTrain2);
+				cacheTrain2.add(cacheTemp);
+				hOldTrain2 = cacheTemp.h.clone();
+				cOldTrain2 = cacheTemp.c.clone();
 			}
 
-			// cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
-			for (int j = 0; j < data1.y.length; j++) {
-				// 对每一个输出y
-				for (int k = 0; k < outputSize; k++) {
-					if (data1.y[j] == k) {
-						loss[i] += Math.log10(cache2.get(cache2.size() - data1.y.length + j).a[k]);
-					} else {
-						loss[i] += Math.log10(1 - cache2.get(j).a[k]);
+			if (watch) {
+				// Loss for train, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
+				for (int j = 0; j < trainData1.y.length; j++) {
+					// 对每一个输出y
+					for (int k = 0; k < outputSize; k++) {
+						if (trainData1.y[j] == k) {
+							trainLoss[trainDataIndex] += Math.log10(cacheTrain2.get(cacheTrain2.size() - trainData1.y.length + j).a[k]);
+						} else {
+							trainLoss[trainDataIndex] += Math.log10(1 - cacheTrain2.get(j).a[k]);
+						}
 					}
 				}
+				trainLoss[trainDataIndex] *= -1;
 			}
-			//loss[i] /= -data1.y.length;
-			loss[i] *= -1;
 
 			// back propagation lstm2
-			dCache.dcNext = MatrixUtil.create(lstms[1].layerSize, 0);
-			dCache.dhNext = MatrixUtil.create(lstms[1].layerSize, 0);
-			for (int j = cache2.size() - 1; j >= 0; j--) {
-				if (cache2.size() - j - 1 < data1.y.length) {
-					lstms[1].backward(data1.y[j - cache2.size() + data1.y.length], dCache, cache2.get(j));
+			dCacheTrain2.dcNext = MatrixUtil.create(lstms[1].layerSize, 0);
+			dCacheTrain2.dhNext = MatrixUtil.create(lstms[1].layerSize, 0);
+			Double[][] dhCacheTrain = new Double[cacheTrain2.size()][];
+			for (int j = cacheTrain2.size() - 1; j >= 0; j--) {
+				if (cacheTrain2.size() - j - 1 < trainData1.y.length) {
+					lstms[1].backward(trainData1.y[j - cacheTrain2.size() + trainData1.y.length], dCacheTrain2, cacheTrain2.get(j), null);
 				} else {
-					lstms[1].backward(null, dCache, cache2.get(j));
+					lstms[1].backward(null, dCacheTrain2, cacheTrain2.get(j), null);
 				}
+				dhCacheTrain[j] = dCacheTrain2.dxUpper;
 			}
 
 			// back propagation lstm1
-			dCache.dcNext = MatrixUtil.create(lstms[0].layerSize, 0);
-			dCache.dhNext = MatrixUtil.create(lstms[0].layerSize, 0);
-			for (int j = cache1.size() - 1; j >= 0; j--) {
-				if (cache1.size() - j - 1 < data1.y.length) {
-					lstms[0].backward(data1.y[j - cache1.size() + data1.y.length], dCache, cache1.get(j));
+			dCacheTrain1.dcNext = MatrixUtil.create(lstms[0].layerSize, 0);
+			dCacheTrain1.dhNext = MatrixUtil.create(lstms[0].layerSize, 0);
+			for (int j = cacheTrain1.size() - 1; j >= 0; j--) {
+				if (cacheTrain1.size() - j - 1 < trainData1.y.length) {
+					lstms[0].backward(trainData1.y[j - cacheTrain1.size() + trainData1.y.length], dCacheTrain1, cacheTrain1.get(j), dhCacheTrain[j]);
 				} else {
-					lstms[0].backward(null, dCache, cache1.get(j));
+					lstms[0].backward(null, dCacheTrain1, cacheTrain1.get(j), dhCacheTrain[j]);
 				}
 			}
 		}
-		double totalLoss = MatrixUtil.sum(loss) / indice.length;
-		lstms[1].normalizeD(dCache, indice.length);
-		lstms[1].adjectParam(dCache);
-		lstms[0].normalizeD(dCache, indice.length);
-		lstms[0].adjectParam(dCache);
+		lstms[1].normalizeD(dCacheTrain2, indice.length);
+		lstms[1].adjectParam(dCacheTrain2);
+		lstms[0].normalizeD(dCacheTrain1, indice.length);
+		lstms[0].adjectParam(dCacheTrain1);
 
 		if (watch) {
-			//adjustLearningRate(totalLoss);
-			//MatrixUtil.print(w_i[1]);
+			Double[] testLoss = MatrixUtil.create(getTestDataCnt(), 0.0);
+			for (int testIndex = 0; testIndex < getTestDataCnt(); testIndex++) {
+				// 1 sample in test data
+				LstmData testData1 = getTestData(testIndex);
+
+				// Forward lstm1
+				List<LstmCache> cacheTest1 = new ArrayList<LstmCache>();
+				Double[] hOldTest1 = MatrixUtil.create(lstms[0].layerSize, 0);
+				Double[] cOldTest1 = MatrixUtil.create(lstms[0].layerSize, 0);
+				for (int j = 0; j < testData1.x.length; j++) {
+					LstmCache cacheTemp = lstms[0].forward(testData1.x[j], hOldTest1, cOldTest1);
+					cacheTest1.add(cacheTemp);
+					hOldTest1 = cacheTemp.h.clone();
+					cOldTest1 = cacheTemp.c.clone();
+				}
+
+				// Forward lstm2
+				List<LstmCache> cacheTest2 = new ArrayList<LstmCache>();
+				Double[] hOldTest2 = MatrixUtil.create(lstms[1].layerSize, 0);
+				Double[] cOldTest2 = MatrixUtil.create(lstms[1].layerSize, 0);
+				for (int j = 0; j < cacheTest1.size(); j++) {
+					LstmCache cacheTemp = lstms[1].forward(cacheTest1.get(j).h, hOldTest2, cOldTest2);
+					cacheTest2.add(cacheTemp);
+					hOldTest2 = cacheTemp.h.clone();
+					cOldTest2 = cacheTemp.c.clone();
+				}
+
+				// Loss for test, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
+				for (int j = 0; j < testData1.y.length; j++) {
+					// 对每一个输出y
+					for (int k = 0; k < outputSize; k++) {
+						if (testData1.y[j] == k) {
+							testLoss[testIndex] += Math.log10(cacheTest2.get(cacheTest2.size() - testData1.y.length + j).a[k]);
+						} else {
+							testLoss[testIndex] += Math.log10(1 - cacheTest2.get(j).a[k]);
+						}
+					}
+				}
+				testLoss[testIndex] *= -1;
+			}
+
+			double totalTrainLoss = MatrixUtil.sum(trainLoss) / indice.length;
+			double totalTestLoss = MatrixUtil.sum(testLoss) / getTestDataCnt();
 			synchronized (this.indicator) {
-				if (this.containCatalog("loss")) {
-					record("loss", epochCount, totalLoss);
+				if (this.containCatalog("trainLoss")) {
+					record("trainLoss", epochCount, totalTrainLoss);
+				}
+				if (this.containCatalog("testLoss")) {
+					record("testLoss", epochCount, totalTestLoss);
 				}
 				this.indicator.notify();
 			}
-			System.out.println("Epoch: " + epochCount + ", Loss: " + totalLoss);
+			System.out.println("Epoch: " + epochCount + ", Train loss: " + totalTrainLoss + ", Test loss: " + totalTestLoss);
 		}
 
 		return;
 	}
 
-	public Integer[] predict(Double[][] xs, int step) throws DnnException {
+	public Integer[] predict(Double[][] xs) throws DnnException {
 
 		// Forward lstm1
 		List<LstmCache> cache1 = new ArrayList<LstmCache>();
 		Double[] hOld1 = MatrixUtil.create(lstms[0].layerSize, 0);
 		Double[] cOld1 = MatrixUtil.create(lstms[0].layerSize, 0);
-		for (int j = 0; j < xs.length - 1; j++) {
-			LstmCache cache11 = lstms[0].forward(xs[j], hOld1, cOld1);
-			cache1.add(cache11);
-			hOld1 = cache11.h.clone();
-			cOld1 = cache11.c.clone();
+		for (int j = 0; j < xs.length; j++) {
+			LstmCache cacheTemp = lstms[0].forward(xs[j], hOld1, cOld1);
+			cache1.add(cacheTemp);
+			hOld1 = cacheTemp.h.clone();
+			cOld1 = cacheTemp.c.clone();
 		}
 
 		// Forward lstm2
 		Double[] hOld2 = MatrixUtil.create(lstms[1].layerSize, 0);
 		Double[] cOld2 = MatrixUtil.create(lstms[1].layerSize, 0);
-		Integer[] result = new Integer[step];
+		Integer[] result = new Integer[cache1.size()];
 		for (int i = 0; i < cache1.size(); i++) {
-			LstmCache cache21 = lstms[1].forward(cache1.get(i).h, hOld2, cOld2);
-			hOld2 = cache21.h.clone();
-			cOld2 = cache21.c.clone();
-			Roulette r = new Roulette(cache21.a);
+			LstmCache cacheTemp = lstms[1].forward(cache1.get(i).h, hOld2, cOld2);
+			hOld2 = cacheTemp.h.clone();
+			cOld2 = cacheTemp.c.clone();
+			Roulette r = new Roulette(cacheTemp.a);
 			result[i] = r.getY();
 		}
 
@@ -215,18 +264,22 @@ public class DeepLstm extends Dnn {
 	}
 
 	public void setEpoch(Integer epoch) {
+		this.epoch = epoch;
 		for (int i = 0; i < lstms.length; i++) lstms[i].setEpoch(epoch);
 	}
 
 	public void setTrainSecond(Long trainSecond) {
+		this.trainSecond = trainSecond;
 		for (int i = 0; i < lstms.length; i++) lstms[i].setTrainSecond(trainSecond);
 	}
 
 	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
 		for (int i = 0; i < lstms.length; i++) lstms[i].setBatchSize(batchSize);
 	}
 
 	public void setWatchEpoch(Integer watchEpoch) {
+		this.watchEpoch = watchEpoch;
 		for (int i = 0; i < lstms.length; i++) lstms[i].setWatchEpoch(watchEpoch);
 	}
 }

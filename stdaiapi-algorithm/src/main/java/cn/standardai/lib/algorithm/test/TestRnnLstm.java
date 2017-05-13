@@ -4,8 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cn.standardai.lib.algorithm.exception.DnnException;
+import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
+import cn.standardai.lib.base.matrix.MatrixException;
 
 public class TestRnnLstm {
 
@@ -15,15 +18,306 @@ public class TestRnnLstm {
 	public static void main(String[] args) {
 		try {
 			//test121_sentence();
-			testM21_count1();
+			//testM21_count1();
+			//testDeep_reverse();
+			testDeep_translate();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	private static void testDeep_translate() throws DnnException, MatrixException {
+
+		String[][] data = {
+				{"i am a", "我是a"},
+				{"b likes d", "b爱d"},
+				{"d am b", "d是b"},
+				{"c likes b", "c爱b"},
+				{"i am c", "我是c"},
+				{"i likes b", "我爱b"},
+				{"a likes b", "a爱b"},
+				{"i am d", "我是d"},
+				{"d likes b", "d爱b"},
+		};
+		int epochSize = data.length;
+		int testCount = data.length - epochSize;
+
+		Map<String, Integer> dic1 = getEnglishDic(data, 0);
+		Map<String, Integer> dic2 = getChineseDic(data, 1);
+		DeepLstm deepLstm = new DeepLstm(new int[] {15, 15}, new Double(Math.log(dic1.size()) / Math.log(2)).intValue() + 1, dic2.size());
+
+		LstmData[] lstmData = new LstmData[epochSize];
+		for (int i = 0; i < epochSize; i++) {
+			String xWords = data[i][0];
+			String yWords = data[i][1];
+			Double[][] xs = getX(xWords, dic1, " ");
+			Integer[] ys = getY(yWords, dic2, null);
+			lstmData[i] = new LstmData(xs, ys, LstmData.Delay.NO);
+		}
+
+		deepLstm.reset();
+		deepLstm.setLearningRate(0.2);
+		deepLstm.setEpoch(3000);
+		deepLstm.setBatchSize(epochSize);
+		deepLstm.setWatchEpoch(10);
+		deepLstm.mountData(lstmData);
+		deepLstm.train();
+
+		System.out.println("Training finished!");
+
+		double correctCount = 0.0;
+		double correctCount2 = 0.0;
+		Integer totalCount = 0;
+		//for (int i = 0; i < testCount; i++) {
+		for (int i = 0; i < data.length; i++) {
+			String xWords = data[i][0];
+			String yWords = data[i][1];
+			Double[][] xs = getX(xWords, dic1, " ");
+			Integer[] ys = getY(yWords, dic2, null);
+			Integer[] result = deepLstm.predict(xs);
+			for (int j = 0; j < ys.length; j++) {
+				totalCount++;
+				if (ys[j] == result[j]) {
+					correctCount++;
+				}
+			}
+			for (int j = 0; j < result.length; j++) {
+				for (int k = 0; k < ys.length; k++) {
+					if (ys[k] == result[j]) {
+						correctCount2++;
+						break;
+					}
+				}
+			}
+			String resultWords = parse(result, dic2, null);
+			System.out.println("(Origin) " + xWords + " \t-> " + resultWords + " <-\t " + yWords + " (Expected)");
+		}
+		System.out.println("Position correct rate: " + (correctCount / totalCount * 100) + "%");
+		System.out.println("Existance correct rate: " + (correctCount2 / totalCount * 100) + "%");
+	}
+
+	private static Map<String, Integer> getEnglishDic(String[][] data, int index) {
+		Map<String, Integer> dic = new HashMap<String, Integer>();
+		Integer count = 0;
+		for (int i = 0; i < data.length; i++) {
+			String sentence = data[i][index];
+			String[] words = sentence.split(" ");
+			for (int j = 0; j < words.length; j++) {
+				if (dic.containsKey(words[j])) {
+					continue;
+				} else {
+					dic.put(words[j], count++);
+				}
+			}
+		}
+		return dic;
+	}
+
+	private static Map<String, Integer> getChineseDic(String[][] data, int index) {
+		Map<String, Integer> dic = new HashMap<String, Integer>();
+		Integer count = 0;
+		for (int i = 0; i < data.length; i++) {
+			String sentence = data[i][index];
+			String[] words = new String[sentence.length()];
+			for (int j = 0; j < words.length; j++) {
+				words[j] = sentence.substring(j, j + 1);
+				if (dic.containsKey(words[j])) {
+					continue;
+				} else {
+					dic.put(words[j], count++);
+				}
+			}
+		}
+		return dic;
+	}
+
+	private static String parse(Integer[] values, Map<String, Integer> dic, String split) {
+		String result = "";
+		for (int i = 0; i < values.length; i++) {
+			for (Entry<String, Integer> entry : dic.entrySet()) {
+				if (values[i] == entry.getValue()) {
+					result += entry.getKey();
+					if (split != null) result += split;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	private static Double[][] getX(String sentence, Map<String, Integer> dic, String split) {
+		String[] words;
+		if (split != null) {
+			words = sentence.split(" ");
+		} else {
+			words = new String[sentence.length()];
+			for (int j = 0; j < words.length; j++) {
+				words[j] = sentence.substring(j, j + 1);
+			}
+		}
+		int width = new Double(Math.log(dic.size()) / Math.log(2)).intValue() + 1;
+		Double[][] x = new Double[words.length][width];
+		for (int i = 0; i < words.length; i++) {
+			int index = 0;
+			for (Entry<String, Integer> entry : dic.entrySet()) {
+				if (entry.getKey().equals(words[i])) {
+					index = entry.getValue();
+					break;
+				}
+			}
+			for (int j = 0; j < width; j++) {
+				if (index % 2 == 1) {
+					x[i][j] = 1.0;
+					index -= 1;
+				} else {
+					x[i][j] = 0.0;
+				}
+				index /= 2;
+			}
+ 		}
+		return x;
+	}
+
+	private static Integer[] getY(String sentence, Map<String, Integer> dic, String split) {
+		String[] words;
+		if (split != null) {
+			words = sentence.split(" ");
+		} else {
+			words = new String[sentence.length()];
+			for (int j = 0; j < words.length; j++) {
+				words[j] = sentence.substring(j, j + 1);
+			}
+		}
+		Integer[] y = new Integer[words.length];
+		for (int i = 0; i < words.length; i++) {
+			y[i] = 0;
+			for (Entry<String, Integer> entry : dic.entrySet()) {
+				if (entry.getKey().equals(words[i])) {
+					y[i] = entry.getValue();
+					break;
+				}
+			}
+ 		}
+		return y;
+	}
+
+	private static Map<String, Integer> getLanguageDic1() {
+		Map<String, Integer> dic = new HashMap<String, Integer>();
+		dic.put("i", 0);
+		dic.put("am", 1);
+		dic.put("a", 2);
+		dic.put("you", 3);
+		dic.put("are", 4);
+		dic.put("b", 5);
+		return dic;
+	}
+
+	private static Map<String, Integer> getLanguageDic2() {
+		Map<String, Integer> dic = new HashMap<String, Integer>();
+		dic.put("wo", 0);
+		dic.put("shi", 1);
+		dic.put("a", 2);
+		dic.put("ni", 3);
+		dic.put("b", 4);
+		return dic;
+	}
+
+	private static void testDeep_reverse() throws DnnException, MatrixException {
+		//char[] dic = getNumberDic();
+		//char[] dic = getEnglishDic();
+		int trainTime = 1;
+		int testCount = 1000;
+		int epochSize = 50;
+		int xLength = 4;
+		//String paragraph = words[0];
+		//char[] dic = getDic(paragraph);
+		char[] dic = getEnglishDic();
+		DeepLstm deepLstm = new DeepLstm(new int[] {7, 4}, dic.length, dic.length);
+		//int totalLength = paragraph.length();
+
+		for (int i2 = 0; i2 < trainTime; i2++) {
+			LstmData[] data = new LstmData[epochSize];
+			for (int i = 0; i < epochSize; i++) {
+				//int start = new Double(Math.random() * (totalLength - xLength)).intValue();
+				String xWords = random(dic, xLength);
+				String yWords = reverse(xWords) + '\0';
+				xWords += '\0';
+				Double[][] xs = getX(xWords, dic);
+				Integer[] ys = getY(yWords, dic);
+				data[i] = new LstmData(xs, ys, LstmData.Delay.NO);
+			}
+
+			deepLstm.reset();
+			deepLstm.setLearningRate(1.0);
+			deepLstm.setEpoch(20000);
+			deepLstm.setBatchSize(epochSize);
+			deepLstm.setWatchEpoch(20);
+			deepLstm.mountData(data);
+			deepLstm.train();
+		}
+
+		System.out.println("Training finished!");
+
+		//String paragraph2 = words[3];
+		//int totalLength2 = paragraph2.length();
+		double correctCount = 0.0;
+		double correctCount2 = 0.0;
+		for (int i = 0; i < testCount; i++) {
+			//int start = new Double(Math.random() * (totalLength2 - xLength)).intValue();
+			//String xWords = paragraph2.substring(start, start + xLength);
+			String xWords = random(dic, xLength);
+			String yWords = reverse(xWords);
+			xWords += '\0';
+			Double[][] xs = getX(xWords, dic);
+			Integer[] ys = getY(yWords, dic);
+			Integer[] result = deepLstm.predict(xs);
+			for (int j = 0; j < xLength; j++) {
+				if (ys[j] == result[j]) {
+					correctCount++;
+				}
+			}
+			for (int j = 0; j < xLength; j++) {
+				for (int k = 0; k < xLength; k++) {
+					if (ys[k] == result[j]) {
+						correctCount2++;
+						break;
+					}
+				}
+			}
+			//String resultWords = parse(result, dic);
+			//System.out.println("(Origin) " + xWords.substring(0, 4) + " -> " + resultWords + " <- " + yWords + " (Expected)");
+		}
+		System.out.println("Position correct rate: " + (correctCount / (testCount * xLength)));
+		System.out.println("Existance correct rate: " + (correctCount2 / (testCount * xLength)));
+	}
+
+	private static String random(char[] dic, int len) {
+		String result = "";
+		for (int i = 0; i < len; i++) {
+			result += dic[new Double(Math.random() * dic.length).intValue()];
+		}
+		return result;
+	}
+
+	private static String parse(Integer[] keys, char[] dic) {
+		String result = "";
+		for (int i = 0; i < keys.length; i++) {
+			result += dic[keys[i]];
+		}
+		return result;
+	}
+
+	private static String reverse(String x) {
+		String y = new String();
+		for (int i = x.length() - 1; i >= 0; i--) {
+			y += x.charAt(i);
+		}
+		return y;
+	}
+
 	private static String[] words = {
 			"abcdefgh123456789abcdefgh123456789abcdefgh123456789abcdefgh123456789",
-			"i have a dream, i like sunjing, she loves me too, we are happy.",
+			"i have a dream, we are happy.",
 			"Yes, you’ve guessed it right-water. Our bodies consist of about 70% "
 			+ "of water and therefore we cannot live without it. Whenever you hear about water, "
 			+ "you surely connect it to purification and wellbeing of the body. The Mayo Clinic "
@@ -35,7 +329,8 @@ public class TestRnnLstm {
 			+ "Here are the three most important benefits water makes for our bodies: Aid in losing weight, "
 			+ "in which it satisfies our thirst which most people mix with hunger and overeat. for that "
 			+ "matter it is suggested to drink a glass of water half an hour before a meal Boosting your "
-			+ "flush all the toxins and fat."
+			+ "flush all the toxins and fat.",
+			"acecfhg392167a9d0b7edhgg91722f"
 	};
 
 	private static String[][] word12M = {
@@ -139,12 +434,13 @@ public class TestRnnLstm {
 				cMap.put(c, "");
 			}
 		}
-		char[] dic = new char[cMap.size()];
+		char[] dic = new char[cMap.size() + 1];
 		int i = 0;
 		for (Entry<Character, String> e : cMap.entrySet()) {
 			dic[i] = e.getKey();
 			i++;
 		}
+		dic[dic.length - 1] = '\0';
 		return dic;
 	}
 
@@ -188,7 +484,7 @@ public class TestRnnLstm {
 	}
 
 	private static char[] getEnglishDic() {
-		char[] d = new char[56];
+		char[] d = new char[57];
 		int i = 0;
 		for (char c = 'a'; c <= 'z'; c++) {
 			d[i] = c;
@@ -202,6 +498,7 @@ public class TestRnnLstm {
 		d[53] = ',';
 		d[54] = '.';
 		d[55] = '\'';
+		d[56] = '\0';
 		return d;
 	}
 

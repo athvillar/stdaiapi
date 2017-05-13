@@ -6,6 +6,8 @@ public class LstmDCache {
 
 	public Double[] dhNext;
 
+	public Double[] dxUpper;
+
 	public Double[][] dwf;
 
 	public Double[] dbf;

@@ -3,7 +3,9 @@ package cn.standardai.lib.algorithm.rnn.lstm;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LstmData {
+import cn.standardai.lib.algorithm.base.DnnData;
+
+public class LstmData extends DnnData {
 
 	public enum Delay {
 		YES, NO

@@ -91,9 +91,10 @@ public class Lstm extends Dnn {
 		this.w_o = MatrixUtil.random(layerSize + inputSize, layerSize, -1.0 / Math.sqrt((layerSize + inputSize) * layerSize), 1.0 / Math.sqrt((layerSize + inputSize) * layerSize));
 		//this.w_o = MatrixUtil.random(layerSize + inputSize, layerSize, 0, 1.0 / Math.sqrt((layerSize + inputSize)));
 		this.b_o = MatrixUtil.create(layerSize, 0);
-		this.w_y = MatrixUtil.random(layerSize, inputSize, -1.0 / Math.sqrt(inputSize * layerSize), 1.0 / Math.sqrt(layerSize * inputSize));
+		this.w_y = MatrixUtil.random(layerSize, outputSize, -1.0 / Math.sqrt(outputSize * layerSize), 1.0 / Math.sqrt(layerSize * outputSize));
+		//this.w_y = MatrixUtil.random(layerSize, inputSize, -1.0 / Math.sqrt(inputSize * layerSize), 1.0 / Math.sqrt(layerSize * inputSize));
 		//this.w_y = MatrixUtil.random(layerSize, inputSize, 0, 1.0 / Math.sqrt(layerSize));
-		this.b_y = MatrixUtil.create(inputSize, 0);
+		this.b_y = MatrixUtil.create(outputSize, 0);
 	}
 
 	public void setParam(Double dth, Double η, Double dη, Double maxη,
@@ -206,9 +207,9 @@ public class Lstm extends Dnn {
 			dCache.dhNext = MatrixUtil.create(layerSize, 0);
 			for (int j = cache.size() - 1; j >= 0; j--) {
 				if (cache.size() - j - 1 < data1.y.length) {
-					backward(data1.y[j - cache.size() + data1.y.length], dCache, cache.get(j));
+					backward(data1.y[j - cache.size() + data1.y.length], dCache, cache.get(j), null);
 				} else {
-					backward(null, dCache, cache.get(j));
+					backward(null, dCache, cache.get(j), null);
 				}
 			}
 			/*
@@ -329,7 +330,7 @@ public class Lstm extends Dnn {
 		dCache.dcNext = MatrixUtil.create(layerSize, 0);
 		dCache.dhNext = MatrixUtil.create(layerSize, 0);
 		for (int i = cache.size() - 1; i >= 0; i--) {
-			backward(ys[i], dCache, cache.get(i));
+			backward(ys[i], dCache, cache.get(i), null);
 		}
 		adjectParam(dCache);
 
@@ -404,27 +405,35 @@ public class Lstm extends Dnn {
 		}
 	}
 
-	public void backward(Integer y, LstmDCache dCache, LstmCache cache1) throws DnnException {
+	public void backward(Integer y, LstmDCache dCache, LstmCache cache1, Double[] dhUpper) throws DnnException {
 
 		try {
-			Double[] dy = null;
-			if (y == null) {
-				dy = MatrixUtil.create(cache1.a.length, 0.0);
-				//dy = new Double[cache1.a.length];
-				//for (int i = 0; i < dy.length; i++) {
-				//	dy[i] = cache1.a[i] - 1;
-				//}
-			} else {
-				dy = new Double[cache1.a.length];
-				for (int i = 0; i < dy.length; i++) {
-					dy[i] = cache1.a[i];
+			Double[][] dwy = null;
+			Double[] dby = null;
+			Double[] dh = null;
+			if (dhUpper == null) {
+				Double[] dy = null;
+				if (y == null) {
+					dy = MatrixUtil.create(cache1.a.length, 0.0);
+					//dy = new Double[cache1.a.length];
+					//for (int i = 0; i < dy.length; i++) {
+					//	dy[i] = cache1.a[i] - 1;
+					//}
+				} else {
+					dy = new Double[cache1.a.length];
+					for (int i = 0; i < dy.length; i++) {
+						dy[i] = cache1.a[i];
+					}
+					dy[y] -= 1;
 				}
-				dy[y] -= 1;
+				dwy = MatrixUtil.multiplyTC(cache1.h, dy);
+				dby = dy.clone();
+				dh = MatrixUtil.plus(MatrixUtil.multiplyCT(dy, w_y), dCache.dhNext);
+			} else {
+				dwy = MatrixUtil.create(this.layerSize, this.outputSize, 0.0);
+				dby = MatrixUtil.create(this.outputSize, 0.0);
+				dh = dhUpper.clone();
 			}
-
-			Double[][] dwy = MatrixUtil.multiplyTC(cache1.h, dy);
-			Double[] dby = dy.clone();
-			Double[] dh = MatrixUtil.plus(MatrixUtil.multiplyCT(dy, w_y), dCache.dhNext);
 
 			// Gradient for ho in h = ho * tanh(c)
 			Double[] dho = MatrixUtil.elementMultiply(this.tanh.getY(cache1.c), dh, this.σ.getDerivativeY(cache1.ho));
@@ -462,6 +471,7 @@ public class Lstm extends Dnn {
 			Double[] dX = MatrixUtil.plus(dXf, dXi, dXo, dXc);
 
 			dCache.dhNext = VectorUtil.subVector(dX, layerSize);
+			dCache.dxUpper = VectorUtil.subVector(dX, layerSize, inputSize);
 			// Gradient for c_old in c = hf * c_old + hi * hc
 			dCache.dcNext = MatrixUtil.elementMultiply(cache1.hf, dc);
 
