@@ -51,5 +51,6 @@
 	
    <mappers>
       <mapper resource="cn/standardai/api/dao/sql/map/DataDicData.xml"/>
+      <mapper resource="cn/standardai/api/dao/sql/map/Image.xml"/>
    </mappers>
 </configuration>

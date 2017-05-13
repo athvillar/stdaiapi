@@ -29,6 +29,12 @@ public class PropertyConfig {
 		private String db;
 		
 		private String uploadTemp;
+		
+		private String imagePath;
+		
+		private Integer imageWidth;
+		
+		private Integer imageHeight;
 
 		public String getParkId() {
 			return parkId;
@@ -52,6 +58,30 @@ public class PropertyConfig {
 
 		public void setUploadTemp(String uploadTemp) {
 			this.uploadTemp = uploadTemp;
+		}
+
+		public String getImagePath() {
+			return imagePath;
+		}
+
+		public void setImagePath(String imagePath) {
+			this.imagePath = imagePath;
+		}
+
+		public Integer getImageWidth() {
+			return imageWidth;
+		}
+
+		public void setImageWidth(Integer imageWidth) {
+			this.imageWidth = imageWidth;
+		}
+
+		public Integer getImageHeight() {
+			return imageHeight;
+		}
+
+		public void setImageHeight(Integer imageHeight) {
+			this.imageHeight = imageHeight;
 		}
 	}
 

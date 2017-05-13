@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 图片像素块 -->
+<mapper namespace="cn.standardai.api.dao.ImageDao">
+	<select id="selectByImageType" parameterType="java.lang.String" resultType="cn.standardai.api.dao.bean.Image">
+		SELECT * 
+		  FROM IMAGE 
+		 WHERE 
+		 	IMAGETYPE = #{imageType}
+	</select>
+	
+	<insert id="insert" parameterType="java.util.List">
+		INSERT INTO 
+			IMAGE (IMAGETYPE, XAXIS, YAXIS, COLOR, USERID, STATUS, CREATETIME)
+		VALUES
+		<foreach item="item" collection="list" separator=",">
+			(#{item.imageType}, #{item.xAxis}, #{item.yAxis}, #{item.color}, #{item.userId}, #{item.status}, #{item.createTime})
+		</foreach>
+	</insert>
+
+	<update id="updateByAxis" parameterType="cn.standardai.api.dao.bean.Image">
+		UPDATE IMAGE 
+		   SET COLOR = #{color} 
+		 WHERE 
+		 	XAXIS = #{xAxis} AND 
+		 	YAXIS = #{yAxis}
+	</update>
+
+	<delete id="deleteByAxis" parameterType="cn.standardai.api.dao.bean.Image">
+		DELETE FROM IMAGE 
+		 WHERE 
+		 	XAXIS = #{xAxis} AND 
+		 	YAXIS = #{yAxis}
+	</delete>
+</mapper>

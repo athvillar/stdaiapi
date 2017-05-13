@@ -14,7 +14,7 @@
 			DATADICDATA (DATADICID, KEY, VALUE) 
 		VALUES
 		<foreach item="item" collection="list" separator=",">
-			(#{item.dataDicId}, #{item.key}, #{item.value})
+			(#{item.dataDicId}, #{item.kii}, #{item.value})
 		</foreach>
 	</insert>
 
