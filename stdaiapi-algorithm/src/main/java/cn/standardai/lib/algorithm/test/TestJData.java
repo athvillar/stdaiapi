@@ -151,7 +151,7 @@ public class TestJData {
 		Integer[] ys = (Integer[])data.get("ys");
 		Lstm lstm = new Lstm(30, 7, 7);
 		//lstm.setParam(1, 0.0001, 1, 1, 1, 10, 1000);
-		lstm.train(xs, ys);
+		//lstm.train(xs, ys);
 		System.out.println("Training finished!");
 
 		// 预测
@@ -165,13 +165,13 @@ public class TestJData {
 		List<List<Double[]>> testXs = (List<List<Double[]>>)data.get("testXs");
 		List<List<Integer>> testYs = (List<List<Integer>>)data.get("testYs");
 		for (int i = 0; i < testXs.size(); i++) {
-			Integer[] result = lstm.predict(testXs.get(i).toArray(new Double[testXs.get(i).size() - 1][]), 1);
-			if (result[0] == testYs.get(i).get(testYs.get(i).size() - 1)) {
-				System.out.println("Correct! " + result[0]);
-				cRate += 1.0;
-			} else {
-				System.out.println("Wrong! Output: " + result[0] + ", Expect: " + testYs.get(i).get(testYs.get(i).size() - 1));
-			}
+			//Integer[] result = lstm.predict(testXs.get(i).toArray(new Double[testXs.get(i).size() - 1][]), 1);
+			//if (result[0] == testYs.get(i).get(testYs.get(i).size() - 1)) {
+			//	System.out.println("Correct! " + result[0]);
+			//	cRate += 1.0;
+			//} else {
+			//	System.out.println("Wrong! Output: " + result[0] + ", Expect: " + testYs.get(i).get(testYs.get(i).size() - 1));
+			//}
 		}
 		System.out.println("Correct rate: " + cRate / testXs.size() * 100 + "%");
 	}

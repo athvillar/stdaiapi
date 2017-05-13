@@ -146,10 +146,10 @@ public class LstmAgent extends AuthAgent {
 		} else if (test != null) {
 			String hint = test.getString("hint");
 			Double[][] predictXs = getX(hint, dic);
-			Integer[] predictYs = lstm.predict(predictXs, 100);
-			for (int i = 0; i < predictYs.length; i++) {
-				System.out.print(dic[predictYs[i]]);
-			}
+			//Integer[] predictYs = lstm.predict(predictXs, 100);
+			//for (int i = 0; i < predictYs.length; i++) {
+			//	System.out.print(dic[predictYs[i]]);
+			//}
 		}
 
 		return result;

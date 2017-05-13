@@ -12,6 +12,7 @@ import cn.standardai.api.ml.daohandler.ModelHandler;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.exception.UsageException;
+import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 import cn.standardai.lib.base.matrix.MatrixException;
@@ -20,7 +21,7 @@ public class ModelGhost implements Runnable {
 
 	private DaoHandler daoHandler = new DaoHandler(true);
 
-	private Dnn model;
+	private Dnn<LstmData> model;
 
 	private LstmData[] data;
 
@@ -34,13 +35,11 @@ public class ModelGhost implements Runnable {
 	}
 
 	public void invoke() {
-
 		this.model.addIndicator("trainLoss");
 		this.model.addIndicator("testLoss");
 		this.model.addIndicator("verifyLoss");
 		Executor exec = Executors.newSingleThreadExecutor();
 		exec.execute(this);
-
 		return;
 	}
 
@@ -48,7 +47,7 @@ public class ModelGhost implements Runnable {
 		this.dic = dic;
 	}
 
-	public void loadModel(Dnn model) {
+	public void loadModel(Dnn<LstmData> model) {
 		this.model = model;
 	}
 
@@ -63,20 +62,19 @@ public class ModelGhost implements Runnable {
 	@Override
 	public void run() {
 
-		if (this.model instanceof Lstm) {
+		if (this.model instanceof DeepLstm) {
 			Integer watchEpoch = (Integer)modelContext.get("watchEpoch");
-			((Lstm)this.model).setParam(
-					(Double)modelContext.get("dth"),
-					(Double)modelContext.get("learningRate"),
-					(Double)modelContext.get("dLearningRate"),
-					(Double)modelContext.get("maxLearningRate"),
-					(Double)modelContext.get("gainThreshold"),
-					(Integer)modelContext.get("epoch"),
-					(Long)modelContext.get("trainSecond"),
-					(Integer)modelContext.get("batchSize"),
-					watchEpoch);
-			ModelRunner mr = new ModelRunner(this.model, this.data);
+			((DeepLstm)this.model).setDth((Double)modelContext.get("dth"));
+			((DeepLstm)this.model).setLearningRate((Double)modelContext.get("learningRate"));
+			((DeepLstm)this.model).setBatchSize((Integer)modelContext.get("batchSize"));
+			((DeepLstm)this.model).setDiverseDataRate((int[])modelContext.get("diverseDataRate"));
+			((DeepLstm)this.model).setEpoch((Integer)modelContext.get("epoch"));
+			((DeepLstm)this.model).setTestLossIncreaseTolerance((Integer)modelContext.get("testLossIncreaseTolerance"));
+			((DeepLstm)this.model).setTrainSecond((Integer)modelContext.get("trainSecond"));
+			((DeepLstm)this.model).setWatchEpoch(watchEpoch);
+			this.model.mountData(data);
 
+			ModelRunner mr = new ModelRunner(this.model);
 			synchronized (this.model.indicator) {
 				Executor exec = Executors.newSingleThreadExecutor();
 				exec.execute(mr);
@@ -103,7 +101,7 @@ public class ModelGhost implements Runnable {
 			Double[][] predictXs = getX(hint, dic);
 			Integer[] result;
 			try {
-				result = ((Lstm)this.model).predict(predictXs, 100);
+				result = ((DeepLstm)this.model).predict(predictXs);
 				for (int i = 0; i < result.length; i++) {
 					System.out.print(dic[result[i]]);
 				}
@@ -112,8 +110,7 @@ public class ModelGhost implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			
+
 			ModelHandler mh = new ModelHandler(daoHandler);
 			Model model = new Model();
 			model.setModelId(modelContext.get("modelId").toString());
@@ -127,20 +124,17 @@ public class ModelGhost implements Runnable {
 
 	private class ModelRunner implements Runnable {
 
-		private Dnn model;
+		private Dnn<LstmData> model;
 
-		private LstmData[] data;
-
-		public ModelRunner(Dnn model, LstmData[] data) {
+		public ModelRunner(Dnn<LstmData> model) {
 			this.model = model;
-			this.data = data;
 		}
 
 		@Override
 		public void run() {
 			if (this.model instanceof Lstm) {
 				try {
-					((Lstm)this.model).train(data);
+					((DeepLstm)this.model).train();
 				} catch (DnnException | MatrixException e) {
 					e.printStackTrace();
 				}

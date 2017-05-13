@@ -29,22 +29,22 @@ public class TestRnnLstm {
 	private static void testDeep_translate() throws DnnException, MatrixException {
 
 		String[][] data = {
-				{"i am a", "我是a"},
-				{"b likes d", "b爱d"},
+				{"i am a 1", "我是a1"},
+				{"b likes d", "b喜欢d"},
 				{"d am b", "d是b"},
 				{"c likes b", "c爱b"},
 				{"i am c", "我是c"},
 				{"i likes b", "我爱b"},
 				{"a likes b", "a爱b"},
-				{"i am d", "我是d"},
-				{"d likes b", "d爱b"},
+				{"i am d 1", "我是d1"},
+				{"d likes b", "d喜欢b"},
 		};
 		int epochSize = data.length;
 		int testCount = data.length - epochSize;
 
 		Map<String, Integer> dic1 = getEnglishDic(data, 0);
 		Map<String, Integer> dic2 = getChineseDic(data, 1);
-		DeepLstm deepLstm = new DeepLstm(new int[] {15, 15}, new Double(Math.log(dic1.size()) / Math.log(2)).intValue() + 1, dic2.size());
+		DeepLstm deepLstm = new DeepLstm(new int[] {5, 5}, new Double(Math.log(dic1.size()) / Math.log(2)).intValue() + 1, dic2.size());
 
 		LstmData[] lstmData = new LstmData[epochSize];
 		for (int i = 0; i < epochSize; i++) {
@@ -56,10 +56,13 @@ public class TestRnnLstm {
 		}
 
 		deepLstm.reset();
+		deepLstm.setDth(1.0);
 		deepLstm.setLearningRate(0.2);
-		deepLstm.setEpoch(3000);
+		deepLstm.setEpoch(2000);
+		//deepLstm.setTrainSecond(2);
 		deepLstm.setBatchSize(epochSize);
-		deepLstm.setWatchEpoch(10);
+		deepLstm.setWatchEpoch(1);
+		//deepLstm.setTestLossIncreaseTolerance(2);
 		deepLstm.mountData(lstmData);
 		deepLstm.train();
 
@@ -201,27 +204,6 @@ public class TestRnnLstm {
 		return y;
 	}
 
-	private static Map<String, Integer> getLanguageDic1() {
-		Map<String, Integer> dic = new HashMap<String, Integer>();
-		dic.put("i", 0);
-		dic.put("am", 1);
-		dic.put("a", 2);
-		dic.put("you", 3);
-		dic.put("are", 4);
-		dic.put("b", 5);
-		return dic;
-	}
-
-	private static Map<String, Integer> getLanguageDic2() {
-		Map<String, Integer> dic = new HashMap<String, Integer>();
-		dic.put("wo", 0);
-		dic.put("shi", 1);
-		dic.put("a", 2);
-		dic.put("ni", 3);
-		dic.put("b", 4);
-		return dic;
-	}
-
 	private static void testDeep_reverse() throws DnnException, MatrixException {
 		//char[] dic = getNumberDic();
 		//char[] dic = getEnglishDic();
@@ -232,7 +214,7 @@ public class TestRnnLstm {
 		//String paragraph = words[0];
 		//char[] dic = getDic(paragraph);
 		char[] dic = getEnglishDic();
-		DeepLstm deepLstm = new DeepLstm(new int[] {7, 4}, dic.length, dic.length);
+		DeepLstm deepLstm = new DeepLstm(new int[] {7,4}, dic.length, dic.length);
 		//int totalLength = paragraph.length();
 
 		for (int i2 = 0; i2 < trainTime; i2++) {
@@ -362,23 +344,21 @@ public class TestRnnLstm {
 				data[i] = new LstmData(xs, ys, LstmData.Delay.NO);
 			}
 
-			lstm.reset();
+			//lstm.reset();
 			lstm.setLearningRate(2.0);
-			lstm.setEpoch(20000);
-			lstm.setBatchSize(epochSize);
-			lstm.setWatchEpoch(10);
-			lstm.train(data);
+			//lstm.setEpoch(20000);
+			//lstm.train(data);
 		}
 
 		System.out.println("Training finished!");
 
 		String hint = " ";
 		Double[][] predictXs = getX(hint, dic);
-		Integer[] result = lstm.predict(predictXs, 100);
-		for (int i = 0; i < result.length; i++) {
-			System.out.print(dic[result[i]]);
-		}
-		System.out.println("");
+		//Integer[] result = lstm.predict(predictXs, 100);
+		//for (int i = 0; i < result.length; i++) {
+		//	System.out.print(dic[result[i]]);
+		//}
+		//System.out.println("");
 	}
 
 	public static void testM21_count1() throws Exception {
@@ -401,10 +381,8 @@ public class TestRnnLstm {
 
 		Lstm lstm = new Lstm(4, dic.length, dic.length);
 		lstm.setLearningRate(0.1);
-		lstm.setEpoch(5000);
-		lstm.setBatchSize(20);
-		lstm.setWatchEpoch(5);
-		lstm.train(data);
+		//lstm.setEpoch(5000);
+		//lstm.train(data);
 		System.out.println("Training finished!");
 
 		double correct = 0.0;
@@ -419,10 +397,10 @@ public class TestRnnLstm {
 			//}
 			predictYs[0] = Integer.parseInt(predictXString[i].substring(2, 3));
 			//if (predictYs[0] > 10) predictYs[0] = 10;
-			Integer[] result = lstm.predict(predictXs, 1);
-			if (result[0] == predictYs[0]) {
-				correct++;
-			}
+			//Integer[] result = lstm.predict(predictXs, 1);
+			//if (result[0] == predictYs[0]) {
+			//	correct++;
+			//}
 		}
 		System.out.println("Correct rate: " + correct / totalPredictCount);
 	}

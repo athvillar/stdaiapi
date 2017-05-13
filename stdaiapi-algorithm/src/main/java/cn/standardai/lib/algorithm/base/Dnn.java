@@ -5,7 +5,7 @@ import java.util.Map;
 
 import cn.standardai.lib.algorithm.exception.UsageException;
 
-public abstract class Dnn<T> implements Monitorable {
+public abstract class Dnn<T extends DnnData> implements Monitorable {
 
 	public final String lock = "lock";
 
