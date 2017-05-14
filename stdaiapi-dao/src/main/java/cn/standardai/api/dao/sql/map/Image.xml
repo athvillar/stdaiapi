@@ -2,12 +2,45 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 图片像素块 -->
 <mapper namespace="cn.standardai.api.dao.ImageDao">
-	<select id="selectByImageType" parameterType="java.lang.String" resultType="cn.standardai.api.dao.bean.Image">
+	<select id="selectCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		  FROM IMAGE 
+        <where>
+			<include refid="whereOfImage"></include>
+        </where>
+	</select>
+	
+	<select id="select" parameterType="java.util.Map" resultType="cn.standardai.api.dao.bean.Image">
 		SELECT * 
 		  FROM IMAGE 
-		 WHERE 
-		 	IMAGETYPE = #{imageType}
+        <where>
+			<include refid="whereOfImage"></include>
+        </where>
 	</select>
+	
+	<!-- 检索条件 -->
+	<sql id="whereOfImage">
+		<if test="imageType != null and imageType != ''">
+			AND IMAGETYPE = #{imageType}
+		</if>
+		<if test="status != null and status !=''">
+			AND STATUS = #{status}
+		</if>
+		<if test="isUserId != null and isUserId != ''">
+			<if test="isUserId == 0">
+				AND USERID = #{userId}
+			</if>
+			<if test="isUserId == 1">
+				AND USERID &lt;&gt; #{userId}
+			</if>
+		</if>
+		<if test="axisList != null and axisList.size() > 0">
+			AND (XAXIS, YAXIS) IN
+			<foreach item="item" index="index" collection="axisList" open="(" separator="," close=")">
+				(#{item.xAxis}, #{item.yAxis})
+			</foreach>
+		</if>
+	</sql>
 	
 	<insert id="insert" parameterType="java.util.List">
 		INSERT INTO 
@@ -20,8 +53,11 @@
 
 	<update id="updateByAxis" parameterType="cn.standardai.api.dao.bean.Image">
 		UPDATE IMAGE 
-		   SET COLOR = #{color} 
+		   SET COLOR = #{color},
+			   USERID = #{userId},
+			   STATUS = #{status}
 		 WHERE 
+		 	IMAGETYPE = #{imageType} AND
 		 	XAXIS = #{xAxis} AND 
 		 	YAXIS = #{yAxis}
 	</update>
@@ -29,6 +65,7 @@
 	<delete id="deleteByAxis" parameterType="cn.standardai.api.dao.bean.Image">
 		DELETE FROM IMAGE 
 		 WHERE 
+		 	IMAGETYPE = #{imageType} AND 
 		 	XAXIS = #{xAxis} AND 
 		 	YAXIS = #{yAxis}
 	</delete>

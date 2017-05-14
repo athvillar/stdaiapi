@@ -26,7 +26,7 @@ public class ImageService extends BaseService<ImageAgent> {
 
 	@RequestMapping(value = "/import", method = RequestMethod.POST)
 	public String importImage(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data 收到图片导入请求 ...");
+		logger.info("stdaiapi-data 收到图像导入请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, ImageAgent.class);
@@ -38,13 +38,13 @@ public class ImageService extends BaseService<ImageAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data 结束图片导入 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data 结束图像导入 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 	
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	public String updateImage(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data 收到图片导入请求 ...");
+		logger.info("stdaiapi-data 收到图像更新请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, ImageAgent.class);
@@ -56,13 +56,13 @@ public class ImageService extends BaseService<ImageAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data 结束图片导入 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data 结束图像更新 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 	
 	@RequestMapping(value = "/export", method = RequestMethod.GET)
 	public String exportImage(@RequestHeader HttpHeaders headers, String imageName, String imageFormat, String imageType) {
-		logger.info("stdaiapi-data 收到图片导出请求 ...");
+		logger.info("stdaiapi-data 收到图像导出请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, ImageAgent.class);
@@ -74,7 +74,7 @@ public class ImageService extends BaseService<ImageAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data 结束图片导出(" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data 结束图像导出(" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }
