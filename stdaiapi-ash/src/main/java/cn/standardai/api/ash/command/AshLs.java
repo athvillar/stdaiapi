@@ -27,11 +27,11 @@ public class AshLs extends AshCommand {
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("token", this.token);
-		String s = HttpUtil.get(Context.getProp().getUrl().getMl() + "/lstm");
+		String s = HttpUtil.get(Context.getProp().getUrl().getMl() + "/lstm", null, headers);
 		JSONObject j = JSONObject.parseObject(s);
 
 		if (!"success".equals(j.getString("result"))) {
-			return j.getString("message");
+			return j.getString("message") + "\n";
 		}
 		JSONArray models = j.getJSONArray("models");
 		if (models == null) return "没有记录\n";
