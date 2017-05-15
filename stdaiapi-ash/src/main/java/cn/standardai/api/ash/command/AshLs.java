@@ -3,6 +3,7 @@ package cn.standardai.api.ash.command;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.HttpUtil;
 
 public class AshLs extends AshCommand {
@@ -17,7 +18,7 @@ public class AshLs extends AshCommand {
 			return this.help();
 		}
 
-		String s = HttpUtil.get(propertyConfig.getUrl().getMl() + "/lstm");
+		String s = HttpUtil.get(Context.getProp().getUrl().getMl() + "/lstm");
 		JSONObject j = JSONObject.parseObject(s);
 
 		JSONArray models = j.getJSONArray("models");
@@ -41,14 +42,15 @@ public class AshLs extends AshCommand {
 
 	@Override
 	public String help() {
-		return "ls命令格式：ls [-l]";
+		return "ls命令格式：ls [-l]\n";
 	}
 
 	@Override
 	public String man() {
 		return "ls命令用于显示当前资源类别下的所有资源\n"
-				+ "用法：\tls -参数"
+				+ "用法：\n"
+				+ "\tls -参数\n"
 				+ "参数：\n"
-				+ "\t-l: 显示详细信息";
+				+ "\t-l: 显示详细信息\n";
 	}
 }

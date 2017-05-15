@@ -19,12 +19,13 @@ public class AshMan extends AshCommand {
 
 	@Override
 	public String help() {
-		return "man命令格式：man [命令名]";
+		return "man命令格式：man [命令名]\n";
 	}
 
 	@Override
 	public String man() {
 		return "man命令用于显示帮助信息\n"
-				+ "用法：\tman [命令名]";
+				+ "用法：\n"
+				+ "\tman [命令名]\n";
 	}
 }
