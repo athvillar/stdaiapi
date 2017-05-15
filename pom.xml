@@ -50,6 +50,7 @@
 	</pluginRepositories>
 	<modules>
 		<module>./stdaiapi-algorithm</module>
+		<module>./stdaiapi-ash</module>
 		<module>./stdaiapi-biz</module>
 		<module>./stdaiapi-core</module>
 		<module>./stdaiapi-dao</module>
