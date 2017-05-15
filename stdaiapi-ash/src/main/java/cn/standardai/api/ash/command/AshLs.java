@@ -41,7 +41,7 @@ public class AshLs extends AshCommand {
 		if (params.length == 1) {
 			result = "modelId\n";
 		} else {
-			result = "modelId\t\t\t\t\t\t\tupdateTime\t\t\n";
+			result = "modelId\t\t\t\t\t\t\t\t\tupdateTime\t\t\n";
 		}
 		for (int i = 0; i < models.size(); i++) {
 			result += models.getJSONObject(i).getString("modelId") + "\t";

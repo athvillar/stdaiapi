@@ -14,18 +14,18 @@ public class AshHelp extends AshCommand {
 		if (params.length == 1) {
 			return "Ash是Athvillar平台专用的命令行系统，用来管理和操作Athvillar平台的资源。\n"
 					+ "其中全局命令\n"
-					+ "\tash       \tcd        \tcurl\n"
-					+ "\techo      \thelp      \thistory\n"
-					+ "\tman       \tmessage  \tlogin\n"
-					+ "\tlogout    \tversion   \t\n"
+					+ "\tash(未完成)       \tcd(未完成)        \tcurl(未完成)\n"
+					+ "\techo(未完成)      \thelp              \thistory(未完成)\n"
+					+ "\tman               \tmessage(未完成)  \tlogin(未完成)\n"
+					+ "\tlogout(未完成)    \tversion(未完成)\n"
 					+ "针对某资源的命令\n"
-					+ "\tcat       \tcp        \tdownload\n"
-					+ "\tfind      \tls        \tmk\n"
-					+ "\trm        \tupload    \n"
+					+ "\tcat(未完成)       \tcp(未完成)        \tdownload(未完成)\n"
+					+ "\tfind(未完成)      \tls                \tmk(未完成)\n"
+					+ "\trm(未完成)        \tupload(未完成)    \n"
 					+ "资源\n"
-					+ "\tdata      \tdataset   \tdic\n"
-					+ "\tdoc       \tmodel     \tnode\n"
-					+ "\ttemplate \tuser\n"
+					+ "\tdata(未完成)      \tdataset(未完成)   \tdic(未完成)\n"
+					+ "\tdoc(未完成)       \tmodel             \tnode(未完成)\n"
+					+ "\ttemplate(未完成) \tuser(未完成)\n"
 					+ "查看某个命令的具体使用方式请输入“man 命令名”，查看某项资源介绍请输入“help 资源名”\n";
 		}
 
