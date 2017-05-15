@@ -6,10 +6,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.StringUtil;
 
@@ -117,6 +120,47 @@ public class ImageAgent extends AuthAgent {
 	public JSONObject updateImage(JSONObject request) throws BizException {
 		JSONObject result = new JSONObject();
 
+		String userId = request.getString("userId");
+		String imageType = request.getString("imageType");
+		JSONArray axisArray = request.getJSONArray("axis");
+		List<Map<String, Object>> axisList = new ArrayList<Map<String, Object>>();
+		for (int i = 0; i < axisArray.size(); i++) {
+			JSONObject axisObject = axisArray.getJSONObject(i);
+			Map<String, Object> axis = new HashMap<String, Object>();
+			axis.put("xAxis", axisObject.getInteger("xAxis"));
+			axis.put("yAxis", axisObject.getInteger("yAxis"));
+			axis.put("color", axisObject.getString("color"));
+			axisList.add(axis);
+		}
+
+		ImageDao imageDao = daoHandler.getMySQLMapper(ImageDao.class);
+		// 检索可用像素数
+		Map<String, Object> params1 = new HashMap<String, Object>();
+		params1.put("imageType", imageType);
+		params1.put("status", "0");
+		int count = imageDao.selectCount(params1);
+		if (count < axisList.size()) {
+			throw new BizException("Image available axis count not enough");
+		}
+		// 检索像素是否被占用
+		Map<String, Object> params2 = new HashMap<String, Object>();
+		params2.put("imageType", imageType);
+		params2.put("status", "1");
+		params2.put("isUserId", "1");
+		params2.put("userId", userId);
+		params2.put("axisList", axisList);
+		List<Image> imagePointList = imageDao.select(params2);
+		if (imagePointList != null && imagePointList.size() > 0) {
+			throw new BizException("Image axis occupied");
+		}
+
+		for (Map<String, Object> axis : axisList) {
+			Image imageParam = makeImageParam(imageType, Integer.parseInt(String.valueOf(axis.get("xAxis"))),
+					Integer.parseInt(String.valueOf(axis.get("yAxis"))), 0, String.valueOf(axis.get("color")), userId,
+					"1");
+			imageDao.updateByAxis(imageParam);
+		}
+
 		// make result
 		result.put("result", "success");
 		return result;
@@ -127,7 +171,9 @@ public class ImageAgent extends AuthAgent {
 
 		try {
 			ImageDao imageDao = daoHandler.getMySQLMapper(ImageDao.class);
-			List<Image> imagePointList = imageDao.selectByImageType(imageType);
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("imageType", imageType);
+			List<Image> imagePointList = imageDao.select(params);
 
 			int width = Context.getProp().getLocal().getImageWidth();
 			int Height = Context.getProp().getLocal().getImageHeight();
