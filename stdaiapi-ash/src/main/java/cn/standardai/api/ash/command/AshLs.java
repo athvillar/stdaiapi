@@ -1,5 +1,8 @@
 package cn.standardai.api.ash.command;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -7,6 +10,10 @@ import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.HttpUtil;
 
 public class AshLs extends AshCommand {
+
+	public AshLs(String token) {
+		super(token);
+	}
 
 	@Override
 	public String exec(String[] params) {
@@ -18,9 +25,14 @@ public class AshLs extends AshCommand {
 			return this.help();
 		}
 
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("token", this.token);
 		String s = HttpUtil.get(Context.getProp().getUrl().getMl() + "/lstm");
 		JSONObject j = JSONObject.parseObject(s);
 
+		if (!"success".equals(j.getString("result"))) {
+			return j.getString("message");
+		}
 		JSONArray models = j.getJSONArray("models");
 		if (models == null) return "没有记录\n";
 

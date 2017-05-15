@@ -3,14 +3,9 @@ package cn.standardai.api.ash.command;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import cn.standardai.api.core.bean.PropertyConfig;
-
 public abstract class AshCommand {
 
-	@Autowired
-	public PropertyConfig propertyConfig;
+	public String token;
 
 	public enum Command {
 
@@ -35,22 +30,26 @@ public abstract class AshCommand {
 		}
 	}
 
+	public AshCommand(String token) {
+		this.token = token;
+	}
+
 	public abstract String exec(String[] params);
 
 	public abstract String help();
 
 	public abstract String man();
 
-	public static AshCommand getInstance(String commandString) {
+	public static AshCommand getInstance(String commandString, String token) {
 		Command command = AshCommand.Command.resolve(commandString);
 		if (command == null) return null;
 		switch (command) {
 		case help:
-			return new AshHelp();
+			return new AshHelp(token);
 		case ls:
-			return new AshLs();
+			return new AshLs(token);
 		case man:
-			return new AshMan();
+			return new AshMan(token);
 		}
 		return null;
 	}

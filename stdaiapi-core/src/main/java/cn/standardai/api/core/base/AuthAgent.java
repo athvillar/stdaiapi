@@ -14,12 +14,15 @@ public class AuthAgent {
 
 	public String userId;
 
+	private String token;
+
 	protected AuthAgent() {
 		super();
 	}
 
 	public void setUserId(String token) throws AuthException {
 		this.userId = getUserIdByToken(token);
+		this.token = token;
 	}
 
 	public String getUserIdByToken(String token) throws AuthException {
@@ -38,5 +41,9 @@ public class AuthAgent {
 
 	public void done() {
 		daoHandler.releaseSession();
+	}
+
+	public String getToken() {
+		return token;
 	}
 }

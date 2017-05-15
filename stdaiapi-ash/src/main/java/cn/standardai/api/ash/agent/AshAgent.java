@@ -22,7 +22,7 @@ public class AshAgent extends AuthAgent {
 		};
 
 		String resource = request.getString("resource");
-		AshCommand ashCommand = AshCommand.getInstance(commands[0]);
+		AshCommand ashCommand = AshCommand.getInstance(commands[0], this.getToken());
 		if (ashCommand == null) {
 			result.put("message", "无此命令，或者此命令正在开发中，如需帮助，请输入“help”\n");
 			return result;

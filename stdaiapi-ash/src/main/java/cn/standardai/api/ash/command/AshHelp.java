@@ -4,6 +4,10 @@ import cn.standardai.api.ash.resource.AshResource;
 
 public class AshHelp extends AshCommand {
 
+	public AshHelp(String token) {
+		super(token);
+	}
+
 	@Override
 	public String exec(String[] params) {
 
