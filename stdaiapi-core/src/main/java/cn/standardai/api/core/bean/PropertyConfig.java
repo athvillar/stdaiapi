@@ -21,6 +21,8 @@ public class PropertyConfig {
 	private Redis redis;
 
 	private Scheduler scheduler;
+
+	private Url url;
 	
 	public static class Local {
 
@@ -352,4 +354,64 @@ public class PropertyConfig {
 		this.local = local;
 	}
 
+	public Url getUrl() {
+		return url;
+	}
+
+	public void setUrl(Url url) {
+		this.url = url;
+	}
+
+	public static class Url {
+
+		private String ash;
+
+		private String biz;
+
+		private String data;
+
+		private String math;
+
+		private String ml;
+
+		public String getAsh() {
+			return ash;
+		}
+
+		public void setAsh(String ash) {
+			this.ash = ash;
+		}
+
+		public String getBiz() {
+			return biz;
+		}
+
+		public void setBiz(String biz) {
+			this.biz = biz;
+		}
+
+		public String getData() {
+			return data;
+		}
+
+		public void setData(String data) {
+			this.data = data;
+		}
+
+		public String getMath() {
+			return math;
+		}
+
+		public void setMath(String math) {
+			this.math = math;
+		}
+
+		public String getMl() {
+			return ml;
+		}
+
+		public void setMl(String ml) {
+			this.ml = ml;
+		}
+	}
 }
