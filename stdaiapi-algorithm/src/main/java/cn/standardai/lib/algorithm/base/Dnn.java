@@ -7,9 +7,13 @@ import cn.standardai.lib.algorithm.exception.UsageException;
 
 public abstract class Dnn<T extends DnnData> implements Monitorable {
 
+	public enum ValueType { Single, Multiple };
+
 	public final String lock = "lock";
 
 	private T[] data;
+
+	public ValueType dataResultType;
 
 	private int trainDataCnt;
 

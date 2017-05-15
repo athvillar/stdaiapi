@@ -256,6 +256,21 @@ public class MatrixUtil {
 		return result;
 	}
 
+	public static Double[][] devide(Integer[][] m, int devider) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		if (devider == 0) throw new MatrixException(MatrixException.ERRMSG.ZERO_DEVIDE);
+
+		Double[][] result = new Double[m.length][m[0].length];
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[0].length; j++) {
+				result[i][j] = 1.0 * m[i][j] / devider;
+			}
+		}
+
+		return result;
+	}
+
 	public static Double[] devide(Double[] m, double devider) throws MatrixException {
 
 		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
@@ -399,5 +414,24 @@ public class MatrixUtil {
 			}
 		}
 		System.out.println(" ]");
+	}
+
+	public static Double[][] subMatrix(Double[][] src, int m, int n, int direction) {
+		if (src == null) return null;
+		Double[][] des = new Double[m][n];
+		if (direction == 1) {
+			for (int i = 0; i < m; i++) {
+				for (int j = 0; j < n; j++) {
+					des[i][j] = src[i][j];
+				}
+			}
+		} else {
+			for (int i = 0; i < m; i++) {
+				for (int j = 0; j < n; j++) {
+					des[i][j] = src[src.length - m + i - 1][j];
+				}
+			}
+		}
+		return des;
 	}
 }

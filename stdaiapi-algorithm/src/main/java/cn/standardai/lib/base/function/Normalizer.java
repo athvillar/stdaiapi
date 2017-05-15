@@ -31,4 +31,25 @@ public class Normalizer {
 		}
 		return output;
 	}
+
+	/**
+	 * 归一化
+	 * @param input
+	 * 输入数组
+	 * @return 归一化后结果
+	 */
+	public static Double[] toProbability(Double[] input) {
+		Double[] output = new Double[input.length];
+		double total = 0;
+		for (int i = 0; i < input.length; i++) {
+			total += input[i];
+		}
+		if (total == 0) {
+			return output;
+		}
+		for (int i = 0; i < input.length; i++) {
+			output[i] = input[i] / total;
+		}
+		return output;
+	}
 }

@@ -1,48 +1,30 @@
 package cn.standardai.lib.algorithm.rnn.lstm;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import cn.standardai.lib.algorithm.base.DnnData;
 
 public class LstmData extends DnnData {
 
-	public enum Delay {
-		YES, NO
-	}
-
-	public enum Reflect {
-
-		I1OM('1'), IMO1('2'), IMOM('3'), I1O1('4');
-
-		public char reflect;
-
-		private Reflect(char reflect) {
-			this.reflect = reflect;
-		}
-
-		private static final Map<Character, Reflect> mappings = new HashMap<Character, Reflect>(4);
-
-		static {
-			for (Reflect reflect : values()) {
-				mappings.put(reflect.reflect, reflect);
-			}
-		}
-
-		public static Reflect resolve(Character reflect) {
-			return (reflect != null ? mappings.get(reflect) : null);
-		}
-	}
-
 	public Double[][] x;
 
-	public Integer[] y;
+	public Double[][] y;
 
-	public Delay yDelay;
+	public Integer[] y1;
 
-	public LstmData(Double[][] x, Integer[] y, Delay yDelay) {
+	private int yLength;
+
+	public LstmData(Double[][] x, Double[][] y) {
 		this.x = x;
 		this.y = y;
-		this.yDelay = yDelay;
+		this.yLength = y.length;
+	}
+
+	public LstmData(Double[][] x, Integer[] y1) {
+		this.x = x;
+		this.y1 = y1;
+		this.yLength = y1.length;
+	}
+
+	public int getYLength() {
+		return yLength;
 	}
 }

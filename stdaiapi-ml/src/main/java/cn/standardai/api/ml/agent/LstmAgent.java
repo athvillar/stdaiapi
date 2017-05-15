@@ -121,7 +121,7 @@ public class LstmAgent extends AuthAgent {
 						String yWords = xWords.substring(1) + paragraph.substring(start + xLength, start + xLength + 1);
 						Double[][] xs = getX(xWords, dic);
 						Integer[] ys = getY(yWords, dic);
-						data[i] = new LstmData(xs, ys, LstmData.Delay.NO);
+						data[i] = new LstmData(xs, ys);
 					}
 					// TODO delete this
 					mg.loadDic(dic);

@@ -24,6 +24,8 @@ public class DeepLstm extends Dnn<LstmData> {
 
 	public int outputSize;
 
+	private boolean delay = false;
+
 	private Integer epoch = 1;
 
 	private Long trainMillisecond = null;
@@ -35,6 +37,8 @@ public class DeepLstm extends Dnn<LstmData> {
 	private Integer testLossIncreaseTolerance = null;
 
 	private Integer terminator = null;
+
+	private Boolean selfConnect = false;
 
 	public DerivableFunction σ = new Sigmoid();
 
@@ -119,26 +123,29 @@ public class DeepLstm extends Dnn<LstmData> {
 			List<List<LstmCache>> caches4Train = new ArrayList<List<LstmCache>>();
 			for (int lstmIndex = 0; lstmIndex < lstms.length; lstmIndex++) {
 				List<LstmCache> caches1Layer4Train = new ArrayList<LstmCache>();
-				Double[] hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
-				Double[] cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
-				if (lstmIndex == 0) {
-					// 1st lstm layer's forward
-					for (int inputIndex = 0; inputIndex < trainData1.x.length; inputIndex++) {
-						// 1 input
-						LstmCache cacheTemp = lstms[lstmIndex].forward(trainData1.x[inputIndex], hOld, cOld);
-						caches1Layer4Train.add(cacheTemp);
-						hOld = cacheTemp.h.clone();
-						cOld = cacheTemp.c.clone();
+				if (lstmIndex == 0 && lstmIndex == lstms.length - 1) {
+					// 1-layer's forward
+					forward(lstmIndex, trainData1.x, caches1Layer4Train);
+					if (this.delay) {
+						forward(lstmIndex, MatrixUtil.create(trainData1.getYLength() - 1, lstms[lstmIndex].inputSize, 0.0), caches1Layer4Train);
 					}
+				} else if (lstmIndex == lstms.length - 1) {
+					// last layer's forward
+					forward(lstmIndex, caches4Train.get(lstmIndex - 1), caches1Layer4Train);
+					if (this.delay) {
+						if (this.selfConnect) {
+							Double[][] ys = makeYs(trainData1.y1, lstms[lstmIndex].outputSize);
+							forward(lstmIndex, MatrixUtil.subMatrix(ys, ys.length - 1, lstms[lstmIndex].outputSize, 1), caches1Layer4Train);
+						} else {
+							forward(lstmIndex, MatrixUtil.create(trainData1.getYLength() - 1, lstms[lstmIndex].inputSize, 0.0), caches1Layer4Train);
+						}
+					}
+				} else if (lstmIndex == 0) {
+					// 1st lstm layer's forward
+					forward(lstmIndex, trainData1.x, caches1Layer4Train);
 				} else {
 					// others' forward
-					for (int inputIndex = 0; inputIndex < caches4Train.get(lstmIndex - 1).size(); inputIndex++) {
-						// 1 input
-						LstmCache cacheTemp = lstms[lstmIndex].forward(caches4Train.get(lstmIndex - 1).get(inputIndex).h, hOld, cOld);
-						caches1Layer4Train.add(cacheTemp);
-						hOld = cacheTemp.h.clone();
-						cOld = cacheTemp.c.clone();
-					}
+					forward(lstmIndex, caches4Train.get(lstmIndex - 1), caches1Layer4Train);
 				}
 				caches4Train.add(caches1Layer4Train);
 			}
@@ -146,13 +153,20 @@ public class DeepLstm extends Dnn<LstmData> {
 			if (watch) {
 				List<LstmCache> cacheLastLayer = caches4Train.get(caches4Train.size() - 1);
 				// Loss for train, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
-				for (int j = 0; j < trainData1.y.length; j++) {
+				for (int j = 0; j < trainData1.getYLength(); j++) {
 					// 对每一个输出y
-					for (int k = 0; k < outputSize; k++) {
-						if (trainData1.y[j] == k) {
-							trainLoss[trainDataIndex] += Math.log10(cacheLastLayer.get(cacheLastLayer.size() - trainData1.y.length + j).a[k]);
-						} else {
-							trainLoss[trainDataIndex] += Math.log10(1 - cacheLastLayer.get(j).a[k]);
+					if (trainData1.y1 != null) {
+						for (int k = 0; k < outputSize; k++) {
+							if (trainData1.y1[j] == k) {
+								trainLoss[trainDataIndex] += Math.log(cacheLastLayer.get(cacheLastLayer.size() - trainData1.getYLength() + j).a[k]);
+							} else {
+								trainLoss[trainDataIndex] += Math.log(1 - cacheLastLayer.get(cacheLastLayer.size() - trainData1.getYLength() + j).a[k]);
+							}
+						}
+					} else {
+						for (int k = 0; k < outputSize; k++) {
+							trainLoss[trainDataIndex] += (trainData1.y[j][k] * Math.log(cacheLastLayer.get(cacheLastLayer.size() - trainData1.getYLength() + j).a[k]) +
+									(1 - trainData1.y[j][k]) * Math.log((1 - cacheLastLayer.get(cacheLastLayer.size() - trainData1.getYLength() + j).a[k])));
 						}
 					}
 				}
@@ -169,17 +183,19 @@ public class DeepLstm extends Dnn<LstmData> {
 				if (lstmIndex == lstms.length - 1) {
 					// last lstm layer's back propagation
 					for (int j = caches1Layer4Train.size() - 1; j >= 0; j--) {
-						if (caches1Layer4Train.size() - j - 1 < trainData1.y.length) {
-							lstms[lstmIndex].backward(trainData1.y[j - caches1Layer4Train.size() + trainData1.y.length], dCaches4Train[lstmIndex], caches1Layer4Train.get(j), null);
+						if (caches1Layer4Train.size() - j - 1 < trainData1.getYLength()) {
+							lstms[lstmIndex].backward(trainData1.y1 == null ? null : trainData1.y1[j - caches1Layer4Train.size() + trainData1.getYLength()],
+									trainData1.y == null ? null : trainData1.y[j - caches1Layer4Train.size() + trainData1.getYLength()],
+									dCaches4Train[lstmIndex], caches1Layer4Train.get(j), null);
 						} else {
-							lstms[lstmIndex].backward(null, dCaches4Train[lstmIndex], caches1Layer4Train.get(j), null);
+							lstms[lstmIndex].backward(null, null, dCaches4Train[lstmIndex], caches1Layer4Train.get(j), dCaches4Train[lstmIndex].dhNext);
 						}
 						dhCacheTrain[lstmIndex][j] = dCaches4Train[lstmIndex].dxUpper;
 					}
 				} else {
 					// others' back propagation
 					for (int j = caches1Layer4Train.size() - 1; j >= 0; j--) {
-						lstms[lstmIndex].backward(null, dCaches4Train[lstmIndex], caches1Layer4Train.get(j), dhCacheTrain[lstmIndex + 1][j]);
+						lstms[lstmIndex].backward(null, null, dCaches4Train[lstmIndex], caches1Layer4Train.get(j), dhCacheTrain[lstmIndex + 1][j]);
 						dhCacheTrain[lstmIndex][j] = dCaches4Train[lstmIndex].dxUpper;
 					}
 				}
@@ -201,39 +217,49 @@ public class DeepLstm extends Dnn<LstmData> {
 				List<List<LstmCache>> caches4Test = new ArrayList<List<LstmCache>>();
 				for (int lstmIndex = 0; lstmIndex < lstms.length; lstmIndex++) {
 					List<LstmCache> caches1Layer4Test = new ArrayList<LstmCache>();
-					Double[] hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
-					Double[] cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
-					if (lstmIndex == 0) {
-						// 1st lstm layer's forward
-						for (int inputIndex = 0; inputIndex < testData1.x.length; inputIndex++) {
-							// 1 input
-							LstmCache cacheTemp = lstms[lstmIndex].forward(testData1.x[inputIndex], hOld, cOld);
-							caches1Layer4Test.add(cacheTemp);
-							hOld = cacheTemp.h.clone();
-							cOld = cacheTemp.c.clone();
+					if (lstmIndex == 0 && lstmIndex == lstms.length - 1) {
+						// 1-layer's forward
+						forward(lstmIndex, testData1.x, caches1Layer4Test);
+						if (this.delay) {
+							forward(lstmIndex, MatrixUtil.create(testData1.getYLength() - 1, lstms[lstmIndex].inputSize, 0.0), caches1Layer4Test);
 						}
+					} else if (lstmIndex == lstms.length - 1) {
+						// last layer's forward
+						forward(lstmIndex, caches4Test.get(lstmIndex - 1), caches1Layer4Test);
+						if (this.delay) {
+							if (this.selfConnect) {
+								Double[][] ys = makeYs(testData1.y1, lstms[lstmIndex].outputSize);
+								forward(lstmIndex, MatrixUtil.subMatrix(ys, ys.length - 1, lstms[lstmIndex].outputSize, 1), caches1Layer4Test);
+							} else {
+								forward(lstmIndex, MatrixUtil.create(testData1.getYLength() - 1, lstms[lstmIndex].inputSize, 0.0), caches1Layer4Test);
+							}
+						}
+					} else if (lstmIndex == 0) {
+						// 1st lstm layer's forward
+						forward(lstmIndex, testData1.x, caches1Layer4Test);
 					} else {
 						// others' forward
-						for (int inputIndex = 0; inputIndex < caches4Test.get(lstmIndex - 1).size(); inputIndex++) {
-							// 1 input
-							LstmCache cacheTemp = lstms[lstmIndex].forward(caches4Test.get(lstmIndex - 1).get(inputIndex).h, hOld, cOld);
-							caches1Layer4Test.add(cacheTemp);
-							hOld = cacheTemp.h.clone();
-							cOld = cacheTemp.c.clone();
-						}
+						forward(lstmIndex, caches4Test.get(lstmIndex - 1), caches1Layer4Test);
 					}
 					caches4Test.add(caches1Layer4Test);
 				}
 
 				List<LstmCache> cacheLastLayer = caches4Test.get(caches4Test.size() - 1);
 				// Loss for test, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
-				for (int j = 0; j < testData1.y.length; j++) {
+				for (int j = 0; j < testData1.getYLength(); j++) {
 					// 对每一个输出y
-					for (int k = 0; k < outputSize; k++) {
-						if (testData1.y[j] == k) {
-							testLoss[testDataIndex] += Math.log10(cacheLastLayer.get(cacheLastLayer.size() - testData1.y.length + j).a[k]);
-						} else {
-							testLoss[testDataIndex] += Math.log10(1 - cacheLastLayer.get(j).a[k]);
+					if (testData1.y1 != null) {
+						for (int k = 0; k < outputSize; k++) {
+							if (testData1.y1[j] == k) {
+								testLoss[testDataIndex] += Math.log(cacheLastLayer.get(cacheLastLayer.size() - testData1.getYLength() + j).a[k]);
+							} else {
+								testLoss[testDataIndex] += Math.log(1 - cacheLastLayer.get(cacheLastLayer.size() - testData1.getYLength() + j).a[k]);
+							}
+						}
+					} else {
+						for (int k = 0; k < outputSize; k++) {
+							testLoss[testDataIndex] += testData1.y[j][k] * Math.log(cacheLastLayer.get(cacheLastLayer.size() - testData1.getYLength() + j).a[k]) +
+									(1 - testData1.y[j][k]) * Math.log((1 - cacheLastLayer.get(cacheLastLayer.size() - testData1.getYLength() + j).a[k]));
 						}
 					}
 				}
@@ -258,43 +284,305 @@ public class DeepLstm extends Dnn<LstmData> {
 		return 0.0;
 	}
 
-	public Integer[] predict(Double[][] xs) throws DnnException {
+	private Double[][] makeYs(Integer[] y1, int yDimension) {
+		Double[][] ys = new Double[y1.length][yDimension];
+		for (int i = 0; i < y1.length; i++) {
+			for (int j = 0; j < yDimension; j++) {
+				if (j == y1[i]) {
+					ys[i][j] = 1.0;
+				} else {
+					ys[i][j] = 0.0;
+				}
+			}
+		}
+		return ys;
+	}
 
+	private void forward(int lstmIndex, List<LstmCache> cachesLastLayer, List<LstmCache> cachesThisLayer) throws DnnException {
+		Double[] hOld;
+		Double[] cOld;
+		for (int inputIndex = 0; inputIndex < cachesLastLayer.size(); inputIndex++) {
+			// 1 input
+			if (cachesThisLayer == null || cachesThisLayer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = cachesThisLayer.get(cachesThisLayer.size() - 1).h.clone();
+				cOld = cachesThisLayer.get(cachesThisLayer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp = lstms[lstmIndex].forward(cachesLastLayer.get(inputIndex).h, hOld, cOld);
+			cachesThisLayer.add(cacheTemp);
+		}
+		return;
+	}
+
+	private void forward(int lstmIndex, Double[][] input, List<LstmCache> caches1Layer) throws DnnException {
+		Double[] hOld;
+		Double[] cOld;
+		for (int inputIndex = 0; inputIndex < input.length; inputIndex++) {
+			// 1 input
+			if (caches1Layer == null || caches1Layer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = caches1Layer.get(caches1Layer.size() - 1).h.clone();
+				cOld = caches1Layer.get(caches1Layer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp = lstms[lstmIndex].forward(input[inputIndex], hOld, cOld);
+			caches1Layer.add(cacheTemp);
+		}
+		return;
+	}
+
+	private void forwardTillTerminate(int lstmIndex, Double[][] input, List<LstmCache> caches1Layer, Integer terminator) throws DnnException {
+		Double[] hOld;
+		Double[] cOld;
+		for (int inputIndex = 0; inputIndex < input.length; inputIndex++) {
+			// 1 input
+			if (caches1Layer == null || caches1Layer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = caches1Layer.get(caches1Layer.size() - 1).h.clone();
+				cOld = caches1Layer.get(caches1Layer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp = lstms[lstmIndex].forward(input[inputIndex], hOld, cOld);
+			caches1Layer.add(cacheTemp);
+			if (inputIndex == input.length - 1) {
+				Roulette r = new Roulette(cacheTemp.a);
+				if (r.getY() == terminator) {
+					return;
+				}
+			}
+		}
+		while (true) {
+			if (caches1Layer == null || caches1Layer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = caches1Layer.get(caches1Layer.size() - 1).h.clone();
+				cOld = caches1Layer.get(caches1Layer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp;
+			if (this.selfConnect) {
+				cacheTemp = lstms[lstmIndex].forward(caches1Layer.get(caches1Layer.size() - 1).a, hOld, cOld);
+			} else {
+				cacheTemp = lstms[lstmIndex].forward(MatrixUtil.create(lstms[lstmIndex].inputSize, 0.0), hOld, cOld);
+			}
+			caches1Layer.add(cacheTemp);
+
+			Roulette r = new Roulette(cacheTemp.a);
+			if (r.getY() == terminator) {
+				return;
+			}
+		}
+	}
+
+	private void forwardTillTerminate(int lstmIndex, List<LstmCache> cachesLastLayer, List<LstmCache> cachesThisLayer, Integer terminator) throws DnnException {
+		Double[] hOld;
+		Double[] cOld;
+		for (int inputIndex = 0; inputIndex < cachesLastLayer.size(); inputIndex++) {
+			// 1 input
+			if (cachesThisLayer == null || cachesThisLayer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = cachesThisLayer.get(cachesThisLayer.size() - 1).h.clone();
+				cOld = cachesThisLayer.get(cachesThisLayer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp = lstms[lstmIndex].forward(cachesLastLayer.get(inputIndex).h, hOld, cOld);
+			cachesThisLayer.add(cacheTemp);
+			if (inputIndex == cachesLastLayer.size() - 1) {
+				Roulette r = new Roulette(cacheTemp.a);
+				if (r.getY() == terminator) {
+					return;
+				}
+			}
+		}
+		while (true) {
+			if (cachesThisLayer == null || cachesThisLayer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = cachesThisLayer.get(cachesThisLayer.size() - 1).h.clone();
+				cOld = cachesThisLayer.get(cachesThisLayer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp;
+			if (this.selfConnect) {
+				cacheTemp = lstms[lstmIndex].forward(cachesThisLayer.get(cachesThisLayer.size() - 1).a, hOld, cOld);
+			} else {
+				cacheTemp = lstms[lstmIndex].forward(MatrixUtil.create(lstms[lstmIndex].inputSize, 0.0), hOld, cOld);
+			}
+			cachesThisLayer.add(cacheTemp);
+
+			Roulette r = new Roulette(cacheTemp.a);
+			if (r.getY() == terminator) {
+				return;
+			}
+		}
+	}
+
+	private void forwardAtSteps(int lstmIndex, Double[][] input, List<LstmCache> caches1Layer, Integer steps) throws DnnException {
+		Double[] hOld;
+		Double[] cOld;
+		for (int inputIndex = 0; inputIndex < input.length; inputIndex++) {
+			// 1 input
+			if (caches1Layer == null || caches1Layer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = caches1Layer.get(caches1Layer.size() - 1).h.clone();
+				cOld = caches1Layer.get(caches1Layer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp = lstms[lstmIndex].forward(input[inputIndex], hOld, cOld);
+			caches1Layer.add(cacheTemp);
+		}
+		for (int i = 0; i < steps - 1; i++) {
+			if (caches1Layer == null || caches1Layer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = caches1Layer.get(caches1Layer.size() - 1).h.clone();
+				cOld = caches1Layer.get(caches1Layer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp;
+			if (this.selfConnect) {
+				cacheTemp = lstms[lstmIndex].forward(caches1Layer.get(caches1Layer.size() - 1).a, hOld, cOld);
+			} else {
+				cacheTemp = lstms[lstmIndex].forward(MatrixUtil.create(lstms[lstmIndex].inputSize, 0.0), hOld, cOld);
+			}
+			caches1Layer.add(cacheTemp);
+		}
+	}
+
+	private void forwardAtSteps(int lstmIndex, List<LstmCache> cachesLastLayer, List<LstmCache> cachesThisLayer, Integer steps) throws DnnException {
+		Double[] hOld;
+		Double[] cOld;
+		for (int inputIndex = 0; inputIndex < cachesLastLayer.size(); inputIndex++) {
+			// 1 input
+			if (cachesThisLayer == null || cachesThisLayer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = cachesThisLayer.get(cachesThisLayer.size() - 1).h.clone();
+				cOld = cachesThisLayer.get(cachesThisLayer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp = lstms[lstmIndex].forward(cachesLastLayer.get(inputIndex).h, hOld, cOld);
+			cachesThisLayer.add(cacheTemp);
+		}
+		for (int i = 0; i < steps - 1; i++) {
+			if (cachesThisLayer == null || cachesThisLayer.size() == 0) {
+				hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+				cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
+			} else {
+				hOld = cachesThisLayer.get(cachesThisLayer.size() - 1).h.clone();
+				cOld = cachesThisLayer.get(cachesThisLayer.size() - 1).c.clone();
+			}
+			LstmCache cacheTemp;
+			if (this.selfConnect) {
+				cacheTemp = lstms[lstmIndex].forward(cachesThisLayer.get(cachesThisLayer.size() - 1).a, hOld, cOld);
+			} else {
+				cacheTemp = lstms[lstmIndex].forward(MatrixUtil.create(lstms[lstmIndex].inputSize, 0.0), hOld, cOld);
+			}
+			cachesThisLayer.add(cacheTemp);
+		}
+	}
+
+	public Integer[] predictY(Double[][] xs, Integer terminator, Integer steps) throws DnnException {
+
+		if (terminator == null) terminator = this.terminator;
 		List<List<LstmCache>> caches4Predict = new ArrayList<List<LstmCache>>();
 		for (int lstmIndex = 0; lstmIndex < lstms.length; lstmIndex++) {
 			List<LstmCache> caches1Layer4Predict = new ArrayList<LstmCache>();
-			Double[] hOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
-			Double[] cOld = MatrixUtil.create(lstms[lstmIndex].layerSize, 0);
-			if (lstmIndex == 0) {
-				// 1st lstm layer's forward
-				for (int inputIndex = 0; inputIndex < xs.length; inputIndex++) {
-					// 1 input
-					LstmCache cacheTemp = lstms[lstmIndex].forward(xs[inputIndex], hOld, cOld);
-					caches1Layer4Predict.add(cacheTemp);
-					hOld = cacheTemp.h.clone();
-					cOld = cacheTemp.c.clone();
+			if (lstmIndex == 0 && lstmIndex == lstms.length - 1) {
+				// 1-layer's forward
+				if (terminator != null) {
+					forwardTillTerminate(lstmIndex, xs, caches1Layer4Predict, terminator);
+				} else if (steps != null) {
+					forwardAtSteps(lstmIndex, xs, caches1Layer4Predict, steps);
+				} else {
+					forward(lstmIndex, xs, caches1Layer4Predict);
 				}
+			} else if (lstmIndex == lstms.length - 1) {
+				// last layer's forward
+				if (terminator != null) {
+					forwardTillTerminate(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict, terminator);
+				} else if (steps != null) {
+					forwardAtSteps(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict, steps);
+				} else {
+					forward(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict);
+				}
+			} else if (lstmIndex == 0) {
+				// 1st lstm layer's forward
+				forward(lstmIndex, xs, caches1Layer4Predict);
 			} else {
 				// others' forward
-				for (int inputIndex = 0; inputIndex < caches4Predict.get(lstmIndex - 1).size(); inputIndex++) {
-					// 1 input
-					LstmCache cacheTemp = lstms[lstmIndex].forward(caches4Predict.get(lstmIndex - 1).get(inputIndex).h, hOld, cOld);
-					caches1Layer4Predict.add(cacheTemp);
-					hOld = cacheTemp.h.clone();
-					cOld = cacheTemp.c.clone();
-				}
+				forward(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict);
 			}
 			caches4Predict.add(caches1Layer4Predict);
 		}
 
 		List<LstmCache> cacheLast = caches4Predict.get(caches4Predict.size() - 1);
-		Integer[] result = new Integer[cacheLast.size()];
-		for (int i = 0; i < result.length; i++) {
-			Roulette r = new Roulette(cacheLast.get(i).a);
-			result[i] = r.getY();
+		if (this.delay) {
+			Integer[] result = new Integer[cacheLast.size() - xs.length + 1];
+			for (int i = 0; i < result.length; i++) {
+				Roulette r = new Roulette(cacheLast.get(xs.length + i - 1).a);
+				result[i] = r.getY();
+			}
+			return result;
+		} else {
+			Integer[] result = new Integer[cacheLast.size()];
+			for (int i = 0; i < result.length; i++) {
+				Roulette r = new Roulette(cacheLast.get(i).a);
+				result[i] = r.getY();
+			}
+			return result;
+		}
+	}
+
+	public Double[][] predictYs(Double[][] xs, Integer steps) throws DnnException {
+
+		List<List<LstmCache>> caches4Predict = new ArrayList<List<LstmCache>>();
+		for (int lstmIndex = 0; lstmIndex < lstms.length; lstmIndex++) {
+			List<LstmCache> caches1Layer4Predict = new ArrayList<LstmCache>();
+			if (lstmIndex == 0 && lstmIndex == lstms.length - 1) {
+				// 1-layer's forward
+				if (steps != null) {
+					forwardAtSteps(lstmIndex, xs, caches1Layer4Predict, steps);
+				} else {
+					forward(lstmIndex, xs, caches1Layer4Predict);
+				}
+			} else if (lstmIndex == lstms.length - 1) {
+				// last layer's forward
+				if (steps != null) {
+					forwardAtSteps(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict, steps);
+				} else {
+					forward(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict);
+				}
+			} else if (lstmIndex == 0) {
+				// 1st lstm layer's forward
+				forward(lstmIndex, xs, caches1Layer4Predict);
+			} else {
+				// others' forward
+				forward(lstmIndex, caches4Predict.get(lstmIndex - 1), caches1Layer4Predict);
+			}
+			caches4Predict.add(caches1Layer4Predict);
 		}
 
-		return result;
+		List<LstmCache> cacheLast = caches4Predict.get(caches4Predict.size() - 1);
+		if (this.delay) {
+			Double[][] result = new Double[cacheLast.size() - xs.length + 1][];
+			for (int i = 0; i < result.length; i++) {
+				result[i] = cacheLast.get(xs.length + i - 1).a;
+			}
+			return result;
+		} else {
+			Double[][] result = new Double[cacheLast.size()][];
+			for (int i = 0; i < result.length; i++) {
+				result[i] = cacheLast.get(i).a;
+			}
+			return result;
+		}
 	}
 
 	private List<Integer> initIndice(int length) {
@@ -348,7 +636,24 @@ public class DeepLstm extends Dnn<LstmData> {
 		this.testLossIncreaseTolerance = testLossIncreaseTolerance;
 	}
 
+	public void setDelay(boolean delay) {
+		this.delay = delay;
+	}
+
 	public void setTerminator(Integer terminator) {
 		this.terminator = terminator;
+	}
+
+	public void setSelfConnect(boolean selfConnect) throws DnnException {
+		this.selfConnect = selfConnect;
+		if (this.lstms.length < 2) throw new DnnException("层数过少，无法设置层连接");
+		if (this.lstms[lstms.length - 2].outputSize != this.lstms[lstms.length - 2].inputSize) {
+			this.lstms[lstms.length - 2] = new Lstm(this.lstms[lstms.length - 1].outputSize,
+					this.lstms[lstms.length - 2].inputSize,
+					this.lstms[lstms.length - 2].outputSize);
+			this.lstms[lstms.length - 1] = new Lstm(this.lstms[lstms.length - 1].layerSize,
+					this.lstms[lstms.length - 1].outputSize,
+					this.lstms[lstms.length - 1].outputSize);
+		}
 	}
 }

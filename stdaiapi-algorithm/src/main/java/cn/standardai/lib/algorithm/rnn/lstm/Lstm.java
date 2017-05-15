@@ -3,6 +3,7 @@ package cn.standardai.lib.algorithm.rnn.lstm;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.DnnException;
+import cn.standardai.lib.base.function.Normalizer;
 import cn.standardai.lib.base.function.Softmax;
 import cn.standardai.lib.base.function.activate.Sigmoid;
 import cn.standardai.lib.base.function.activate.Tanh;
@@ -144,7 +145,7 @@ public class Lstm extends Dnn<LstmData> {
 		}
 	}
 
-	public void backward(Integer y, LstmDCache dCache, LstmCache cache1, Double[] dhUpper) throws DnnException {
+	public void backward(Integer y1, Double[] y, LstmDCache dCache, LstmCache cache1, Double[] dhUpper) throws DnnException {
 
 		try {
 			Double[][] dwy = null;
@@ -152,18 +153,19 @@ public class Lstm extends Dnn<LstmData> {
 			Double[] dh = null;
 			if (dhUpper == null) {
 				Double[] dy = null;
-				if (y == null) {
-					dy = MatrixUtil.create(cache1.a.length, 0.0);
-					//dy = new Double[cache1.a.length];
-					//for (int i = 0; i < dy.length; i++) {
-					//	dy[i] = cache1.a[i] - 1;
-					//}
-				} else {
+				if (y1 != null) {
 					dy = new Double[cache1.a.length];
 					for (int i = 0; i < dy.length; i++) {
 						dy[i] = cache1.a[i];
 					}
-					dy[y] -= 1;
+					dy[y1] -= 1;
+				} else if (y != null) {
+					dy = new Double[cache1.a.length];
+					for (int i = 0; i < dy.length; i++) {
+						dy[i] = cache1.a[i] - y[i];
+					}
+				} else {
+					dy = MatrixUtil.create(cache1.a.length, 0.0);
 				}
 				dwy = MatrixUtil.multiplyTC(cache1.h, dy);
 				dby = dy.clone();

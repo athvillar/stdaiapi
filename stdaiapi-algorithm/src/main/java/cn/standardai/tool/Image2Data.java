@@ -4,6 +4,9 @@
 */
 package cn.standardai.tool;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -83,5 +86,42 @@ public class Image2Data {
 		}
 
 		return data;
+	}
+
+	public static Integer[][] getGray2(String filepath) throws IOException{
+
+		File file = new File(filepath);
+		File file2 = new File(file.getAbsolutePath());
+		BufferedImage image = ImageIO.read(file2);
+
+		int width = image.getWidth();
+		int height = image.getHeight();
+		Integer[][] data = new Integer[width][height];
+
+		//FileOutputStream fos = new FileOutputStream(new File(newFilepath));
+		for (int i= 0 ; i < width ; i++) {
+			for (int j = 0 ; j < height; j++) {
+				int rgb = image.getRGB(i, j);
+				int R =(rgb & 0xff0000 ) >> 16 ;
+				int G= (rgb & 0xff00 ) >> 8 ;
+				int B= (rgb & 0xff );
+				data[i][j] = (R + G + B) / 3;
+			}
+		}
+
+		return data;
+	}
+
+	public static void drawGray(String fileName, Integer[][] pixels) throws IOException{
+
+		int imageWidth = pixels.length;
+		int imageHeight = pixels[0].length;
+		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+		for (int i = 0; i < imageWidth; i++) {
+			for (int j = 0; j < imageHeight; j++) {
+				image.setRGB(i, j, pixels[i][j] * 256 * 256 + pixels[i][j] * 256 + pixels[i][j]);
+			}
+		}
+		ImageIO.write(image, "PNG", new File(fileName));
 	}
 }

@@ -63,6 +63,8 @@ public class ModelGhost implements Runnable {
 	public void run() {
 
 		if (this.model instanceof DeepLstm) {
+			Integer terminator = (Integer)modelContext.get("terminator");
+			Integer steps = (Integer)modelContext.get("steps");
 			Integer watchEpoch = (Integer)modelContext.get("watchEpoch");
 			((DeepLstm)this.model).setDth((Double)modelContext.get("dth"));
 			((DeepLstm)this.model).setLearningRate((Double)modelContext.get("learningRate"));
@@ -71,6 +73,7 @@ public class ModelGhost implements Runnable {
 			((DeepLstm)this.model).setEpoch((Integer)modelContext.get("epoch"));
 			((DeepLstm)this.model).setTestLossIncreaseTolerance((Integer)modelContext.get("testLossIncreaseTolerance"));
 			((DeepLstm)this.model).setTrainSecond((Integer)modelContext.get("trainSecond"));
+			((DeepLstm)this.model).setDelay((Boolean)modelContext.get("delay"));
 			((DeepLstm)this.model).setWatchEpoch(watchEpoch);
 			this.model.mountData(data);
 
@@ -101,7 +104,7 @@ public class ModelGhost implements Runnable {
 			Double[][] predictXs = getX(hint, dic);
 			Integer[] result;
 			try {
-				result = ((DeepLstm)this.model).predict(predictXs);
+				result = ((DeepLstm)this.model).predictY(predictXs, terminator, steps);
 				for (int i = 0; i < result.length; i++) {
 					System.out.print(dic[result[i]]);
 				}
