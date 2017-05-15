@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.bean.Context;
+import cn.standardai.api.core.util.DateUtil;
 import cn.standardai.api.core.util.HttpUtil;
 
 public class AshLs extends AshCommand {
@@ -40,11 +41,11 @@ public class AshLs extends AshCommand {
 		if (params.length == 1) {
 			result = "modelId\n";
 		} else {
-			result = "modelId\t\t\tupdateTime\t\t\n";
+			result = "modelId\t\t\t\t\t\t\tupdateTime\t\t\n";
 		}
 		for (int i = 0; i < models.size(); i++) {
 			result += models.getJSONObject(i).getString("modelId") + "\t";
-			if (params.length == 1) result += models.getJSONObject(i).getString("updateTime");
+			if (params.length == 2) result += DateUtil.format(models.getJSONObject(i).getDate("updateTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
 			result += "\n";
 		}
 		result += "共" + models.size() + "条记录\n";

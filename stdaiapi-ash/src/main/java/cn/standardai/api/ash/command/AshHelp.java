@@ -16,7 +16,7 @@ public class AshHelp extends AshCommand {
 					+ "其中全局命令\n"
 					+ "\tash       \tcd        \tcurl\n"
 					+ "\techo      \thelp      \thistory\n"
-					+ "\tman       \tmessage   \tlogin\n"
+					+ "\tman       \tmessage  \tlogin\n"
 					+ "\tlogout    \tversion   \t\n"
 					+ "针对某资源的命令\n"
 					+ "\tcat       \tcp        \tdownload\n"
@@ -25,7 +25,7 @@ public class AshHelp extends AshCommand {
 					+ "资源\n"
 					+ "\tdata      \tdataset   \tdic\n"
 					+ "\tdoc       \tmodel     \tnode\n"
-					+ "\ttemplate  \tuser\n"
+					+ "\ttemplate \tuser\n"
 					+ "查看某个命令的具体使用方式请输入“man 命令名”，查看某项资源介绍请输入“help 资源名”\n";
 		}
 
