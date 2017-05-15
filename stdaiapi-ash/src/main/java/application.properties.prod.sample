@@ -1,8 +1,8 @@
-app.name=stdaiapi-biz
-app.description=${app.name} provide a service layer of business
+app.name=stdaiapi-ash
+app.description=${app.name} provide a service layer of athvillar shell
 
-server.port=10104
-server.context-path=/biz
+server.port=10106
+server.context-path=/ash
 
 # dev, qa, prod, home
 spring.profiles.active=prod
