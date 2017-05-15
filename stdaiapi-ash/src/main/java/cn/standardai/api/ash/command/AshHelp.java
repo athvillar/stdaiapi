@@ -31,7 +31,7 @@ public class AshHelp extends AshCommand {
 
 		AshResource resource = AshResource.getInstance(params[1]);
 		if (resource == null) {
-			return "没有找到" + params[1];
+			return "没有找到" + params[1] + "\n";
 		}
 
 		return resource.help();

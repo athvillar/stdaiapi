@@ -11,7 +11,7 @@ public class AshMan extends AshCommand {
 
 		AshCommand command = AshCommand.getInstance(params[1]);
 		if (command == null) {
-			return "没有找到" + params[1];
+			return "没有找到" + params[1] + "\n";
 		}
 
 		return command.man();
