@@ -22,7 +22,7 @@ public class AshLs extends AshCommand {
 		JSONObject j = JSONObject.parseObject(s);
 
 		JSONArray models = j.getJSONArray("models");
-		if (models == null) return "没有记录";
+		if (models == null) return "没有记录\n";
 
 		String result;
 		if (params.length == 1) {
@@ -35,7 +35,7 @@ public class AshLs extends AshCommand {
 			if (params.length == 1) result += models.getJSONObject(i).getString("updateTime");
 			result += "\n";
 		}
-		result += "共" + models.size() + "条记录";
+		result += "共" + models.size() + "条记录\n";
 
 		return result;
 	}
