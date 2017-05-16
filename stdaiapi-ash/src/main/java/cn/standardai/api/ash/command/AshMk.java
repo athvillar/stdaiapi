@@ -48,8 +48,8 @@ public class AshMk extends AshCommand {
 	public String man() {
 		return "mk命令用于创建资源\n"
 				+ "用法：\n"
-				+ "\tmk [资源]\n"
-				+ "创建用户: \n"
-				+ "\tmk user";
+				+ "\tmk 资源\n"
+				+ "例:\n"
+				+ "\t创建用户:\tmk user";
 	}
 }

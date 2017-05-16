@@ -32,13 +32,13 @@ public class AshLogin extends AshCommand {
 
 	@Override
 	public String help() {
-		return "login命令格式：login [用户名]";
+		return "login命令格式：login [用户名] [密码]";
 	}
 
 	@Override
 	public String man() {
 		return "login命令用于用户登录\n"
 				+ "用法：\n"
-				+ "\tlogin [用户名]";
+				+ "\tlogin [用户名] [密码]";
 	}
 }

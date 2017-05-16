@@ -16,7 +16,7 @@ public class AshHelp extends AshCommand {
 					+ "其中全局命令\n"
 					+ "\tash(未完成)\t\t\tcd(未完成)\t\t\tcurl(未完成)\n"
 					+ "\techo(未完成)\t\t\thelp\t\t\t\t\thistory(未完成)\n"
-					+ "\tman\t\t\t\t\tmessage\t\t\t\tlogin\n"
+					+ "\tman\t\t\t\t\tmsg\t\t\t\t\tlogin\n"
 					+ "\tlogout(未完成)\t\t\tversion(未完成)\n"
 					+ "针对某资源的命令\n"
 					+ "\tcat(未完成)\t\t\tcp(未完成)\t\t\tdownload(未完成)\n"
@@ -52,6 +52,6 @@ public class AshHelp extends AshCommand {
 				+ "用法\n"
 				+ "\thelp [-c 名词]\n"
 				+ "参数\n"
-				+ "\t-c: 显示某个名词解释";
+				+ "\t-c:\t显示某个名词解释";
 	}
 }
