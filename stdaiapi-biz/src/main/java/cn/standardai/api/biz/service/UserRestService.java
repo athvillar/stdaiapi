@@ -69,11 +69,13 @@ public class UserRestService extends BaseService<UserAgent> {
 				if (agent != null) agent.done();
 				if (this.agent != null) this.agent.done();
 			}
+			logger.info("stdaiapi-biz 结束更新用户(" + result + ")");
 			return result.toString();
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 			if (this.agent != null) this.agent.done();
+			logger.info("stdaiapi-biz 结束更新用户(" + result + ")");
 			return result.toString();
 		}
 		try {

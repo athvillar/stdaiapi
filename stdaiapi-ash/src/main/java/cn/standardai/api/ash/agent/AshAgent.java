@@ -3,6 +3,8 @@ package cn.standardai.api.ash.agent;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.command.AshCommand;
+import cn.standardai.api.ash.command.AshLogin;
+import cn.standardai.api.ash.command.AshMk;
 import cn.standardai.api.core.base.AuthAgent;
 
 public class AshAgent extends AuthAgent {
@@ -28,6 +30,8 @@ public class AshAgent extends AuthAgent {
 			return result;
 		}
 		result.put("display", ashCommand.exec(commands));
+		if (ashCommand instanceof AshLogin) result.put("token", ashCommand.token);
+		if (ashCommand instanceof AshMk) result.put("token", ashCommand.token);
 
 		return result;
 	}

@@ -9,7 +9,7 @@ public abstract class AshCommand {
 
 	public enum Command {
 
-		help("help"), ls("ls"), man("man"), rm("rm"), msg("msg"), message("message");
+		help("help"), ls("ls"), man("man"), rm("rm"), msg("msg"), message("message"), login("login"), mk("mk");
 
 		String command;
 
@@ -60,6 +60,10 @@ public abstract class AshCommand {
 			return new AshMsg(token);
 		case rm:
 			return new AshRm(token);
+		case login:
+			return new AshLogin(token);
+		case mk:
+			return new AshMk(token);
 		}
 		return null;
 	}

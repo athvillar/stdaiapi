@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.agent.AshAgent;
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.exception.AuthException;
 import cn.standardai.api.core.exception.StdaiException;
 
 @Controller
@@ -29,10 +30,21 @@ public class AshService extends BaseService<AshAgent> {
 	public String upgradeUserById(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
 		logger.info("stdaiapi-ash 收到ash请求(request=" + request + ")");
 		JSONObject result = new JSONObject();
+		AshAgent agent = null;
 		try {
-			initAgent(headers, AshAgent.class);
+			if ("login".equals(request.getString("ash").split(" ")[0])) {
+				agent = new AshAgent();
+			} else if ("mk".equals(request.getString("ash").split(" ")[0]) && "user".equals(request.getString("ash").split(" ")[1])) {
+				agent = new AshAgent();
+			} else {
+				initAgent(headers, AshAgent.class);
+				agent = this.agent;
+			}
 			result = agent.exec(request);
 			result.put("result", "success");
+		} catch (AuthException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+			result.put("display", "请使用login登陆或mk user注册");
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
