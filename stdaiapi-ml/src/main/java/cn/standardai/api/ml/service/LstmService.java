@@ -106,4 +106,24 @@ public class LstmService extends BaseService<LstmAgent> {
 		logger.info("stdaiapi-ml lstm GET finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
+	
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public String delete(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-ml delete/" + id + " DELETE start");
+		JSONObject result = null;
+		try {
+			initAgent(headers, LstmAgent.class);
+			result = agent.delete(id);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-ml delete/" + id + " DELETE finish (response:" + result.toJSONString() + ")");
+		return result.toString();
+	}
 }

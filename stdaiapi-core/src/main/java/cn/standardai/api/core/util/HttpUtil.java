@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -26,6 +25,7 @@ public class HttpUtil {
 
 	private static final String GET = "GET";
 	private static final String POST = "POST";
+	private static final String DELETE = "DELETE";
 	private static final String CHARSET = "UTF-8";
 
 	private static HttpURLConnection getHttpConnection(String url, String method, Map<String, String> headers, int timeOut)
@@ -120,23 +120,19 @@ public class HttpUtil {
 	}
 
 	public static String delete(String url, Map<String, String> queryParas, Map<String, String> headers) {
-
+		HttpURLConnection conn = null;
 		try {
-			HttpClient client = new DefaultHttpClient();
-			HttpDelete put = new HttpDelete(buildUrlWithQueryString(url, queryParas));
-			put.setHeader("Content-type", "application/json");
-
-			HttpResponse response = client.execute(put);
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-			StringBuffer result = new StringBuffer();
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				result.append(line);
-			}
-			return result.toString();
+			conn = getHttpConnection(buildUrlWithQueryString(url, queryParas), DELETE, headers, 3 * 60 * 1000);
+			conn.setRequestProperty("Content-Type", "application/json");
+			conn.connect();
+			String outStr = readResponseString(conn);
+			return outStr;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
 		}
 	}
 

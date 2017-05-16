@@ -229,4 +229,12 @@ public class LstmAgent extends AuthAgent {
 		result.put("models", jsonModels);
 		return result;
 	}
+
+	public JSONObject delete(String modelId) throws MLException {
+		JSONObject result = new JSONObject();
+		if (mh.deleteModel(modelId, userId) == 0) {
+			throw new MLException("删除异常");
+		}
+		return result;
+	}
 }
