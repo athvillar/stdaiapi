@@ -9,7 +9,7 @@ public abstract class AshCommand {
 
 	public enum Command {
 
-		help("help"), ls("ls"), man("man");
+		help("help"), ls("ls"), man("man"), msg("msg"), message("message");
 
 		String command;
 
@@ -40,6 +40,10 @@ public abstract class AshCommand {
 
 	public abstract String man();
 
+	public String help(String msg) {
+		return msg + "\n" + this.help();
+	}
+
 	public static AshCommand getInstance(String commandString, String token) {
 		Command command = AshCommand.Command.resolve(commandString);
 		if (command == null) return null;
@@ -50,6 +54,10 @@ public abstract class AshCommand {
 			return new AshLs(token);
 		case man:
 			return new AshMan(token);
+		case msg:
+			return new AshMsg(token);
+		case message:
+			return new AshMsg(token);
 		}
 		return null;
 	}

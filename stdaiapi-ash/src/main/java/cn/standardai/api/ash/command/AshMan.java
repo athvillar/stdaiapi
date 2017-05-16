@@ -10,12 +10,12 @@ public class AshMan extends AshCommand {
 	public String exec(String[] params) {
 
 		if (params.length != 2) {
-			return this.help();
+			return this.help("参数个数不正确");
 		}
 
 		AshCommand command = AshCommand.getInstance(params[1], this.token);
 		if (command == null) {
-			return "没有找到" + params[1] + "\n";
+			return "没有找到" + params[1];
 		}
 
 		return command.man();
@@ -23,13 +23,13 @@ public class AshMan extends AshCommand {
 
 	@Override
 	public String help() {
-		return "man命令格式：man [命令名]\n";
+		return "man命令格式：man [命令名]";
 	}
 
 	@Override
 	public String man() {
 		return "man命令用于显示帮助信息\n"
 				+ "用法\n"
-				+ "\tman [命令名]\n";
+				+ "\tman [命令名]";
 	}
 }

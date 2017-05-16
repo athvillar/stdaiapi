@@ -12,19 +12,19 @@ public class AshAgent extends AuthAgent {
 		JSONObject result = new JSONObject();
 		String commandLine = request.getString("ash");
 		if (commandLine == null) {
-			result.put("message", "缺少命令，如需帮助，请输入“help”\n");
+			result.put("message", "缺少命令，如需帮助，请输入“help”");
 			return result;
 		};
 		String[] commands = commandLine.split(" ");
 		if (commands == null) {
-			result.put("message", "缺少命令，如需帮助，请输入“help”\n");
+			result.put("message", "缺少命令，如需帮助，请输入“help”");
 			return result;
 		};
 
 		String resource = request.getString("resource");
 		AshCommand ashCommand = AshCommand.getInstance(commands[0], this.getToken());
 		if (ashCommand == null) {
-			result.put("message", "无此命令，或者此命令正在开发中，如需帮助，请输入“help”\n");
+			result.put("message", "无此命令，或者此命令正在开发中，如需帮助，请输入“help”");
 			return result;
 		}
 		result.put("display", ashCommand.exec(commands));

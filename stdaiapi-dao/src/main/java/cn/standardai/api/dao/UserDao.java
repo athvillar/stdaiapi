@@ -21,6 +21,9 @@ public interface UserDao {
 	@Select({"SELECT * FROM USER WHERE USERID = #{userId}"})
 	List<User> selectById(@Param("userId") String userId);
 
+	@Select({"SELECT * FROM USER"})
+	List<User> select();
+
 	@Insert({"INSERT INTO USER (USERID, PASSWORD, EMAIL, REGISTTIME, LASTLOGINTIME, STATUS) ",
 		"VALUES (#{param.userId}, #{param.password}, #{param.email}, NOW(), NOW(), '2')"})
 	void insert(@Param("param") User param);
