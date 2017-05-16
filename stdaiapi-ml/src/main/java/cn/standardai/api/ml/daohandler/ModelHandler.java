@@ -159,4 +159,13 @@ public class ModelHandler {
 		List<Model> models = modelDao.selectByUserId(userId);
 		return models;
 	}
+
+	public int deleteModel(String modelId, String userId) throws MLException {
+		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
+		Integer count = modelDao.selectCountByIdUserId(modelId, userId);
+		if (count == 0) {
+			throw new MLException("模型不存在");
+		}
+		return modelDao.deleteById(modelId);
+	}
 }

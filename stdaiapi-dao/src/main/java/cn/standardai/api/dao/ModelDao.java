@@ -19,6 +19,9 @@ public interface ModelDao {
 
 	@Select({"SELECT COUNT(*) FROM MODEL WHERE MODELID = #{modelId} AND MODELTEMPLATEID = #{modelTemplateId}"})
 	Integer selectCountByIdModelTemplateId(@Param("modelId") String modelId, @Param("modelTemplateId") String modelTemplateId);
+	
+	@Select({"SELECT COUNT(*) FROM MODEL WHERE MODELID = #{modelId} AND USERID = #{userId}"})
+	Integer selectCountByIdUserId(@Param("modelId") String modelId, @Param("userId") String userId);
 
 	@Select({"SELECT * FROM MODEL WHERE MODELID = #{modelId}"})
 	Model selectById(@Param("modelId") String modelId);
@@ -47,5 +50,5 @@ public interface ModelDao {
 	List<Model> updateStructureById(@Param("param") Model param);
 
 	@Delete({"DELETE FROM MODEL WHERE MODELID = #{modelId}"})
-	void deleteById(@Param("modelId") String modelId);
+	Integer deleteById(@Param("modelId") String modelId);
 }
