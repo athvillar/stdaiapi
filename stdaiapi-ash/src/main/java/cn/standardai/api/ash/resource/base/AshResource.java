@@ -13,20 +13,20 @@ import cn.standardai.api.ash.command.AshRm;
 import cn.standardai.api.ash.command.base.AshResourceCommand;
 import cn.standardai.api.ash.command.base.AshCommand.HttpMethod;
 import cn.standardai.api.ash.exception.AshException;
+import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.ash.resource.AshModel;
+import cn.standardai.api.ash.resource.AshUser;
 import cn.standardai.api.core.util.HttpUtil;
 
 public abstract class AshResource {
 
-	private String help;
-
 	private String token;
 
-	public AshReply reply;
+	protected AshReply reply;
 
 	public enum Resource {
 
-		model("model");
+		model("model"), user("user"), dataset("dataset");
 
 		String resource;
 
@@ -59,10 +59,7 @@ public abstract class AshResource {
 
 	public abstract void parseParam(AshCommandParams params);
 
-	public AshReply help() {
-		this.reply.display = this.help;
-		return this.reply;
-	}
+	public abstract AshReply help();
 
 	public static AshResource getInstance(String resourceString) {
 		Resource resource = Resource.resolve(resourceString);
@@ -74,6 +71,10 @@ public abstract class AshResource {
 		switch (resource) {
 		case model:
 			return new AshModel();
+		case dataset:
+			return new AshModel();
+		case user:
+			return new AshUser();
 		}
 		return null;
 	}
@@ -91,7 +92,7 @@ public abstract class AshResource {
 		return this.reply;
 	}
 
-	public JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body) throws AshException {
+	public JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body) throws HttpException {
 		Map<String, String> headers = null;
 		if (this.token != null) {
 			headers = new HashMap<String, String>();
@@ -113,9 +114,7 @@ public abstract class AshResource {
 			break;
 		}
 		if (!"success".equals(result.getString("result"))) {
-			this.reply.display = "系统错误";
-			this.reply.message = result.getString("message");
-			throw new AshException("系统错误", result.getString("message"));
+			throw new HttpException(result.getString("message"));
 		}
 		return result;
 	}

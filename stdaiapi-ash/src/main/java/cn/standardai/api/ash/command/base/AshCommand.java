@@ -15,21 +15,10 @@ import cn.standardai.api.ash.command.AshMk;
 import cn.standardai.api.ash.command.AshMsg;
 import cn.standardai.api.ash.command.AshRm;
 import cn.standardai.api.ash.exception.AshException;
+import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.core.util.HttpUtil;
 
 public abstract class AshCommand {
-
-	public String token;
-
-	private String help;
-
-	private String man;
-
-	public AshReply reply;
-
-	protected AshCommandParams params;
-
-	public enum HttpMethod { GET, POST, PUT, DELETE }
 
 	public enum Command {
 
@@ -54,40 +43,41 @@ public abstract class AshCommand {
 		}
 	}
 
+	public enum HttpMethod { GET, POST, PUT, DELETE }
+
+	public String token;
+
+	protected AshReply reply;
+
+	public char[] fp = null;
+
+	public char[] vp = null;
+
+	public Integer pNumMax = null;
+
+	public Integer pNumMin = null;
+
+	protected AshCommandParams params;
+
 	public AshCommand() {
 		this.reply = new AshReply();
 	}
 
-	public abstract void invoke() throws AshException;
-
-	public AshReply exec(String ashString, String token) throws AshException {
+	public AshReply exec(String[] params, String token) throws AshException {
 		this.token = token;
-		this.params = parseParam(ashString);
+		this.params = parseParam(params);
 		invoke();
 		return this.reply;
 	}
 
-	private AshCommandParams parseParam(String ashString) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public abstract void invoke() throws AshException;
 
-	public AshReply help() {
-		this.reply.display = this.help;
-		return this.reply;
-	}
+	public abstract AshReply help();
 
-	public AshReply man() {
-		this.reply.display = this.man;
-		return this.reply;
-	}
-
-	public AshReply help(String msg) {
-		this.reply.display = msg + "\n" + this.help();
-		return this.reply;
-	}
+	public abstract AshReply man();
 
 	public static AshCommand getInstance(String commandString) {
+
 		Command command = AshCommand.Command.resolve(commandString);
 		if (command == null) return null;
 		switch (command) {
@@ -111,7 +101,21 @@ public abstract class AshCommand {
 		return null;
 	}
 
-	public JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body) throws AshException {
+	protected void setParamRules(char[] fp, char[] vp, Integer pNumMax, Integer pNumMin) {
+		// -x
+		this.fp = fp;
+		// -x x
+		this.vp = vp;
+		// xx xx xx
+		this.pNumMax = pNumMax;
+		this.pNumMin = pNumMin;
+	}
+
+	private AshCommandParams parseParam(String[] paramStrings) throws AshException {
+		return AshCommandParams.parse(paramStrings, fp, vp, pNumMax, pNumMin);
+	}
+
+	public JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body) throws HttpException {
 		Map<String, String> headers = null;
 		if (this.token != null) {
 			headers = new HashMap<String, String>();
@@ -133,9 +137,7 @@ public abstract class AshCommand {
 			break;
 		}
 		if (!"success".equals(result.getString("result"))) {
-			this.reply.display = "系统错误";
-			this.reply.message = result.getString("message");
-			throw new AshException("系统错误", result.getString("message"));
+			throw new HttpException(result.getString("message"));
 		}
 		return result;
 	}

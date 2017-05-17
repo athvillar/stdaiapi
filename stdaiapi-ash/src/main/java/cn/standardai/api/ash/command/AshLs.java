@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.base.AshResourceCommand;
 import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.DateUtil;
@@ -13,14 +14,9 @@ import cn.standardai.api.core.util.HttpUtil;
 
 public class AshLs extends AshResourceCommand {
 
-	protected final String help = "ls命令格式：ls [-l]";
-
-	protected final String man = "msg(message)命令用于接收或发送消息\n"
-				+ "ls命令用于显示当前资源类别下的所有资源\n"
-				+ "用法：\n"
-				+ "\tls -参数\n"
-				+ "参数：\n"
-				+ "\t-l: 显示详细信息";
+	public AshLs() {
+		setParamRules(new char[] {'l'}, null, 0, null);
+	}
 
 	@Override
 	public void invoke() {
@@ -38,16 +34,32 @@ public class AshLs extends AshResourceCommand {
 		if (models == null) this.reply.display = "没有记录";
 
 		String result;
-		if (params.has("l")) {
+		if (params.has('l')) {
 			result = "modelId\t\t\t\t\t\t\t\t\tupdateTime\t\t";
 		} else {
 			result = "modelId";
 		}
 		for (int i = 0; i < models.size(); i++) {
 			result += "\n" + models.getJSONObject(i).getString("modelId") + "\t";
-			if (params.has("l")) result += DateUtil.format(models.getJSONObject(i).getDate("updateTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
+			if (params.has('l')) result += DateUtil.format(models.getJSONObject(i).getDate("updateTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
 		}
 		result += "\n共" + models.size() + "条记录";
 		this.reply.display = result;
+	}
+
+	@Override
+	public AshReply help() {
+		this.reply.display = "ls命令格式：ls [-l]";
+		return this.reply;
+	}
+
+	@Override
+	public AshReply man() {
+		this.reply.display = "ls命令用于显示当前资源类别下的所有资源\n"
+				+ "用法：\n"
+				+ "\tls -参数\n"
+				+ "参数：\n"
+				+ "\t-l: 显示详细信息";
+		return this.reply;
 	}
 }

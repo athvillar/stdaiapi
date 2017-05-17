@@ -6,11 +6,15 @@ import cn.standardai.api.ash.resource.base.AshResource.Resource;
 
 public abstract class AshResourceCommand extends AshCommand {
 
-	protected Resource resource;
+	private Resource resource;
 
 	@Override
 	public void invoke() throws AshException {
 		AshResource ashResource = AshResource.getInstance(this.resource);
 		this.reply = ashResource.invoke(this.getClass(), this.params, this.token);
+	}
+
+	public void setResource(Resource resource) {
+		this.resource = resource;
 	}
 }

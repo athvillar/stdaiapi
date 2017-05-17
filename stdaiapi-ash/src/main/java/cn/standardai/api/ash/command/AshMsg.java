@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.base.AshCommonCommand;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.core.bean.Context;
@@ -13,29 +14,20 @@ import cn.standardai.api.core.util.DateUtil;
 
 public class AshMsg extends AshCommonCommand {
 
-	protected final String help = "msg(message)命令格式：msg [-a] [-d] [-n] [-u 用户] [内容]";
-
-	protected final String man = "msg(message)命令用于接收或发送消息\n"
-				+ "用法：\n"
-				+ "\tmsg(message) [-a] [-d] [-n] [-u 用户] [内容]\n"
-				+ "参数：\n"
-				+ "\t-a:\t在接收消息时，-a为显示所有信息，如没有此选项，默认显示未读消息\n"
-				+ "\t\t在发送消息时，-a为向所有人发送广播，此时-u被忽略\n"
-				+ "\t-d:\t删除历史消息，消息将被全部删除，且忽略其它参数\n"
-				+ "\t-n:\tn为显示消息的最大条数\n"
-				+ "\t-u [用户]:\t在接收消息时，-u为显示该用户的消息，默认显示所有用户消息\n"
-				+ "\t\t在发送消息时，-u为给该用户发送消息，省略-u默认给系统管理员发送消息";
+	public AshMsg() {
+		setParamRules(new char[] { 'a', 'd' }, new char[] { 'u' }, null, 0);
+	}
 
 	@Override
 	public void invoke() throws AshException {
 
 		boolean receive = false;
-		boolean all = params.has("a");
-		boolean delete = params.has("d");
-		Integer number = Integer.parseInt(params.get("n"));
-		String user = params.get("u");
+		boolean all = params.has('a');
+		boolean delete = params.has('d');
+		Integer number = params.getInteger();
+		String user = params.get('u');
 		String content = params.get(1);
-		if ("".equals(content)) receive = true;
+		if (content == null) receive = true;
 
 		if (delete) {
 			Map<String, String> queryParams = new HashMap<String, String>();
@@ -79,5 +71,26 @@ public class AshMsg extends AshCommonCommand {
 			reply.display = "发送成功";
 			return;
 		}
+	}
+
+	@Override
+	public AshReply help() {
+		this.reply.display = "msg(message)命令格式：msg [-a] [-d] [-n] [-u 用户] [内容]";
+		return this.reply;
+	}
+
+	@Override
+	public AshReply man() {
+		this.reply.display = "msg(message)命令用于接收或发送消息\n"
+				+ "用法：\n"
+				+ "\tmsg(message) [-a] [-d] [-n] [-u 用户] [内容]\n"
+				+ "参数：\n"
+				+ "\t-a:\t在接收消息时，-a为显示所有信息，如没有此选项，默认显示未读消息\n"
+				+ "\t\t在发送消息时，-a为向所有人发送广播，此时-u被忽略\n"
+				+ "\t-d:\t删除历史消息，消息将被全部删除，且忽略其它参数\n"
+				+ "\t-n:\tn为显示消息的最大条数\n"
+				+ "\t-u [用户]:\t在接收消息时，-u为显示该用户的消息，默认显示所有用户消息\n"
+				+ "\t\t在发送消息时，-u为给该用户发送消息，省略-u默认给系统管理员发送消息";
+		return this.reply;
 	}
 }

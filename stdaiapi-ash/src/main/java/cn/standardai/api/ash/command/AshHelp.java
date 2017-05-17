@@ -1,17 +1,14 @@
 package cn.standardai.api.ash.command;
 
+import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.base.AshCommonCommand;
 import cn.standardai.api.ash.resource.base.AshResource;
 
 public class AshHelp extends AshCommonCommand {
 
-	protected final String help = "help命令格式：help [名词]";
-
-	protected final String man = "help命令用于显示帮助信息\n"
-				+ "用法\n"
-				+ "\thelp [-c 名词]\n"
-				+ "参数\n"
-				+ "\t-c:\t显示某个名词解释";
+	public AshHelp() {
+		setParamRules(null, null, 1, null);
+	}
 
 	@Override
 	public void invoke() {
@@ -32,13 +29,31 @@ public class AshHelp extends AshCommonCommand {
 					+ "\tdoc(未完成)\t\t\tmodel\t\t\t\tnode(未完成)\n"
 					+ "\ttemplate(未完成)\t\tuser(未完成)\n"
 					+ "查看某个命令的具体使用方式请输入“man 命令名”，查看某项资源介绍请输入“help 资源名”";
+			return;
 		}
 
 		AshResource resource = AshResource.getInstance(params.get(1));
 		if (resource == null) {
 			this.reply.display = "没有找到" + params.get(1);
+			return;
 		}
-
 		this.reply.display = resource.help().display;
+		return;
+	}
+
+	@Override
+	public AshReply help() {
+		this.reply.display = "help命令格式：help [名词]";
+		return this.reply;
+	}
+
+	@Override
+	public AshReply man() {
+		this.reply.display = "help命令用于显示帮助信息\n"
+				+ "用法\n"
+				+ "\thelp [-c 名词]\n"
+				+ "参数\n"
+				+ "\t-c:\t显示某个名词解释";
+		return this.reply;
 	}
 }

@@ -16,7 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.ash.agent.AshAgent;
 import cn.standardai.api.core.base.BaseService;
 import cn.standardai.api.core.exception.AuthException;
-import cn.standardai.api.core.exception.StdaiException;
 
 @Controller
 @RestController
@@ -32,9 +31,9 @@ public class AshService extends BaseService<AshAgent> {
 		JSONObject result = new JSONObject();
 		AshAgent agent = null;
 		try {
-			if ("login".equals(request.getString("ash").split(" ")[0])) {
-				agent = new AshAgent();
-			} else if ("mk".equals(request.getString("ash").split(" ")[0]) && "user".equals(request.getString("ash").split(" ")[1])) {
+			String[] inputs = request.getString("ash").split(" ");
+			if ((inputs != null && inputs.length >= 1 && "login".equals(inputs[0])) ||
+					(inputs.length >= 2 && "mk".equals(inputs[0]) && "user".equals(inputs[1]))) {
 				agent = new AshAgent();
 			} else {
 				initAgent(headers, AshAgent.class);
@@ -45,11 +44,10 @@ public class AshService extends BaseService<AshAgent> {
 		} catch (AuthException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 			result.put("display", "请使用login登陆或mk user注册");
-		} catch (StdaiException e) {
-			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+			result.put("display", "如需帮助，请使用msg命令联系管理员");
 		} finally {
 			if (agent != null) agent.done();
 		}

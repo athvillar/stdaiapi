@@ -13,8 +13,4 @@ public class AshException extends StdaiException {
 	public AshException(String msg, Throwable e) {
 		super(msg, e);
 	}
-
-	public AshException(String msg, String message) {
-		super(msg);
-	}
 }
