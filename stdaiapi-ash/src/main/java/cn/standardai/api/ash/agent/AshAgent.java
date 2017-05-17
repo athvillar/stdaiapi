@@ -2,9 +2,9 @@ package cn.standardai.api.ash.agent;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.api.ash.command.AshCommand;
-import cn.standardai.api.ash.command.AshLogin;
-import cn.standardai.api.ash.command.AshMk;
+import cn.standardai.api.ash.bean.AshReply;
+import cn.standardai.api.ash.command.base.AshCommand;
+import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.core.base.AuthAgent;
 
 public class AshAgent extends AuthAgent {
@@ -24,14 +24,22 @@ public class AshAgent extends AuthAgent {
 		};
 
 		String resource = request.getString("resource");
-		AshCommand ashCommand = AshCommand.getInstance(commands[0], this.getToken());
+		AshCommand ashCommand = AshCommand.getInstance(commands[0]);
 		if (ashCommand == null) {
 			result.put("message", "无此命令，或者此命令正在开发中，如需帮助，请输入“help”");
 			return result;
 		}
-		result.put("display", ashCommand.exec(commands));
-		if (ashCommand instanceof AshLogin) result.put("token", ashCommand.token);
-		if (ashCommand instanceof AshMk) result.put("token", ashCommand.token);
+		AshReply reply;
+		try {
+			reply = ashCommand.exec(commandLine, this.getToken());
+			result.put("display", reply.display);
+			//result.put("message", reply.message);
+			result.put("hidden", reply.hidden);
+		} catch (AshException e) {
+			result.put("display", "系统错误");
+			result.put("message", e.getMessage());
+			//result.put("hidden", reply.hidden);
+		}
 
 		return result;
 	}

@@ -1,6 +1,5 @@
 package cn.standardai.api.ash.exception;
 
-import cn.standardai.api.ash.command.AshCommand;
 import cn.standardai.api.core.exception.StdaiException;
 
 public class AshException extends StdaiException {
@@ -15,7 +14,7 @@ public class AshException extends StdaiException {
 		super(msg, e);
 	}
 
-	public AshException(String msg, AshCommand comm) {
+	public AshException(String msg, String message) {
 		super(msg);
 	}
 }
