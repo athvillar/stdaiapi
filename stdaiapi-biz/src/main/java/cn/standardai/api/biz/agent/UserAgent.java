@@ -36,6 +36,7 @@ public class UserAgent extends AuthAgent {
 
 	public JSONObject create(String userId, JSONObject request) throws UnsupportedEncodingException, BizException {
 
+		if (userId == null || request.getString("password") == null || request.getString("email") == null) throw new BizException("缺少必要的信息");
 		JSONObject result = new JSONObject();
 		UserDao dao = daoHandler.getMySQLMapper(UserDao.class);
 		User param = new User();

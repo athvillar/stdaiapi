@@ -8,12 +8,15 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.ash.bean.AshCommandParams;
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.AshHelp;
+import cn.standardai.api.ash.command.AshHistory;
 import cn.standardai.api.ash.command.AshLogin;
+import cn.standardai.api.ash.command.AshLogout;
 import cn.standardai.api.ash.command.AshLs;
 import cn.standardai.api.ash.command.AshMan;
 import cn.standardai.api.ash.command.AshMk;
 import cn.standardai.api.ash.command.AshMsg;
 import cn.standardai.api.ash.command.AshRm;
+import cn.standardai.api.ash.command.AshVersion;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.core.util.HttpUtil;
@@ -22,7 +25,8 @@ public abstract class AshCommand {
 
 	public enum Command {
 
-		help("help"), ls("ls"), man("man"), rm("rm"), msg("msg"), message("message"), login("login"), mk("mk");
+		help("help"), history("history"), ls("ls"), man("man"), rm("rm"),
+		msg("msg"), message("message"), login("login"), logout("logout"), mk("mk"), version("version");
 
 		String command;
 
@@ -83,6 +87,8 @@ public abstract class AshCommand {
 		switch (command) {
 		case help:
 			return new AshHelp();
+		case history:
+			return new AshHistory();
 		case ls:
 			return new AshLs();
 		case man:
@@ -95,8 +101,12 @@ public abstract class AshCommand {
 			return new AshRm();
 		case login:
 			return new AshLogin();
+		case logout:
+			return new AshLogout();
 		case mk:
 			return new AshMk();
+		case version:
+			return new AshVersion();
 		}
 		return null;
 	}

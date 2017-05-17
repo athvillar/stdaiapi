@@ -60,10 +60,12 @@ public class UserRestService extends BaseService<UserAgent> {
 				result = agent.create(id, request);
 			} catch (StdaiException e2) {
 				result = makeResponse(ReturnType.FAILURE, null, e2.getMessage());
+				logger.info("stdaiapi-biz 结束更新用户(" + result + ")");
 				return result.toString();
 			} catch (Exception e2) {
-				e.printStackTrace();
+				e2.printStackTrace();
 				result = makeResponse(ReturnType.FAILURE, null, e2.getMessage());
+				logger.info("stdaiapi-biz 结束更新用户(" + result + ")");
 				return result.toString();
 			} finally {
 				if (agent != null) agent.done();
