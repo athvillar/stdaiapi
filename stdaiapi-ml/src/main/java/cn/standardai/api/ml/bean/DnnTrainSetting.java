@@ -1,0 +1,113 @@
+package cn.standardai.api.ml.bean;
+
+import com.alibaba.fastjson.JSONObject;
+
+import cn.standardai.api.ml.exception.JSONFormatException;
+
+public class DnnTrainSetting {
+
+	private int[] diverseDataRate;
+
+	private Double dth;
+
+	private Double learningRate;
+
+	private Integer epoch;
+
+	private Integer trainSecond;
+
+	private Integer batchSize;
+
+	private Integer watchEpoch;
+
+	private Integer testLossIncreaseTolerance;
+
+	public Double getDth() {
+		return dth;
+	}
+
+	public void setDth(Double dth) {
+		this.dth = dth;
+	}
+
+	public Double getLearningRate() {
+		return learningRate;
+	}
+
+	public void setLearningRate(Double learningRate) {
+		this.learningRate = learningRate;
+	}
+
+	public Integer getEpoch() {
+		return epoch;
+	}
+
+	public void setEpoch(Integer epoch) {
+		this.epoch = epoch;
+	}
+
+	public Integer getTrainSecond() {
+		return trainSecond;
+	}
+
+	public void setTrainSecond(Integer trainSecond) {
+		this.trainSecond = trainSecond;
+	}
+
+	public Integer getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public Integer getWatchEpoch() {
+		return watchEpoch;
+	}
+
+	public void setWatchEpoch(Integer watchEpoch) {
+		this.watchEpoch = watchEpoch;
+	}
+
+	public Integer getTestLossIncreaseTolerance() {
+		return testLossIncreaseTolerance;
+	}
+
+	public void setTestLossIncreaseTolerance(Integer testLossIncreaseTolerance) {
+		this.testLossIncreaseTolerance = testLossIncreaseTolerance;
+	}
+	
+	/*
+	 *   "train":{
+	 *     "dth":1,
+	 *     "learningRate":0.07,
+	 *     "epoch":8000,
+	 *     "trainSecond": 3600,
+	 *     "batchSize": 100,
+	 *     "watchEpoch":1,
+	 *     "testLossIncreaseTolerance":3
+	 *   }
+	 */
+	public static DnnTrainSetting parse(JSONObject json) throws JSONFormatException {
+
+		DnnTrainSetting ts = new DnnTrainSetting();
+
+		ts.dth = json.getDouble("datasetId");
+		ts.learningRate = json.getDouble("datasetId");
+		ts.epoch = json.getInteger("datasetId");
+		ts.trainSecond = json.getInteger("datasetId");
+		ts.batchSize = json.getInteger("datasetId");
+		ts.watchEpoch = json.getInteger("datasetId");
+		ts.testLossIncreaseTolerance = json.getInteger("datasetId");
+		return ts;
+	}
+
+	public int[] getDiverseDataRate() {
+		return diverseDataRate;
+	}
+
+	public void setDiverseDataRate(int[] diverseDataRate) {
+		this.diverseDataRate = diverseDataRate;
+	}
+}

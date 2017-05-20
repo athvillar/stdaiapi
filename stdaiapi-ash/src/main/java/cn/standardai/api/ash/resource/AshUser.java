@@ -8,6 +8,7 @@ import cn.standardai.api.ash.command.base.AshCommand.HttpMethod;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.resource.base.AshResource;
 import cn.standardai.api.core.bean.Context;
+import cn.standardai.api.core.util.DateUtil;
 
 public class AshUser extends AshResource {
 
@@ -34,15 +35,34 @@ public class AshUser extends AshResource {
 	}
 
 	@Override
-	public void ls() {
-		// TODO Auto-generated method stub
-		return;
+	public void ls() throws AshException {
+
+		JSONObject j = http(HttpMethod.GET, Context.getProp().getUrl().getBiz() + "/user/" + userId, null, null);
+		JSONObject user = j.getJSONObject("user");
+		if (user == null) {
+			this.reply.display = "没有用户";
+			return;
+		}
+
+		String result;
+		if (params.has('l')) {
+			result = "userId\t\t\t\t\t\t\temail\t\t\t\t账户余额\t\t上次登录时间\t\t";
+		} else {
+			result = "userId\t\t\t\t\t\t\temail";
+		}
+		result += "\n" + j.getString("userId") + "\t" + j.getString("email");
+		if (params.has('l')) {
+			result += j.getDouble("remainMoney") + "\t\t";
+			result += DateUtil.format(j.getDate("lastLoginTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
+		}
+
+		this.reply.display = result;
 	}
 
 	@Override
 	public void rm() throws AshException {
-		// TODO Auto-generated method stub
-		return;
+		http(HttpMethod.DELETE, Context.getProp().getUrl().getBiz() + "/user/" + userId, null, null);
+		this.reply.display = "用户(" + userId + ")已删除";
 	}
 
 	@Override
@@ -60,5 +80,14 @@ public class AshUser extends AshResource {
 				+ "登陆之后的用户可以上传数据，或者使用共享数据建立自己的深度学习模型，并对整个模型的生命周期进行管理。"
 				+ "关于模型的介绍可以输入\"help model\"，登出请使用logout命令。";
 		return this.reply;
+	}
+
+	@Override
+	public String[] getMkSteps() {
+		return new String[] {
+				"请输入用户名：",
+				"请输入密码：",
+				"请输入email：",
+		};
 	}
 }

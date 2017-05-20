@@ -5,7 +5,11 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.standardai.lib.algorithm.base.Dnn;
+import cn.standardai.lib.algorithm.base.Trainable;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.function.activate.Sigmoid;
@@ -108,6 +112,7 @@ public class DeepLstm extends Dnn<LstmData> {
 			finish();
 			this.indicator.notify();
 		}
+		epochCount = 0;
 	}
 
 	private double trainBatch(Integer[] indice, boolean watch) throws DnnException, MatrixException {
@@ -604,10 +609,6 @@ public class DeepLstm extends Dnn<LstmData> {
 		return batchIndice;
 	}
 
-	public void reset() {
-		this.epochCount = 0;
-	}
-
 	public void setDth(Double dth) {
 		for (int i = 0; i < lstms.length; i++) lstms[i].setDth(dth);
 	}
@@ -655,5 +656,31 @@ public class DeepLstm extends Dnn<LstmData> {
 					this.lstms[lstms.length - 1].outputSize,
 					this.lstms[lstms.length - 1].outputSize);
 		}
+	}
+
+	public static DeepLstm getInstance(JSONObject structure) throws DnnException {
+
+		JSONArray layerSizeJ = structure.getJSONArray("layerSize");
+		Integer inputSize = structure.getInteger("inputSize");
+		Integer outputSize = structure.getInteger("outputSize");
+		Boolean delay = structure.getBoolean("delay");
+		if (layerSizeJ == null || inputSize == null || outputSize == null) {
+			throw new DnnException("缺少必要的初始化参数");
+		}
+		if (delay == null) delay = false;
+
+		int[] layerSize = new int[layerSizeJ.size()];
+		for (int i = 0; i < layerSize.length; i++) {
+			layerSize[i] = layerSizeJ.getInteger(i);
+		}
+		DeepLstm dLstm = new DeepLstm(layerSize, inputSize, outputSize);
+		dLstm.setDelay(delay);
+
+		return dLstm;
+	}
+
+	public static DeepLstm getInstance(byte[] structure) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

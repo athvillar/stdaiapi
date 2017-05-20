@@ -1,6 +1,6 @@
 package cn.standardai.lib.algorithm.exception;
 
-public class StorageException extends Exception {
+public class StorageException extends DnnException {
 
 	private static final long serialVersionUID = 1L;
 

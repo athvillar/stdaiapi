@@ -20,8 +20,14 @@ public class AuthAgent {
 		super();
 	}
 
-	public void setUserId(String token) throws AuthException {
+	public void checkToken(String token) throws AuthException {
 		this.userId = getUserIdByToken(token);
+		this.token = token;
+	}
+
+	public void checkUserIdByToken(String userId, String token) throws AuthException {
+		if (userId == null || !userId.equals(getUserIdByToken(token))) throw new AuthException("认证失败");
+		this.userId = userId;
 		this.token = token;
 	}
 

@@ -1,19 +1,26 @@
 package cn.standardai.api.ml.run;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import cn.standardai.api.dao.base.DaoHandler;
+import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Model;
-import cn.standardai.api.ml.bean.DnnModel.Status;
+import cn.standardai.api.ml.bean.DnnDataSetting;
+import cn.standardai.api.ml.bean.DnnModelSetting;
+import cn.standardai.api.ml.bean.DnnModelSetting.Status;
+import cn.standardai.api.ml.bean.DnnTrainSetting;
+import cn.standardai.api.ml.daohandler.DataHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
+import cn.standardai.api.ml.exception.FilterException;
+import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
-import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 import cn.standardai.lib.base.matrix.MatrixException;
 
@@ -21,14 +28,9 @@ public class ModelGhost implements Runnable {
 
 	private DaoHandler daoHandler = new DaoHandler(true);
 
-	private Dnn<LstmData> model;
-
-	private LstmData[] data;
+	private Dnn<?> model;
 
 	private Map<String, Object> modelContext;
-
-	// TODO delete this
-	private char[] dic;
 
 	public ModelGhost() {
 		this.modelContext = new HashMap<String, Object>();
@@ -43,16 +45,8 @@ public class ModelGhost implements Runnable {
 		return;
 	}
 
-	public void loadDic(char[] dic) {
-		this.dic = dic;
-	}
-
-	public void loadModel(Dnn<LstmData> model) {
+	public void loadModel(Dnn<?> model) {
 		this.model = model;
-	}
-
-	public void loadData(LstmData[] data) {
-		this.data = data;
 	}
 
 	public void loadParam(String key, Object value) {
@@ -62,20 +56,41 @@ public class ModelGhost implements Runnable {
 	@Override
 	public void run() {
 
-		if (this.model instanceof DeepLstm) {
-			Integer terminator = (Integer)modelContext.get("terminator");
-			Integer steps = (Integer)modelContext.get("steps");
-			Integer watchEpoch = (Integer)modelContext.get("watchEpoch");
-			((DeepLstm)this.model).setDth((Double)modelContext.get("dth"));
-			((DeepLstm)this.model).setLearningRate((Double)modelContext.get("learningRate"));
-			((DeepLstm)this.model).setBatchSize((Integer)modelContext.get("batchSize"));
-			((DeepLstm)this.model).setDiverseDataRate((int[])modelContext.get("diverseDataRate"));
-			((DeepLstm)this.model).setEpoch((Integer)modelContext.get("epoch"));
-			((DeepLstm)this.model).setTestLossIncreaseTolerance((Integer)modelContext.get("testLossIncreaseTolerance"));
-			((DeepLstm)this.model).setTrainSecond((Integer)modelContext.get("trainSecond"));
-			((DeepLstm)this.model).setDelay((Boolean)modelContext.get("delay"));
-			((DeepLstm)this.model).setWatchEpoch(watchEpoch);
-			this.model.mountData(data);
+		ModelHandler mh = new ModelHandler(daoHandler);
+		try {
+
+			DnnTrainSetting ts = (DnnTrainSetting) modelContext.get("trainSetting");
+			Integer watchEpoch = ts.getWatchEpoch();
+			this.model.setDth(ts.getDth());
+			this.model.setLearningRate(ts.getLearningRate());
+			this.model.setBatchSize(ts.getBatchSize());
+			this.model.setDiverseDataRate(ts.getDiverseDataRate());
+			this.model.setEpoch(ts.getEpoch());
+			this.model.setTestLossIncreaseTolerance(ts.getTestLossIncreaseTolerance());
+			this.model.setTrainSecond(ts.getTrainSecond());
+			this.model.setWatchEpoch(watchEpoch);
+
+			DnnModelSetting ms = (DnnModelSetting) modelContext.get("modelSetting");
+			DnnDataSetting ds = ms.getDataSetting();
+			DataHandler dh = new DataHandler(this.daoHandler);
+			List<Data> rawData = dh.getData(dh.getDataset(ms.getUserId(), ds.getDatasetId(), ds.getDatasetName()));
+			DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(ds.getxFilter());
+			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
+
+			switch (ms.getAlgorithm()) {
+			case cnn:
+				// TODO
+				break;
+			case lstm:
+				LstmData[] data = new LstmData[rawData.size()];
+				for (int i = 0; i < rawData.size(); i++) {
+					Double[][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
+					Integer[] y = DataFilter.encode(ds.getData(rawData.get(i), ds.getyColumn()), yFilters);
+					data[i] = new LstmData(x, y);
+				}
+				((Dnn<LstmData>)this.model).mountData(data);
+				break;
+			}
 
 			ModelRunner mr = new ModelRunner(this.model);
 			synchronized (this.model.indicator) {
@@ -100,74 +115,42 @@ public class ModelGhost implements Runnable {
 				System.out.println("finished at epoch " + epoch);
 			}
 
-			String hint = " ";
-			Double[][] predictXs = getX(hint, dic);
-			Integer[] result;
-			try {
-				result = ((DeepLstm)this.model).predictY(predictXs, terminator, steps);
-				for (int i = 0; i < result.length; i++) {
-					System.out.print(dic[result[i]]);
-				}
-				System.out.println("");
-			} catch (DnnException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			ModelHandler mh = new ModelHandler(daoHandler);
 			Model model = new Model();
 			model.setModelId(modelContext.get("modelId").toString());
-			model.setStructure(Lstm.getBytes((Lstm)this.model));
+			model.setStructure(Dnn.getBytes(this.model));
 			model.setStatus(Status.Normal.status);
 			mh.updateModelStructureById(model);
-		}
 
-		done();
+		} catch (FilterException e) {
+			e.printStackTrace();
+			Model model = new Model();
+			model.setModelId(modelContext.get("modelId").toString());
+			model.setStatus(Status.Normal.status);
+			mh.updateModelStatusById(model);
+		} finally {
+			done();
+		}
 	}
 
 	private class ModelRunner implements Runnable {
 
-		private Dnn<LstmData> model;
+		private Dnn<?> model;
 
-		public ModelRunner(Dnn<LstmData> model) {
+		public ModelRunner(Dnn<?> model) {
 			this.model = model;
 		}
 
 		@Override
 		public void run() {
-			if (this.model instanceof Lstm) {
-				try {
-					((DeepLstm)this.model).train();
-				} catch (DnnException | MatrixException e) {
-					e.printStackTrace();
-				}
+			try {
+				((DeepLstm)this.model).train();
+			} catch (DnnException | MatrixException e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
 	public void done() {
 		daoHandler.releaseSession();
-	}
-
-	// TODO delete this
-	private static Double[][] getX(String words, char[] dic) {
-		char[] c = words.toCharArray();
-		return getX(c, dic);
-	}
-
-	private static Double[][] getX(char[] words, char[] dic) {
-		Double[][] result = new Double[words.length][dic.length];
-		for (int i = 0; i < result.length; i++) {
-			Double[] result1 = new Double[dic.length];
-			for (int j = 0; j < dic.length; j++) {
-				if (words[i] == dic[j]) {
-					result1[j] = 1.0;
-				} else {
-					result1[j] = 0.0;
-				}
-			}
-			result[i] = result1;
-		}
-		return result;
 	}
 }

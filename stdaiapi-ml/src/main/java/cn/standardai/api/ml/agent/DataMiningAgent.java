@@ -24,7 +24,7 @@ import cn.standardai.lib.algorithm.knn.DoubleNode;
 import cn.standardai.lib.algorithm.knn.KNN;
 import cn.standardai.lib.algorithm.knn.KNNNode;
 
-public class MLAgent extends AuthAgent {
+public class DataMiningAgent extends AuthAgent {
 
 	public static enum DataType { training, target };
 
@@ -166,11 +166,11 @@ public class MLAgent extends AuthAgent {
 			List<Data> data = dataDao.selectDataByDatasetId(dataId);
 			if (type == JSONObject.class) {
 				for (Data data1 : data) {
-					dataList.add((T)JSONObject.parse(data1.getData()));
+					dataList.add((T)JSONObject.parse(data1.getX()));
 				}
 			} else {
 				for (Data data1 : data) {
-					dataList.add((T)(data1.getData()));
+					dataList.add((T)(data1.getX()));
 				}
 			}
 		}

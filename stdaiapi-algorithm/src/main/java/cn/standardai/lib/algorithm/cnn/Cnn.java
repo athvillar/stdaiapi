@@ -6,11 +6,12 @@ import java.util.List;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.cnn.Layer.LayerType;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.StorageException;
 
-public class Cnn {
+public class Cnn extends Dnn<CnnData> {
 
 	// TODO public
 	public List<Layer> layers = new ArrayList<Layer>();
@@ -292,5 +293,47 @@ public class Cnn {
 			batchNums[i] = new Double(Math.random() * maxSize).intValue();
 		}
 		return batchNums;
+	}
+
+	@Override
+	public void setDth(Double dth) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setLearningRate(Double η) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setEpoch(Integer epoch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setTrainSecond(Integer trainSecond) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setBatchSize(Integer batchSize) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setWatchEpoch(Integer watchEpoch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setTestLossIncreaseTolerance(Integer testLossIncreaseTolerance) {
+		// TODO Auto-generated method stub
+		
 	}
 }

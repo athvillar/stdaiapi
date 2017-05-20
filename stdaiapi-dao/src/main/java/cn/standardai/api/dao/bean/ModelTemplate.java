@@ -10,11 +10,61 @@ public class ModelTemplate {
 
 	private String userId;
 
-	private String type;
+	private String algorithm;
 
 	private String script;
 
+	private String datasetId;
+
+	private String xColumn;
+
+	private String xFilter;
+
+	private String yColumn;
+
+	private String yFilter;
+
 	private Date createTime;
+
+	public String getDatasetId() {
+		return datasetId;
+	}
+
+	public void setDatasetId(String datasetId) {
+		this.datasetId = datasetId;
+	}
+
+	public String getxColumn() {
+		return xColumn;
+	}
+
+	public void setxColumn(String xColumn) {
+		this.xColumn = xColumn;
+	}
+
+	public String getxFilter() {
+		return xFilter;
+	}
+
+	public void setxFilter(String xFilter) {
+		this.xFilter = xFilter;
+	}
+
+	public String getyColumn() {
+		return yColumn;
+	}
+
+	public void setyColumn(String yColumn) {
+		this.yColumn = yColumn;
+	}
+
+	public String getyFilter() {
+		return yFilter;
+	}
+
+	public void setyFilter(String yFilter) {
+		this.yFilter = yFilter;
+	}
 
 	public String getUserId() {
 		return userId;
@@ -22,14 +72,6 @@ public class ModelTemplate {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public String getScript() {
@@ -62,5 +104,13 @@ public class ModelTemplate {
 
 	public void setModelTemplateName(String modelTemplateName) {
 		this.modelTemplateName = modelTemplateName;
+	}
+
+	public String getAlgorithm() {
+		return algorithm;
+	}
+
+	public void setAlgorithm(String algorithm) {
+		this.algorithm = algorithm;
 	}
 }

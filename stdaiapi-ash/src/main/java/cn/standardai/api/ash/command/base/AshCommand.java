@@ -49,6 +49,8 @@ public abstract class AshCommand {
 
 	public enum HttpMethod { GET, POST, PUT, DELETE }
 
+	public String userId;
+
 	public String token;
 
 	protected AshReply reply;
@@ -67,7 +69,8 @@ public abstract class AshCommand {
 		this.reply = new AshReply();
 	}
 
-	public AshReply exec(String[] params, String token) throws AshException {
+	public AshReply exec(String[] params, String userId, String token) throws AshException {
+		this.userId = userId;
 		this.token = token;
 		this.params = parseParam(params);
 		invoke();

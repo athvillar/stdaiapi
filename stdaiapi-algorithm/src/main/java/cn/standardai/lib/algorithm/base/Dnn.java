@@ -3,9 +3,11 @@ package cn.standardai.lib.algorithm.base;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.exception.UsageException;
+import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 
-public abstract class Dnn<T extends DnnData> implements Monitorable {
+public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	public enum ValueType { Single, Multiple };
 
@@ -95,5 +97,15 @@ public abstract class Dnn<T extends DnnData> implements Monitorable {
 
 	public int getVerifyDataCnt() {
 		return this.verifyDataCnt;
+	}
+
+	public static byte[] getBytes(Dnn<?> model) {
+		if (model instanceof DeepLstm) {
+			return DeepLstm.getBytes(model);
+		} else if (model instanceof Cnn) {
+			return Cnn.getBytes(model);
+		} else {
+			return null;
+		}
 	}
 }

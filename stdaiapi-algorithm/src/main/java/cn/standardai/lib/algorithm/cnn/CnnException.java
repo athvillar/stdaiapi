@@ -1,6 +1,8 @@
 package cn.standardai.lib.algorithm.cnn;
 
-public class CnnException extends Exception {
+import cn.standardai.lib.algorithm.exception.DnnException;
+
+public class CnnException extends DnnException {
 
 	private static final long serialVersionUID = 1L;
 

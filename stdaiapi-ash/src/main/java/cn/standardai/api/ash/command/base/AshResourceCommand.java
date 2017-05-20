@@ -11,7 +11,7 @@ public abstract class AshResourceCommand extends AshCommand {
 	@Override
 	public void invoke() throws AshException {
 		AshResource ashResource = AshResource.getInstance(this.resource);
-		this.reply = ashResource.invoke(this.getClass(), this.params, this.token);
+		this.reply = ashResource.invoke(this.getClass(), this.params, this.userId, this.token);
 	}
 
 	public void setResource(Resource resource) {

@@ -29,11 +29,11 @@ public interface ModelDao {
 	@Select({"SELECT * FROM MODEL WHERE USERID = #{userId}"})
 	List<Model> selectByUserId(@Param("userId") String userId);
 
-	@Select({"SELECT * FROM MODEL WHERE MODELTEMPLATEID = #{modelTemplateId} ORDER BY CREATETIME DESC"})
-	List<Model> selectByModelTemplateId(@Param("modelTemplateId") String modelTemplateId);
+	@Select({"SELECT * FROM (SELECT * FROM MODEL WHERE MODELTEMPLATEID = #{modelTemplateId} ORDER BY CREATETIME DESC) T LIMIT 1"})
+	Model selectLatestByModelTemplateId(@Param("modelTemplateId") String modelTemplateId);
 
 	@Select({"SELECT * FROM MODEL WHERE MODELID = #{modelId} AND MODELTEMPLATEID = #{modelTemplateId} ORDER BY UPDATETIME DESC"})
-	List<Model> selectByIdModelTemplateId(@Param("modelId") String modelId, @Param("modelTemplateId") String modelTemplateId);
+	Model selectByIdModelTemplateId(@Param("modelId") String modelId, @Param("modelTemplateId") String modelTemplateId);
 
 	@Insert({"INSERT INTO MODEL ",
 		"(MODELID, MODELTEMPLATEID, USERID, STATUS, DATASETID, DATADICID,",

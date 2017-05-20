@@ -12,8 +12,10 @@ import cn.standardai.api.dao.ModelTemplateDao;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Model;
 import cn.standardai.api.dao.bean.ModelTemplate;
-import cn.standardai.api.ml.bean.DnnModel;
-import cn.standardai.api.ml.bean.DnnModel.Status;
+import cn.standardai.api.ml.bean.DnnAlgorithm;
+import cn.standardai.api.ml.bean.DnnDataSetting;
+import cn.standardai.api.ml.bean.DnnModelSetting;
+import cn.standardai.api.ml.bean.DnnModelSetting.Status;
 import cn.standardai.api.ml.exception.MLException;
 
 public class ModelHandler {
@@ -24,42 +26,29 @@ public class ModelHandler {
 		this.daoHandler = daoHandler;
 	}
 
-	public JSONObject createModel(String userId, String name, String type, String script) throws MLException {
+	public JSONObject createModel(String userId, String modelTemplateName, DnnAlgorithm algorithm,
+			DnnDataSetting dataSetting, String script) throws MLException {
 
 		JSONObject result = new JSONObject();
 		ModelTemplateDao dao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
-		if (name != null) {
-			ModelTemplate modelTemolate = dao.selectByKey(name, userId);
-			if (modelTemolate != null) {
-				ModelTemplate param = new ModelTemplate();
-				param.setModelTemplateName(name);
-				param.setScript(script);
-				param.setUserId(userId);
-				param.setCreateTime(new Date());
-				dao.updateByKey(param);
-				result.put("id", modelTemolate.getModelTemplateId());
-				result.put("name", modelTemolate.getModelTemplateName());
-				result.put("time", DateUtil.format(param.getCreateTime(), DateUtil.YYYY_MM_DD_HH_MM_SS));
-			} else {
-				ModelTemplate param = new ModelTemplate();
-				param.setModelTemplateId(MathUtil.random(17));
-				param.setModelTemplateName(name == null ? param.getModelTemplateId() : name);
-				param.setType(type);
-				param.setScript(script);
-				param.setUserId(userId);
-				param.setCreateTime(new Date());
-				dao.insert(param);
-				result.put("id", param.getModelTemplateId());
-				result.put("name", param.getModelTemplateName());
-				result.put("time", DateUtil.format(param.getCreateTime(), DateUtil.YYYY_MM_DD_HH_MM_SS));
-			}
+
+		// 按照模型名查找模型
+		ModelTemplate modelTemolate = dao.selectByKey(modelTemplateName, userId);
+		if (modelTemolate != null) {
+			// 模型已存在，错误
+			throw new MLException("模型已存在(name=" + modelTemplateName + ")");
 		} else {
 			ModelTemplate param = new ModelTemplate();
 			param.setModelTemplateId(MathUtil.random(17));
-			param.setModelTemplateName(name == null ? param.getModelTemplateId() : name);
-			param.setType(type);
-			param.setScript(script);
+			param.setModelTemplateName(modelTemplateName);
 			param.setUserId(userId);
+			param.setAlgorithm(algorithm.name());
+			param.setScript(script);
+			param.setDatasetId(dataSetting.getDatasetId());
+			param.setxColumn(dataSetting.getxColumn());
+			param.setxFilter(dataSetting.getxFilter());
+			param.setyColumn(dataSetting.getyColumn());
+			param.setyFilter(dataSetting.getyFilter());
 			param.setCreateTime(new Date());
 			dao.insert(param);
 			result.put("id", param.getModelTemplateId());
@@ -70,41 +59,57 @@ public class ModelHandler {
 		return result;
 	}
 
-	public DnnModel findModel(String userId, String modelTemplateId, String modelTemplateName, String modelId) throws MLException {
+	public DnnModelSetting findModel(String userId, String modelTemplateName, String modelId) {
 
 		ModelTemplateDao modelTemplateDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
-		ModelTemplate modelTemplate = modelTemplateDao.selectById(modelTemplateId);
-		if (modelTemplate == null) {
-			modelTemplate = modelTemplateDao.selectByKey(modelTemplateName, userId);
-			if (modelTemplate == null) throw new MLException("模型不存在");
-		}
+		ModelTemplate modelTemplate = modelTemplateDao.selectByKey(modelTemplateName, userId);
+		if (modelTemplate == null) return null;
 
-		DnnModel model = new DnnModel();
-		model.setModelTemplateId(modelTemplate.getModelTemplateId());
-		model.setScript(modelTemplate.getScript());
-		model.setUserId(userId);
+		DnnModelSetting ms = new DnnModelSetting();
+		ms.setModelTemplateId(modelTemplate.getModelTemplateId());
+		ms.setScript(modelTemplate.getScript());
+		ms.setUserId(userId);
 
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
-		if (modelId == null) {
-			List<Model> models = modelDao.selectByModelTemplateId(model.getModelTemplateId());
-			if (models != null && models.size() != 0) {
-				model.setModelId(models.get(0).getModelId());
-				model.setParentModelId(models.get(0).getParentModelId());
-				model.setStructure(models.get(0).getStructure());
-			}
-		} else {
-			List<Model> models = modelDao.selectByIdModelTemplateId(modelId, model.getModelTemplateId());
-			if (models != null && models.size() != 0) {
-				model.setModelId(models.get(0).getModelId());
-				model.setParentModelId(models.get(0).getParentModelId());
-				model.setStructure(models.get(0).getStructure());
-			}
-		}
+		Model model = modelDao.selectByIdModelTemplateId(modelId, ms.getModelTemplateId());
+		if (model == null) return null;
+		ms.setModelId(model.getModelId());
+		ms.setParentModelId(model.getParentModelId());
+		ms.setStructure(model.getStructure());
 
-		return model;
+		return ms;
 	}
 
-	public void upgradeModel2Training(DnnModel dnnModel, Boolean newFlag) {
+	public DnnModelSetting findLastestModel(String userId, String modelTemplateName) {
+
+		ModelTemplateDao modelTemplateDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
+		ModelTemplate modelTemplate = modelTemplateDao.selectByKey(modelTemplateName, userId);
+		if (modelTemplate == null) return null;
+
+		DnnModelSetting ms = new DnnModelSetting();
+		DnnDataSetting ds = new DnnDataSetting();
+		ms.setModelTemplateId(modelTemplate.getModelTemplateId());
+		ms.setUserId(userId);
+		ms.setAlgorithm(DnnAlgorithm.resolve(modelTemplate.getAlgorithm()));
+		ms.setScript(modelTemplate.getScript());
+		ds.setDatasetId(modelTemplate.getDatasetId());
+		ds.setxColumn(modelTemplate.getxColumn());
+		ds.setxFilter(modelTemplate.getxFilter());
+		ds.setyColumn(modelTemplate.getyColumn());
+		ds.setyFilter(modelTemplate.getyFilter());
+		ms.setDataSetting(ds);
+
+		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
+		Model model = modelDao.selectLatestByModelTemplateId(ms.getModelTemplateId());
+		if (model == null) return ms;
+		ms.setModelId(model.getModelId());
+		ms.setParentModelId(model.getParentModelId());
+		ms.setStructure(model.getStructure());
+
+		return ms;
+	}
+
+	public void upgradeModel2Training(DnnModelSetting dnnModel, Boolean newFlag) {
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		if (newFlag) {
 			// 新模型
@@ -114,12 +119,11 @@ public class ModelHandler {
 			model.setUserId(dnnModel.getUserId());
 			model.setParentModelId(dnnModel.getModelId());
 			model.setStatus(Status.Training.status);
-			model.setDatasetId(dnnModel.getDatasetId());
-			model.setDataDicId(dnnModel.getDataDicId());
 			model.setStructure(null);
 			model.setCreateTime(new Date());
 			model.setUpdateTime(new Date());
 			modelDao.insert(model);
+			dnnModel.setModelId(model.getModelId());
 		} else {
 			if (dnnModel.getModelId() == null) {
 				// 新模型
@@ -133,6 +137,7 @@ public class ModelHandler {
 				model.setCreateTime(new Date());
 				model.setUpdateTime(new Date());
 				modelDao.insert(model);
+				dnnModel.setModelId(model.getModelId());
 			} else {
 				// 更新旧模型
 				Model model = new Model();
@@ -167,5 +172,11 @@ public class ModelHandler {
 			throw new MLException("模型不存在");
 		}
 		return modelDao.deleteById(modelId);
+	}
+
+	public JSONObject createModel(String userId, String modelTemplateName, DnnAlgorithm algorithm, JSONObject data,
+			JSONObject structure) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

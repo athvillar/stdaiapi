@@ -1,9 +1,7 @@
 package cn.standardai.lib.algorithm.rnn.lstm;
 
-import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.DnnException;
-import cn.standardai.lib.base.function.Normalizer;
 import cn.standardai.lib.base.function.Softmax;
 import cn.standardai.lib.base.function.activate.Sigmoid;
 import cn.standardai.lib.base.function.activate.Tanh;
@@ -12,7 +10,7 @@ import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 import cn.standardai.lib.base.matrix.VectorUtil;
 
-public class Lstm extends Dnn<LstmData> {
+public class Lstm {
 
 	public int layerSize;
 

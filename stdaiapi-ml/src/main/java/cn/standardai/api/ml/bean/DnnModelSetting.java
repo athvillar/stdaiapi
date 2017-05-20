@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DnnModel {
+public class DnnModelSetting {
 
 	public enum Status {
 
@@ -37,17 +37,15 @@ public class DnnModel {
 
 	private String userId;
 
+	private DnnAlgorithm algorithm;
+
 	private String script;
-
-	private String label;
-
-	private String datasetId;
-
-	private String dataDicId;
 
 	private byte[] structure;
 
 	private Date createTime;
+
+	private DnnDataSetting dataSetting;
 
 	public String getModelId() {
 		return modelId;
@@ -55,14 +53,6 @@ public class DnnModel {
 
 	public void setModelId(String modelId) {
 		this.modelId = modelId;
-	}
-
-	public String getDatasetId() {
-		return datasetId;
-	}
-
-	public void setDatasetId(String datasetId) {
-		this.datasetId = datasetId;
 	}
 
 	public byte[] getStructure() {
@@ -89,14 +79,6 @@ public class DnnModel {
 		this.createTime = createTime;
 	}
 
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
 	public String getParentModelId() {
 		return parentModelId;
 	}
@@ -121,11 +103,19 @@ public class DnnModel {
 		this.userId = userId;
 	}
 
-	public String getDataDicId() {
-		return dataDicId;
+	public DnnAlgorithm getAlgorithm() {
+		return algorithm;
 	}
 
-	public void setDataDicId(String dataDicId) {
-		this.dataDicId = dataDicId;
+	public void setAlgorithm(DnnAlgorithm algorithm) {
+		this.algorithm = algorithm;
+	}
+
+	public DnnDataSetting getDataSetting() {
+		return dataSetting;
+	}
+
+	public void setDataSetting(DnnDataSetting dataSetting) {
+		this.dataSetting = dataSetting;
 	}
 }

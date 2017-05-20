@@ -12,10 +12,6 @@ public class Model {
 
 	private Character status;
 
-	private String datasetId;
-
-	private String dataDicId;
-
 	private String parentModelId;
 
 	private byte[] structure;
@@ -38,14 +34,6 @@ public class Model {
 
 	public void setModelTemplateId(String modelTemplateId) {
 		this.modelTemplateId = modelTemplateId;
-	}
-
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
 	}
 
 	public Character getStatus() {
@@ -88,19 +76,11 @@ public class Model {
 		this.updateTime = updateTime;
 	}
 
-	public String getDatasetId() {
-		return datasetId;
+	public String getUserId() {
+		return userId;
 	}
 
-	public void setDatasetId(String datasetId) {
-		this.datasetId = datasetId;
-	}
-
-	public String getDataDicId() {
-		return dataDicId;
-	}
-
-	public void setDataDicId(String dataDicId) {
-		this.dataDicId = dataDicId;
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 }

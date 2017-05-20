@@ -70,7 +70,7 @@ public class AshAgent extends AuthAgent {
 		}
 		AshReply reply;
 		try {
-			reply = ashCommand.exec(params, this.getToken());
+			reply = ashCommand.exec(params, this.userId, this.getToken());
 			result.put("display", reply.display);
 			//result.put("message", reply.message);
 			result.put("hidden", reply.hidden);

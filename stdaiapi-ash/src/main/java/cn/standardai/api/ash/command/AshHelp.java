@@ -19,15 +19,15 @@ public class AshHelp extends AshCommonCommand {
 					+ "\tash(未完成)\t\t\tcd\t\t\t\t\tcurl(未完成)\n"
 					+ "\techo(未完成)\t\t\thelp\t\t\t\t\thistory\n"
 					+ "\tman\t\t\t\t\tmsg\t\t\t\t\tlogin\n"
-					+ "\tlogout\t\t\t\t\tversion\n"
+					+ "\tlogout\t\t\t\tversion\n"
 					+ "针对某资源的命令\n"
 					+ "\tcat(未完成)\t\t\tcp(未完成)\t\t\tdownload(未完成)\n"
 					+ "\tfind(未完成)\t\t\tls\t\t\t\t\tmk\n"
 					+ "\trm\t\t\t\t\tupload(未完成)\t\n"
 					+ "资源\n"
 					+ "\tdata(未完成)\t\t\tdataset(未完成)\t\tdic(未完成)\n"
-					+ "\tdoc(未完成)\t\t\tmodel\t\t\t\tnode(未完成)\n"
-					+ "\ttemplate(未完成)\t\tuser(未完成)\n"
+					+ "\tdoc(未完成)\t\t\tfile(未完成)\t\tmodel\n"
+					+ "\tnode(未完成)\t\t\tuser\n"
 					+ "查看某个命令的具体使用方式请输入“man 命令名”，查看某项资源介绍请输入“help 资源名”";
 			return;
 		}

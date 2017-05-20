@@ -20,7 +20,11 @@ import cn.standardai.api.core.util.HttpUtil;
 
 public abstract class AshResource {
 
+	protected String userId;
+
 	private String token;
+
+	protected AshCommandParams params;
 
 	protected AshReply reply;
 
@@ -59,6 +63,8 @@ public abstract class AshResource {
 
 	public abstract void parseParam(AshCommandParams params);
 
+	public abstract String[] getMkSteps();
+
 	public abstract AshReply help();
 
 	public static AshResource getInstance(String resourceString) {
@@ -79,9 +85,11 @@ public abstract class AshResource {
 		return null;
 	}
 
-	public AshReply invoke(Class<? extends AshResourceCommand> cls, AshCommandParams params, String token) throws AshException {
+	public AshReply invoke(Class<? extends AshResourceCommand> cls, AshCommandParams params, String userId, String token) throws AshException {
 		parseParam(params);
+		this.userId = userId;
 		this.token = token;
+		this.params = params;
 		if (cls == AshMk.class) {
 			this.mk();
 		} else if (cls == AshLs.class) {

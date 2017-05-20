@@ -186,6 +186,11 @@ public class BaseService<T extends AuthAgent> {
 
 	public void initAgent(HttpHeaders headers, Class<T> cls) throws InstantiationException, IllegalAccessException, AuthException {
 		this.agent = cls.newInstance();
-		this.agent.setUserId(getToken(headers));
+		this.agent.checkToken(getToken(headers));
+	}
+
+	public void initAgent(HttpHeaders headers, Class<T> cls, String userId) throws InstantiationException, IllegalAccessException, AuthException {
+		this.agent = cls.newInstance();
+		this.agent.checkUserIdByToken(userId, getToken(headers));
 	}
 }

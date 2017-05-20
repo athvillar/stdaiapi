@@ -10,7 +10,7 @@ import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Model;
-import cn.standardai.api.ml.bean.DnnModel;
+import cn.standardai.api.ml.bean.DnnModelSetting;
 import cn.standardai.api.ml.daohandler.DataHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
 import cn.standardai.api.ml.exception.MLException;
@@ -77,7 +77,7 @@ public class LstmAgent extends AuthAgent {
 	public JSONObject process(String id, JSONObject request) throws MLException, DnnException {
 
 		String parentModelId = request.getString("parent");
-		DnnModel model = mh.findModel(userId, id, id, parentModelId);
+		DnnModelSetting model = mh.findModel(userId, id, id, parentModelId);
 
 		Lstm lstm = createLstm(model);
 		JSONObject result = new JSONObject();
@@ -155,7 +155,7 @@ public class LstmAgent extends AuthAgent {
 		return result;
 	}
 
-	private Lstm createLstm(DnnModel model) {
+	private Lstm createLstm(DnnModelSetting model) {
 
 		Lstm lstm;
 		if (model.getStructure() == null) {

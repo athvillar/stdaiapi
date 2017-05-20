@@ -44,7 +44,6 @@ public class TestRnnLstm {
 			lstmData[i - 1] = new LstmData(xs, ys);
 		}
 
-		deepLstm.reset();
 		deepLstm.setDth(2.0);
 		deepLstm.setLearningRate(0.011);
 		deepLstm.setEpoch(100);
@@ -135,7 +134,6 @@ public class TestRnnLstm {
 			lstmData[i] = new LstmData(xs, ys);
 		}
 
-		deepLstm.reset();
 		deepLstm.setDth(1.1);
 		deepLstm.setLearningRate(0.1);
 		deepLstm.setEpoch(300);
@@ -340,7 +338,6 @@ public class TestRnnLstm {
 				data[i] = new LstmData(xs, ys);
 			}
 
-			deepLstm.reset();
 			deepLstm.setDth(1.0);
 			deepLstm.setLearningRate(0.2);
 			deepLstm.setEpoch(3000);

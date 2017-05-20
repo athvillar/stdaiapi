@@ -2,14 +2,11 @@ package cn.standardai.api.ml.daohandler;
 
 import java.util.List;
 
-import com.alibaba.fastjson.JSONObject;
-
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Dataset;
-import cn.standardai.api.ml.exception.MLException;
 
 public class DataHandler {
 
@@ -19,31 +16,27 @@ public class DataHandler {
 		this.daoHandler = daoHandler;
 	}
 
-	public Dataset getDataset(String userId, JSONObject json) throws MLException {
+	public Dataset getDataset(String userId, String datasetId, String datasetName) {
 
-		Dataset dataset;
+		if (datasetId == null && datasetName == null) return null;
+
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
-		String datasetId = json.getString("datasetId");
 		if (datasetId != null) {
-			dataset = datasetDao.selectById(datasetId);
-			if (dataset == null) throw new MLException("dataset不存在");
+			return datasetDao.selectById(datasetId);
 		} else {
-			String datasetName = json.getString("datasetName");
-			if (datasetName != null) {
-				dataset = datasetDao.selectByKey(datasetName, userId);
-				if (dataset == null) throw new MLException("dataset不存在");
-			} else {
-				throw new MLException("未指定dataset");
+			int i;
+			if ((i = datasetName.indexOf('/')) != -1 && i < datasetName.length() - 1) {
+				userId = datasetName.substring(0, i);
+				datasetName = datasetName.substring(i + 1);
 			}
+			return datasetDao.selectByKey(datasetName, userId);
 		}
-
-		return dataset;
 	}
 
-	public List<Data> getData(Dataset dataset) throws MLException {
+	public List<Data> getData(Dataset dataset) {
+		if (dataset == null) return null;
 		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
 		List<Data> data = dataDao.selectDataByDatasetId(dataset.getDatasetId());
-		if (data == null) throw new MLException("指定dataset无数据");
 		return data;
 	}
 }
