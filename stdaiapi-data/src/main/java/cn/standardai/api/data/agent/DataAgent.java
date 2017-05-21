@@ -3,7 +3,18 @@ package cn.standardai.api.data.agent;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSONArray;
@@ -18,7 +29,7 @@ import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.data.exception.DataException;
 
-public class UploadAgent extends AuthAgent {
+public class DataAgent extends AuthAgent {
 
 	public JSONObject saveJSONData(JSONObject dataRequest) throws DataException {
 
@@ -166,5 +177,10 @@ public class UploadAgent extends AuthAgent {
 			result.put("message", "File was empty");
 		}
 		return result;
+	}
+
+	public JSONObject saveScratchFiles(JSONObject request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

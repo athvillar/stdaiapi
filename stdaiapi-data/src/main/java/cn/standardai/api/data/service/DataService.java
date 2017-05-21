@@ -16,23 +16,25 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.core.base.BaseService.ReturnType;
 import cn.standardai.api.core.exception.StdaiException;
-import cn.standardai.api.data.agent.UploadAgent;
+import cn.standardai.api.data.agent.DicAgent;
+import cn.standardai.api.data.agent.DataAgent;
 
 @Controller
 @RestController
 @EnableAutoConfiguration
-@RequestMapping("/upload")
-public class UploadService extends BaseService<UploadAgent> {
+@RequestMapping("/data")
+public class DataService extends BaseService<DataAgent> {
 
-	private Logger logger = LoggerFactory.getLogger(UploadService.class);
+	private Logger logger = LoggerFactory.getLogger(DataService.class);
 
-	@RequestMapping(value = "/data", method = RequestMethod.POST)
+	@RequestMapping(value = "/json", method = RequestMethod.POST)
 	public String receiveData(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data /upload/data 收到数据上传请求 ...");
+		logger.info("stdaiapi-data /data/json 收到数据上传请求 ...");
 		JSONObject result = null;
 		try {
-			initAgent(headers, UploadAgent.class);
+			initAgent(headers, DataAgent.class);
 			result = agent.saveJSONData(request);
 			result = successResponse(result);
 		} catch (StdaiException e) {
@@ -43,16 +45,16 @@ public class UploadService extends BaseService<UploadAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /upload/data 结束数据上传 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/json 结束数据上传 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/files", method = RequestMethod.POST)
 	public String uploadFiles(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
-		logger.info("stdaiapi-data /upload/files 收到文件上传请求 ...");
+		logger.info("stdaiapi-data /data/files 收到文件上传请求 ...");
 		JSONObject result = null;
 		try {
-			initAgent(headers, UploadAgent.class);
+			initAgent(headers, DataAgent.class);
 			result = agent.saveUploadFiles(uploadfiles);
 			result = successResponse(result);
 		} catch (StdaiException e) {
@@ -63,7 +65,27 @@ public class UploadService extends BaseService<UploadAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /upload/files 结束文件上传 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/files 结束文件上传 (" + result.toJSONString() + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "／scratch", method = RequestMethod.POST)
+	public String scratch(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+		logger.info("stdaiapi-data /data/scratch 收到数据抓取请求 ...");
+		JSONObject result = null;
+		try {
+			initAgent(headers, DataAgent.class);
+			result = agent.saveScratchFiles(request);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/scratch 结束数据抓取 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }
