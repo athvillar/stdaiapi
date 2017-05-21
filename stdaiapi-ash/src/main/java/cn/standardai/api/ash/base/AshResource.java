@@ -1,4 +1,4 @@
-package cn.standardai.api.ash.resource.base;
+package cn.standardai.api.ash.base;
 
 import java.util.HashMap;
 import java.util.Map;

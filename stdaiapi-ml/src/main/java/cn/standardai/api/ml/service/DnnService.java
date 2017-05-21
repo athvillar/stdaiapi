@@ -17,7 +17,6 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.core.base.BaseService;
 import cn.standardai.api.core.exception.StdaiException;
 import cn.standardai.api.ml.agent.DnnAgent;
-import cn.standardai.api.ml.exception.MLException;
 
 @Controller
 @RestController
@@ -35,7 +34,7 @@ public class DnnService extends BaseService<DnnAgent> {
 			initAgent(headers, DnnAgent.class);
 			result = agent.create(request);
 			result = successResponse(result);
-		} catch (MLException e) {
+		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -56,7 +55,7 @@ public class DnnService extends BaseService<DnnAgent> {
 			initAgent(headers, DnnAgent.class, userId);
 			result = agent.train(userId, request);
 			result = successResponse(result);
-		} catch (MLException e) {
+		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();

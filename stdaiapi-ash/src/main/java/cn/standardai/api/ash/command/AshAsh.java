@@ -1,12 +1,12 @@
 package cn.standardai.api.ash.command;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
+import cn.standardai.api.ash.exception.AshException;
 
 public class AshAsh extends AshCommonCommand {
 
 	public AshAsh() {
-		//setParamRules(null, null, 1, null);
+		setParamRules(null, null, 1, null);
 	}
 
 	@Override
@@ -15,13 +15,13 @@ public class AshAsh extends AshCommonCommand {
 	}
 
 	@Override
-	public AshReply help() {
+	public String help() {
 		//this.reply.display = "help命令格式：help [名词]";
-		return this.reply;
+		return null;
 	}
 
 	@Override
-	public AshReply man() {
+	public String man() {
 		/*
 		this.reply.display = "help命令用于显示帮助信息\n"
 				+ "用法\n"
@@ -29,11 +29,12 @@ public class AshAsh extends AshCommonCommand {
 				+ "参数\n"
 				+ "\t名词:\t显示该名词解释";
 				*/
-		return this.reply;
+		return null;
 	}
 
 	@Override
-	public String[][] getDialog() {
-		return null;
+	public void readParam() throws AshException {
+		// TODO Auto-generated method stub
+		
 	}
 }

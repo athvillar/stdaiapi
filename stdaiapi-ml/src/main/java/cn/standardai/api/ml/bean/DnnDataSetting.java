@@ -72,12 +72,12 @@ public class DnnDataSetting {
 	 *	 "datasetId": "xxx",
 	 *	 "datasetName": "xxx",
 	 *	 "x": {
-	 *	"column": "table.data.ref",
-	 *	"filter": ["jpg2RGB2Double2"]
+	 *	   "column": "table.data.ref",
+	 *	   "filter": "jpg2RGB2Double2"
 	 *	 },
 	 *	 "y": {
-	 *	  "colume": "table.data.y",
-	 *	  "filter": "subString(1)|lookupDic2Integer(xxxx)" 
+	 *	   "colume": "table.data.y",
+	 *	   "filter": "subString(1)|lookupDic2Integer(xxxx)"
 	 *	 }
 	 * }
 	 */
@@ -93,16 +93,16 @@ public class DnnDataSetting {
 
 		ds.xColumn = x.getString("column");
 		ds.xFilter = x.getString("filter");
-		if (ds.xColumn == null) throw new JSONFormatException("缺少参数(data.x.column)");
-		if (ds.xFilter == null) throw new JSONFormatException("缺少参数(data.x.filter)");
+		//if (ds.xColumn == null) throw new JSONFormatException("缺少参数(data.x.column)");
+		//if (ds.xFilter == null) throw new JSONFormatException("缺少参数(data.x.filter)");
 
 		JSONObject y = data.getJSONObject("y");
 		if (y == null) throw new JSONFormatException("缺少参数(data.y)");
 
 		ds.yColumn = y.getString("column");
 		ds.yFilter = y.getString("filter");
-		if (ds.yColumn == null) throw new JSONFormatException("缺少参数(data.y.column)");
-		if (ds.yFilter == null) throw new JSONFormatException("缺少参数(data.y.filter)");
+		//if (ds.yColumn == null) throw new JSONFormatException("缺少参数(data.y.column)");
+		//if (ds.yFilter == null) throw new JSONFormatException("缺少参数(data.y.filter)");
 
 		return ds;
 	}

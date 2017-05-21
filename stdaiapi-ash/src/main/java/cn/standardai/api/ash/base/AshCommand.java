@@ -1,12 +1,10 @@
-package cn.standardai.api.ash.command.base;
+package cn.standardai.api.ash.base;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.api.ash.bean.AshCommandParams;
-import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.AshAsh;
 import cn.standardai.api.ash.command.AshCall;
 import cn.standardai.api.ash.command.AshCat;
@@ -83,37 +81,11 @@ public abstract class AshCommand {
 
 	public String token;
 
-	public AshReply reply;
+	public abstract String help();
 
-	public char[] fp = null;
+	public abstract String man();
 
-	public char[] vp = null;
-
-	public Integer pNumMax = null;
-
-	public Integer pNumMin = null;
-
-	public AshCommandParams params;
-
-	public AshCommand() {
-		this.reply = new AshReply();
-	}
-
-	public AshReply exec(String[] params, String userId, String token) throws AshException {
-		this.userId = userId;
-		this.token = token;
-		this.params = parseParam(params);
-		invoke();
-		return this.reply;
-	}
-
-	public abstract void invoke() throws AshException;
-
-	public abstract AshReply help();
-
-	public abstract AshReply man();
-
-	public abstract String[][] getDialog();
+	public abstract Executable getExecutor() throws AshException;
 
 	public static AshCommand getInstance(String commandString) throws AshException {
 		Class<? extends AshCommand> cls = AshCommand.Command.resolve(commandString);
@@ -124,20 +96,6 @@ public abstract class AshCommand {
 			e.printStackTrace();
 			throw new AshException("命令执行错误");
 		}
-	}
-
-	protected void setParamRules(char[] fp, char[] vp, Integer pNumMax, Integer pNumMin) {
-		// -x
-		this.fp = fp;
-		// -x x
-		this.vp = vp;
-		// xx xx xx
-		this.pNumMax = pNumMax;
-		this.pNumMin = pNumMin;
-	}
-
-	private AshCommandParams parseParam(String[] paramStrings) throws AshException {
-		return AshCommandParams.parse(paramStrings, fp, vp, pNumMax, pNumMin);
 	}
 
 	public JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body) throws HttpException {
@@ -189,5 +147,13 @@ public abstract class AshCommand {
 	public static JSONObject httpGet(String url, Map<String, String> headers, Map<String, String> params) {
 		String s = HttpUtil.get(url, params, headers);
 		return JSONObject.parseObject(s);
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
 	}
 }

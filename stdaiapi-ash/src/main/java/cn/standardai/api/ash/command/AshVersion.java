@@ -1,7 +1,7 @@
 package cn.standardai.api.ash.command;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
+import cn.standardai.api.ash.exception.AshException;
 
 public class AshVersion extends AshCommonCommand {
 
@@ -16,21 +16,20 @@ public class AshVersion extends AshCommonCommand {
 	}
 
 	@Override
-	public AshReply help() {
-		this.reply.display = "version命令格式：version";
-		return this.reply;
+	public String help() {
+		return "version命令格式：version";
 	}
 
 	@Override
-	public AshReply man() {
-		this.reply.display = "version命令用于显示版本信息\n"
+	public String man() {
+		return "version命令用于显示版本信息\n"
 				+ "用法\n"
 				+ "\tversion";
-		return this.reply;
 	}
 
 	@Override
-	public String[][] getDialog() {
-		return null;
+	public void readParam() throws AshException {
+		// TODO Auto-generated method stub
+		
 	}
 }

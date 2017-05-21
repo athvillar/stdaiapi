@@ -8,19 +8,17 @@ public class Dataset {
 
 	private String datasetName;
 
+	private String description;
+
 	private String userId;
+
+	private String type;
 
 	private String format;
 
 	private String keywords;
 
 	private String titles;
-
-	private String dataDicId1;
-
-	private String dataDicId2;
-
-	private String dataDicId3;
 
 	private Character sharePolicy;
 
@@ -74,30 +72,6 @@ public class Dataset {
 		this.titles = titles;
 	}
 
-	public String getDataDicId1() {
-		return dataDicId1;
-	}
-
-	public void setDataDicId1(String dataDicId1) {
-		this.dataDicId1 = dataDicId1;
-	}
-
-	public String getDataDicId2() {
-		return dataDicId2;
-	}
-
-	public void setDataDicId2(String dataDicId2) {
-		this.dataDicId2 = dataDicId2;
-	}
-
-	public String getDataDicId3() {
-		return dataDicId3;
-	}
-
-	public void setDataDicId3(String dataDicId3) {
-		this.dataDicId3 = dataDicId3;
-	}
-
 	public Character getSharePolicy() {
 		return sharePolicy;
 	}
@@ -112,5 +86,21 @@ public class Dataset {
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 }

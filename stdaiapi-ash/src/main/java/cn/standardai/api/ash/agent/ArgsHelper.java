@@ -1,18 +1,24 @@
 package cn.standardai.api.ash.agent;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.api.ash.bean.AshCommandParams;
+import cn.standardai.api.ash.base.AshCommand;
+import cn.standardai.api.ash.base.Executable;
+import cn.standardai.api.ash.bean.AshParam;
 import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommand;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.core.bean.Context;
 
-public class AshDialog {
+public class ArgsHelper {
 
+	private static Map<Class<? extends Executable>, String[][]> dialogs = new HashMap<Class<? extends Executable>, String[][]>();
+/*
 	public static String getQuestion(String dialogId, int size) throws AshException {
 
 		if (dialogId == null) throw new DialogException("缺少必要的参数");
@@ -40,7 +46,7 @@ public class AshDialog {
 		return AshCommand.http(AshCommand.HttpMethod.POST, Context.getProp().getUrl().getAsh() + "/ash", null, body, token);
 	}
 
-	public static AshReply make(AshCommand comm, AshCommandParams params) {
+	public static AshReply make(AshCommand comm, AshParam params) {
 
 		AshReply reply = new AshReply();
 		reply.display = getDialogQuestion(comm, 0, params.number());
@@ -74,5 +80,21 @@ public class AshDialog {
 		if (idx >= comm.getDialog().length) return null;
 		if (idx2 >= comm.getDialog()[idx].length) return null;
 		return comm.getDialog()[idx][idx2];
+	}
+*/
+	public static void check(Executable executor) throws DialogException {
+
+		if (!dialogs.containsKey(executor.getClass())) return;
+
+		String[][] dialog = dialogs.get(executor.getClass());
+		for (int i = 0; i < dialog.length; i++) {
+			if (executor.getParam().get(dialog[i][0]) == null) {
+				throw new DialogException("缺少参数" + dialog[i][0], dialog[i][1], dialog[i][0]);
+			}
+		}
+	}
+
+	public static void regist(Class<? extends Executable> cls, String[][] dialog) {
+		dialogs.put(cls, dialog);
 	}
 }

@@ -6,8 +6,7 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.DateUtil;
@@ -15,18 +14,18 @@ import cn.standardai.api.core.util.DateUtil;
 public class AshMsg extends AshCommonCommand {
 
 	public AshMsg() {
-		setParamRules(new char[] { 'a', 'd' }, new char[] { 'u' }, null, 0);
+		setParamRules(new char[] { 'a', 'd' }, new String[] { "u" }, null, 0);
 	}
 
 	@Override
 	public void invoke() throws AshException {
 
 		boolean receive = false;
-		boolean all = params.has('a');
-		boolean delete = params.has('d');
-		Integer number = params.getInteger();
-		String user = params.get('u');
-		String content = params.get(1);
+		boolean all = param.has('a');
+		boolean delete = param.has('d');
+		Integer number = param.getInteger();
+		String user = param.get('u');
+		String content = param.get(1);
 		if (content == null) receive = true;
 
 		if (delete) {
@@ -74,14 +73,13 @@ public class AshMsg extends AshCommonCommand {
 	}
 
 	@Override
-	public AshReply help() {
-		this.reply.display = "msg(message)命令格式：msg [-a] [-d] [-n] [-u 用户] [内容]";
-		return this.reply;
+	public String help() {
+		return "msg(message)命令格式：msg [-a] [-d] [-n] [-u 用户] [内容]";
 	}
 
 	@Override
-	public AshReply man() {
-		this.reply.display = "msg(message)命令用于接收或发送消息\n"
+	public String man() {
+		return "msg(message)命令用于接收或发送消息\n"
 				+ "用法：\n"
 				+ "\tmsg(message) [-a] [-d] [-n] [-u 用户] [内容]\n"
 				+ "参数：\n"
@@ -91,11 +89,10 @@ public class AshMsg extends AshCommonCommand {
 				+ "\t-n:\tn为显示消息的最大条数\n"
 				+ "\t-u [用户]:\t在接收消息时，-u为显示该用户的消息，默认显示所有用户消息\n"
 				+ "\t\t在发送消息时，-u为给该用户发送消息，省略-u默认给系统管理员发送消息";
-		return this.reply;
 	}
 
 	@Override
-	public String[][] getDialog() {
-		return null;
+	public void readParam() throws AshException {
+		return;
 	}
 }

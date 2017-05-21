@@ -27,7 +27,7 @@ public class ScratchService extends BaseService<ScratchAgent> {
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String scratch(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data 收到数据抓取请求 ...");
+		logger.info("stdaiapi-data /scratch 收到数据抓取请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, ScratchAgent.class);
@@ -41,7 +41,7 @@ public class ScratchService extends BaseService<ScratchAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data 结束数据抓取 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /scratch 结束数据抓取 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

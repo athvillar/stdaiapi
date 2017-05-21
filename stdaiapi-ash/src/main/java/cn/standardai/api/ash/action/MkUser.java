@@ -2,7 +2,9 @@ package cn.standardai.api.ash.action;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.api.ash.command.base.AshCommand.HttpMethod;
+import cn.standardai.api.ash.base.Action;
+import cn.standardai.api.ash.base.AshCommand.HttpMethod;
+import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.core.bean.Context;
 
@@ -15,7 +17,7 @@ public class MkUser extends Action {
 	private String email;
 
 	@Override
-	public void exec() throws AshException {
+	public AshReply exec() throws AshException {
 		JSONObject body = new JSONObject();
 		body.put("password", password);
 		body.put("email", email);
@@ -26,14 +28,15 @@ public class MkUser extends Action {
 		body.put("password", password);
 		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getBiz() + "/token", null, body);
 
-		comm.reply.hidden = j.getString("token");
-		comm.reply.display = "注册成功，欢迎光临！";
+		this.reply.hidden = j.getString("token");
+		this.reply.display = "注册成功，欢迎光临！";
+		return this.reply;
 	}
 
 	@Override
-	public void setParam() throws AshException {
-		this.userId = this.comm.params.get(1);
-		this.password = this.comm.params.get(2);
-		this.email = this.comm.params.get(3);
+	public void readParam() throws AshException {
+		this.userId = this.param.get(1);
+		this.password = this.param.get(2);
+		this.email = this.param.get(3);
 	}
 }

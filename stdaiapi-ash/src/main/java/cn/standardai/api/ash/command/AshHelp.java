@@ -1,9 +1,8 @@
 package cn.standardai.api.ash.command;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshResource;
 import cn.standardai.api.ash.exception.AshException;
-import cn.standardai.api.ash.resource.base.AshResource;
 
 public class AshHelp extends AshCommonCommand {
 
@@ -14,7 +13,7 @@ public class AshHelp extends AshCommonCommand {
 	@Override
 	public void invoke() throws AshException {
 
-		if (params.number() == 0) {
+		if (param.number() == 0) {
 			this.reply.display = "Ash是Athvillar平台专用的命令行系统，用来管理和操作Athvillar平台的资源。\n"
 					+ "其中全局命令\n"
 					+ "\tash(未完成)\t\t\tcd\t\t\t\t\tcurl(未完成)\n"
@@ -27,15 +26,15 @@ public class AshHelp extends AshCommonCommand {
 					+ "\trm\t\t\t\t\tset(未完成)\n"
 					+ "资源\n"
 					+ "\tdata(未完成)\t\t\tdic(未完成)\t\tdoc(未完成)\n"
-					+ "\tfile(未完成)\t\t\tmodel\t\t\t\t\tnode(未完成)\n"
-					+ "\tuser\n"
+					+ "\tfile(未完成)\t\t\tfilter(未完成)\t\t\tmodel\n"
+					+ "\tnode(未完成)\t\t\tuser\n"
 					+ "查看某个命令的具体使用方式请输入“man 命令名”，查看某项资源介绍请输入“help 资源名”";
 			return;
 		}
 
-		AshResource resource = AshResource.getInstance(params.get(1));
+		AshResource resource = AshResource.getInstance(param.get(1));
 		if (resource == null) {
-			this.reply.display = "抱歉，该名词目前没有被收录：" + params.get(1);
+			this.reply.display = "抱歉，该名词目前没有被收录：" + param.get(1);
 			return;
 		}
 		this.reply.display = resource.help();
@@ -43,23 +42,22 @@ public class AshHelp extends AshCommonCommand {
 	}
 
 	@Override
-	public AshReply help() {
-		this.reply.display = "help命令格式：help [名词]";
-		return this.reply;
+	public String help() {
+		return "help命令格式：help [名词]";
 	}
 
 	@Override
-	public AshReply man() {
-		this.reply.display = "help命令用于显示帮助信息\n"
+	public String man() {
+		return "help命令用于显示帮助信息\n"
 				+ "用法\n"
 				+ "\thelp [名词]\n"
 				+ "参数\n"
 				+ "\t名词:\t显示该名词解释";
-		return this.reply;
 	}
 
 	@Override
-	public String[][] getDialog() {
-		return null;
+	public void readParam() throws AshException {
+		// TODO Auto-generated method stub
+		
 	}
 }

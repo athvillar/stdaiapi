@@ -1,6 +1,6 @@
 package cn.standardai.api.ash.resource;
 
-import cn.standardai.api.ash.resource.base.AshResource;
+import cn.standardai.api.ash.base.AshResource;
 
 public class ResModel extends AshResource {
 

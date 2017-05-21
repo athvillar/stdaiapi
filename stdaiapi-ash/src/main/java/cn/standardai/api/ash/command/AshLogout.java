@@ -1,7 +1,7 @@
 package cn.standardai.api.ash.command;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
+import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.core.bean.Context;
 
@@ -18,21 +18,19 @@ public class AshLogout extends AshCommonCommand {
 	}
 
 	@Override
-	public AshReply help() {
-		this.reply.display = "logout命令格式：logout";
-		return this.reply;
+	public String help() {
+		return "logout命令格式：logout";
 	}
 
 	@Override
-	public AshReply man() {
-		this.reply.display = "login命令用于用户登出\n"
+	public String man() {
+		return "login命令用于用户登出\n"
 				+ "用法：\n"
 				+ "\tlogout";
-		return this.reply;
 	}
 
 	@Override
-	public String[][] getDialog() {
-		return null;
+	public void readParam() throws AshException {
+		return;
 	}
 }

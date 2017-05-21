@@ -91,7 +91,7 @@ public class UploadAgent extends AuthAgent {
 			Data param = new Data();
 			param.setDatasetId(datasetId);
 			param.setIdx(baseIdx + i);
-			param.setData(data1);
+			param.setX(data1);
 			dataDao.insert(param);
 		}
 
@@ -100,13 +100,13 @@ public class UploadAgent extends AuthAgent {
 		return result;
 	}
 
-	public JSONObject saveUploadFile(MultipartFile[] uploadfiles) {
+	public JSONObject saveUploadFiles(MultipartFile[] uploadfiles) {
 		JSONObject result = new JSONObject();
 
 		boolean hasFailure = false;
 		for (int i = 0; i < uploadfiles.length; i++) {
 			JSONObject subResult = new JSONObject();
-			subResult = regularUploadFile(uploadfiles[i]);
+			subResult = saveUploadFile(uploadfiles[i]);
 			if (!"success".equals(subResult.getString("result")))
 				hasFailure = true;
 		}
@@ -120,7 +120,7 @@ public class UploadAgent extends AuthAgent {
 		return result;
 	}
 
-	private JSONObject regularUploadFile(MultipartFile inputFile) {
+	private JSONObject saveUploadFile(MultipartFile inputFile) {
 		JSONObject result = new JSONObject();
 		// output file buffer
 		BufferedOutputStream outputFileBuffer = null;

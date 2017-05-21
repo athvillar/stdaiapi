@@ -3,19 +3,21 @@ package cn.standardai.api.ash.agent;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.ash.base.AshCommand;
+import cn.standardai.api.ash.base.AshResource;
+import cn.standardai.api.ash.base.AshResourceRelatedCommand;
+import cn.standardai.api.ash.base.Executable;
 import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommand;
-import cn.standardai.api.ash.command.base.AshResourceRelatedCommand;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.ash.exception.ParamException;
-import cn.standardai.api.ash.resource.base.AshResource;
 import cn.standardai.api.core.base.AuthAgent;
+import cn.standardai.api.core.exception.AuthException;
 
 public class AshAgent extends AuthAgent {
 
-	public JSONObject exec(JSONObject request) throws AshException {
+	public JSONObject exec(JSONObject request) throws AshException, AuthException {
 
 		JSONObject result = new JSONObject();
 		String commandLine = request.getString("ash");
@@ -70,15 +72,26 @@ public class AshAgent extends AuthAgent {
 				pIndex++;
 			}
 		}
-		AshReply reply;
+		ashCommand.setUserId(this.userId);
+		ashCommand.setToken(this.token);
+		Executable executor = ashCommand.getExecutor();
+		executor.setParam(params);
+
 		try {
-			reply = ashCommand.exec(params, this.userId, this.getToken());
+			ArgsHelper.check(executor);
+			//this.checkToken(this.token);
+			executor.readParam();
+			AshReply reply = executor.exec();
 			result.put("display", reply.display);
 			//result.put("message", reply.message);
 			result.put("hidden", reply.hidden);
+		} catch (DialogException e) {
+			//result.put("message", e.getMessage());
+			result.put("display", e.question);
+			result.put("callback", commandLine + " -" + e.answerField + " ");
 		} catch (ParamException e) {
 			result.put("message", e.getMessage());
-			result.put("display", ashCommand.help().display);
+			result.put("display", ashCommand.help());
 			//result.put("hidden", reply.hidden);
 		} catch (HttpException e) {
 			result.put("message", e.getMessage());
@@ -92,7 +105,7 @@ public class AshAgent extends AuthAgent {
 
 		return result;
 	}
-
+/*
 	public JSONObject dialog(JSONObject request) throws AshException {
 
 		JSONObject dialog = request.getJSONObject("dialog");
@@ -100,7 +113,7 @@ public class AshAgent extends AuthAgent {
 
 		String dialogId = dialog.getString("id");
 		JSONArray answersJ = dialog.getJSONArray("answers");
-		String question = AshDialog.getQuestion(dialogId, answersJ.size());
+		String question = ArgsHelper.getQuestion(dialogId, answersJ.size());
 		if (question == null) {
 			String[] answers = new String[answersJ.size()];
 			for (int i = 0; i < answers.length; i++) {
@@ -108,11 +121,11 @@ public class AshAgent extends AuthAgent {
 			}
 			String command = request.getString("command");
 			String resource = request.getString("resource");
-			return AshDialog.finish(command, resource, answers, this.getToken());
+			return ArgsHelper.finish(command, resource, answers, this.token);
 		} else {
 			JSONObject result = new JSONObject();
 			result.put("display", question);
 			return result;
 		}
-	}
+	}*/
 }

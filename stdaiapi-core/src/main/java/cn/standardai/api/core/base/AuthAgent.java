@@ -14,7 +14,7 @@ public class AuthAgent {
 
 	public String userId;
 
-	private String token;
+	protected String token;
 
 	protected AuthAgent() {
 		super();
@@ -47,10 +47,6 @@ public class AuthAgent {
 
 	public void setToken(String token) {
 		this.token = token;
-	}
-
-	public String getToken() {
-		return token;
 	}
 
 	public void done() {

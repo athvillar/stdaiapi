@@ -22,6 +22,6 @@ public enum DnnAlgorithm {
 	}
 
 	public static DnnAlgorithm resolve(String algorithm) {
-		return (algorithm != null ? mappings.get(algorithm) : null);
+		return (algorithm != null ? mappings.get(algorithm.toLowerCase()) : null);
 	}
 }

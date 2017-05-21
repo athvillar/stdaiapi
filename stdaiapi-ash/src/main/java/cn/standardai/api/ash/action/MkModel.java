@@ -2,20 +2,31 @@ package cn.standardai.api.ash.action;
 
 import com.alibaba.fastjson.JSONObject;
 
-import cn.standardai.api.ash.command.base.AshCommand.HttpMethod;
+import cn.standardai.api.ash.agent.ArgsHelper;
+import cn.standardai.api.ash.base.Action;
+import cn.standardai.api.ash.base.AshCommand.HttpMethod;
+import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.core.bean.Context;
 
 public class MkModel extends Action {
 
-	String[] s1 = new String[] {
-			"请输入模型名：",
-			"请输入数据集名(userId/datasetName)：",
-			"请输入x过滤器，多个过滤器用｜分割(支持的过滤器请参考文档－－过滤器)：",
-			"请输入y过滤器，多个过滤器用｜分割(支持的过滤器请参考文档－－过滤器)：",
-			"请输入算法名(CNN, LSTM)：",
-			"请输入算法JSON结构(结构说明请参考文档－－建立模型)：",
+	private static String[][] dialog = new String[][] {
+			new String[] {"md", "请输入模型名:"},
+			new String[] {"dt", "请输入数据名(userId/dataName):"},
+			new String[] {"xf", "请输入x过滤器(过滤器格式可参考文档－－过滤器，默认为系统推荐过滤器):"},
+			new String[] {"yf", "请输入y过滤器(过滤器格式可参考文档－－过滤器，默认为系统推荐过滤器):"},
+			new String[] {"ag", "请输入算法名(CNN, LSTM):"},
+			new String[] {"sr", "请输入算法JSON结构(结构说明请参考文档－－建立模型):",}
 	};
+
+	static {
+		ArgsHelper.regist(MkModel.class, dialog);
+	}
+
+	public MkModel() {
+		setVp(dialog);
+	}
 
 	private String modelName;
 
@@ -30,7 +41,13 @@ public class MkModel extends Action {
 	private String structure;
 
 	@Override
-	public void exec() throws AshException {
+	public AshReply exec() throws AshException {
+
+		for (int i = 0; i < dialog.length; i++) {
+			if (this.param.get(dialog[i][0]) == null) {
+				
+			}
+		}
 		JSONObject body = new JSONObject();
 		body.put("name", modelName);
 		body.put("algorithm", algorithm);
@@ -38,7 +55,7 @@ public class MkModel extends Action {
 		JSONObject dataXJ = new JSONObject();
 		dataXJ.put("filter", xFilter);
 		JSONObject dataYJ = new JSONObject();
-		dataXJ.put("filter", yFilter);
+		dataYJ.put("filter", yFilter);
 
 		JSONObject dataJ = new JSONObject();
 		dataJ.put("datasetName", datasetName);
@@ -49,11 +66,17 @@ public class MkModel extends Action {
 
 		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getMl() + "/dnn", null, body);
 
-		comm.reply.display = "模型(id=" + j.getString("modelId") + ", name=" + comm.userId + "/" + modelName + ")建立成功";
+		this.reply.display = "模型(id=" + j.getString("modelId") + ", name=" + comm.userId + "/" + modelName + ")建立成功";
+		return this.reply;
 	}
 
 	@Override
-	public void setParam() throws AshException {
-//tODO
+	public void readParam() throws AshException {
+		this.modelName = this.param.get("md");
+		this.datasetName = this.param.get("dt");
+		this.xFilter = this.param.get("xf");
+		this.yFilter = this.param.get("yf");
+		this.algorithm = this.param.get("ag");
+		this.structure = this.param.get("sr");
 	}
 }

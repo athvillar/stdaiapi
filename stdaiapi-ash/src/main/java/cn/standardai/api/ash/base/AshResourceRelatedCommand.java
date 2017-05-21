@@ -1,15 +1,13 @@
-package cn.standardai.api.ash.command.base;
+package cn.standardai.api.ash.base;
 
-import cn.standardai.api.ash.action.Action;
 import cn.standardai.api.ash.exception.AshException;
-import cn.standardai.api.ash.resource.base.AshResource;
 
 public abstract class AshResourceRelatedCommand extends AshCommand {
 
 	private AshResource resource;
 
 	@Override
-	public void invoke() throws AshException {
+	public Executable getExecutor() throws AshException {
 
 		String comCls = this.getClass().getName();
 		comCls = comCls.substring(comCls.lastIndexOf('.') + 1).substring(3);
@@ -19,7 +17,7 @@ public abstract class AshResourceRelatedCommand extends AshCommand {
 			Action action = (Action) Class.forName("cn.standardai.api.ash.action." + comCls + resCls).newInstance();
 			action.comm = this;
 			action.res = this.resource;
-			action.exec();
+			return action;
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 			e.printStackTrace();
 			throw new AshException("该资源没有对应的命令");

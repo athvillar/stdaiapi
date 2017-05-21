@@ -1,6 +1,7 @@
 package cn.standardai.api.data.agent;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -96,12 +97,12 @@ public class ScratchAgent extends AuthAgent {
 				ClientHttpRequest chr = schr.createRequest(uri, HttpMethod.GET);
 				ClientHttpResponse res = chr.execute();
 				InputStream is = res.getBody();
-				File file = new File("/tempfile/" + MathUtil.random(12));
+				File file = new File("~/Documents/tempfile/" + MathUtil.random(12));
                 //item.write(file);
 				int len;
 				byte[] bytes = new byte[1024];
+				FileWriter wf = new FileWriter(file);
 				while ((len= is.read(bytes)) != -1) {
-					
 				}
 
 			} catch (URISyntaxException e1) {
@@ -122,7 +123,7 @@ public class ScratchAgent extends AuthAgent {
 			Data param = new Data();
 			param.setDatasetId(datasetId);
 			param.setIdx(baseIdx + i);
-			param.setData(data1);
+			param.setX(data1);
 			dataDao.insert(param);
 		}
 
@@ -195,7 +196,8 @@ public class ScratchAgent extends AuthAgent {
 
 		List<JSONObject> datalist = new ArrayList<JSONObject>();
 		for (int i = 1; i <= 165; i++) {
-			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/yale/s" + i + ".bmp");
+			//Integer[][][] data = ImageUtil.getGray("/Users/athvillar/Documents/yale/s" + i + ".bmp");
+			Integer[][][] data = null;
 			Integer[] target = new Integer[165];
 			for (int j = 0; j < target.length; j++) {
 				if (j == (i - 1) / 11) {
@@ -234,8 +236,7 @@ public class ScratchAgent extends AuthAgent {
 			Data param = new Data();
 			param.setDatasetId(datasetId);
 			param.setIdx(baseIdx + i);
-			param.setData(data1);
-			param.setType("json");
+			param.setX(data1);
 			dataDao.insert(param);
 		}
 

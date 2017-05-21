@@ -5,13 +5,13 @@ import java.util.Map;
 
 import cn.standardai.api.ash.exception.ParamException;
 
-public class AshCommandParams {
+public class AshParam {
 
 	private int paramNumber = 0;
 
 	public Map<String, String> paramMap = new HashMap<String, String>();
 
-	public AshCommandParams() {
+	public AshParam() {
 		paramMap.put("_p", "");
 	}
 
@@ -27,16 +27,16 @@ public class AshCommandParams {
 		paramMap.put("_" + n, p);
 	}
 
-	public void set(char k, String v) {
-		paramMap.put(String.valueOf(k), v);
+	public void set(String k, String v) {
+		paramMap.put(k, v);
 	}
 
 	public boolean has(char p) {
 		return inChars(p, paramMap.get("_p"));
 	}
 
-	public String get(char k) {
-		return paramMap.get(String.valueOf(k));
+	public String get(String k) {
+		return paramMap.get(k);
 	}
 
 	public Integer getInteger() {
@@ -52,8 +52,8 @@ public class AshCommandParams {
 		return paramNumber;
 	}
 
-	public static AshCommandParams parse(String[] paramStrings, char[] fp, char[] vp, Integer pNumMax, Integer pNumMin) throws ParamException {
-		AshCommandParams params = new AshCommandParams();
+	public static AshParam parse(String[] paramStrings, char[] fp, String[] vp, Integer pNumMax, Integer pNumMin) throws ParamException {
+		AshParam params = new AshParam();
 		for (int i = 0; i < paramStrings.length; i++) {
 			String p = paramStrings[i];
 			if (p == null || "".equals(p)) continue;
@@ -63,20 +63,22 @@ public class AshCommandParams {
 					params.setInteger(Integer.parseInt(p.substring(1)));
 					continue;
 				} else {
-					// -abc
-					for (char c : p.substring(1).toCharArray()) {
-						if (inChars(c, fp)) {
-							// -a
-							params.set(c);
-							continue;
-						} else if (inChars(c, vp)) {
-							// -a b
-							if (i == paramStrings.length - 1) throw new ParamException("-" + c + "缺少参数");
-							params.set(c, paramStrings[++i]);
-							continue;
-						} else {
-							// -?
-							throw new ParamException("参数错误(-" + c + ")");
+					if (inStrings(p.substring(1), vp)) {
+						// -a b
+						if (i == paramStrings.length - 1) throw new ParamException(p + "缺少参数");
+						params.set(p.substring(1), paramStrings[++i]);
+						continue;
+					} else {
+						// -abc
+						for (char c : p.substring(1).toCharArray()) {
+							if (inChars(c, fp)) {
+								// -a
+								params.set(c);
+								continue;
+							} else {
+								// -?
+								throw new ParamException("参数错误(-" + c + ")");
+							}
 						}
 					}
 				}
@@ -105,6 +107,14 @@ public class AshCommandParams {
 			}
 		}
 		return true;
+	}
+
+	private static boolean inStrings(String s, String[] ss) {
+		if (ss == null) return false;
+		for (String p : ss) {
+			if (p.equals(s)) return true;
+		}
+		return false;
 	}
 
 	private static boolean inChars(char c, char[] cs) {

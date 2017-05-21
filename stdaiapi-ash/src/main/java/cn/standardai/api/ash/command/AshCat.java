@@ -1,7 +1,6 @@
 package cn.standardai.api.ash.command;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshResourceRelatedCommand;
+import cn.standardai.api.ash.base.AshResourceRelatedCommand;
 
 public class AshCat extends AshResourceRelatedCommand {
 
@@ -10,13 +9,13 @@ public class AshCat extends AshResourceRelatedCommand {
 	}
 
 	@Override
-	public AshReply help() {
+	public String help() {
 		//this.reply.display = "mk命令格式：mk [资源] [参数1, 2, 3...]";
-		return this.reply;
+		return null;
 	}
 
 	@Override
-	public AshReply man() {
+	public String man() {
 		/*
 		this.reply.display = "mk命令用于创建资源\n"
 				+ "用法：\n"
@@ -24,11 +23,6 @@ public class AshCat extends AshResourceRelatedCommand {
 				+ "例:\n"
 				+ "\t创建用户:\tmk user";
 				*/
-		return this.reply;
-	}
-
-	@Override
-	public String[][] getDialog() {
 		return null;
 	}
 }

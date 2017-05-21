@@ -51,10 +51,66 @@ public class DnnAgent extends AuthAgent {
 		Dataset dataset = dh.getDataset(this.userId, dataSetting.getDatasetId(), dataSetting.getDatasetName());
 		if (dataset == null) throw new JSONFormatException("找不到指定的数据集(datasetId=" + dataSetting.getDatasetId() + ", datasetName=" + dataSetting.getDatasetName() + ")");
 
+		setDataSetting(dataSetting, dataset, algorithm);
+
 		JSONObject structure = request.getJSONObject("structure");
 		if (structure == null) throw new JSONFormatException("缺少模型结构(structure)");
 
 		return mh.createModel(userId, modelTemplateName, algorithm, dataSetting, structure.toJSONString());
+	}
+
+	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm) {
+
+		// 如果用户没有输入的话，根据数据集和算法选择filter和column
+		dataSetting.setDatasetId(dataset.getDatasetId());
+		if (dataSetting.getxColumn() == null || "".equals(dataSetting.getxColumn())) {
+			switch (dataset.getFormat().toLowerCase()) {
+			case "file":
+				dataSetting.setxColumn("ref");
+				break;
+			default:
+				dataSetting.setxColumn("x");
+				break;
+			}
+		}
+		if (dataSetting.getyColumn() == null || "".equals(dataSetting.getyColumn())) {
+			dataSetting.setyColumn("y");
+		}
+		if (dataSetting.getxFilter() == null || "".equals(dataSetting.getxFilter())) {
+			switch (algorithm) {
+			case cnn:
+				switch (dataset.getFormat().toLowerCase()) {
+				case "json":
+					dataSetting.setxFilter("Json3");
+					break;
+				case "jpg":
+					dataSetting.setxFilter("RGBImageFilter");
+					break;
+				default:
+					dataSetting.setxFilter("Default3");
+					break;
+				}
+				break;
+			case lstm:
+				switch (dataset.getFormat().toLowerCase()) {
+				case "json":
+					dataSetting.setxFilter("Json2");
+					break;
+				case "jpg":
+					dataSetting.setxFilter("GrayImageFilter");
+					break;
+				default:
+					dataSetting.setxFilter("Default2");
+					break;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		if (dataSetting.getyFilter() == null || "".equals(dataSetting.getyFilter())) {
+			dataSetting.setyFilter("Int");
+		}
 	}
 
 	/*

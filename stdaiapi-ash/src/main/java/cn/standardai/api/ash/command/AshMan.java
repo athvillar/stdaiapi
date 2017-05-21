@@ -1,8 +1,7 @@
 package cn.standardai.api.ash.command;
 
-import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshCommand;
-import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.base.AshCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
 import cn.standardai.api.ash.exception.AshException;
 
 public class AshMan extends AshCommonCommand {
@@ -14,29 +13,27 @@ public class AshMan extends AshCommonCommand {
 	@Override
 	public void invoke() throws AshException {
 
-		AshCommand command = AshCommand.getInstance(params.get(1));
+		AshCommand command = AshCommand.getInstance(param.get(1));
 		if (command == null) {
-			this.reply.display = "没有找到" + params.get(1);
+			this.reply.display = "没有找到" + param.get(1);
 		}
-		this.reply.display = command.man().display;
+		this.reply.display = command.man();
 	}
 
 	@Override
-	public AshReply help() {
-		this.reply.display = "man命令格式：man [命令名]";
-		return this.reply;
+	public String help() {
+		return "man命令格式：man [命令名]";
 	}
 
 	@Override
-	public AshReply man() {
-		this.reply.display = "man命令用于显示帮助信息\n"
+	public String man() {
+		return "man命令用于显示帮助信息\n"
 			+ "用法\n"
 			+ "\tman [命令名]";
-		return this.reply;
 	}
 
 	@Override
-	public String[][] getDialog() {
-		return null;
+	public void readParam() throws AshException {
+		return;
 	}
 }
