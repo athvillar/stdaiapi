@@ -10,12 +10,12 @@ import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.ash.exception.ParamException;
-import cn.standardai.api.ash.resource.base.AshResource.Resource;
+import cn.standardai.api.ash.resource.base.AshResource;
 import cn.standardai.api.core.base.AuthAgent;
 
 public class AshAgent extends AuthAgent {
 
-	public JSONObject exec(JSONObject request) {
+	public JSONObject exec(JSONObject request) throws AshException {
 
 		JSONObject result = new JSONObject();
 		String commandLine = request.getString("ash");
@@ -37,12 +37,12 @@ public class AshAgent extends AuthAgent {
 
 		int paramStartIndex = 1;
 		if (ashCommand instanceof AshResourceRelatedCommand) {
-			Resource resource = null;
+			AshResource resource = null;
 			if (commands.length >= 2) {
-				resource = Resource.resolve(commands[1]);
+				resource = AshResource.getInstance(commands[1]);
 			}
 			if (resource == null) {
-				resource = Resource.resolve(request.getString("resource"));
+				resource = AshResource.getInstance(request.getString("resource"));
 				if (resource == null) {
 					result.put("message", "资源不明，请使用msg命令联系管理员");
 					return result;

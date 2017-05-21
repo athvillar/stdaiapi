@@ -7,6 +7,14 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.bean.AshCommandParams;
 import cn.standardai.api.ash.bean.AshReply;
+import cn.standardai.api.ash.command.AshAsh;
+import cn.standardai.api.ash.command.AshCall;
+import cn.standardai.api.ash.command.AshCat;
+import cn.standardai.api.ash.command.AshCd;
+import cn.standardai.api.ash.command.AshCp;
+import cn.standardai.api.ash.command.AshCurl;
+import cn.standardai.api.ash.command.AshEcho;
+import cn.standardai.api.ash.command.AshFind;
 import cn.standardai.api.ash.command.AshHelp;
 import cn.standardai.api.ash.command.AshHistory;
 import cn.standardai.api.ash.command.AshLogin;
@@ -16,6 +24,7 @@ import cn.standardai.api.ash.command.AshMan;
 import cn.standardai.api.ash.command.AshMk;
 import cn.standardai.api.ash.command.AshMsg;
 import cn.standardai.api.ash.command.AshRm;
+import cn.standardai.api.ash.command.AshSet;
 import cn.standardai.api.ash.command.AshVersion;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.HttpException;
@@ -25,24 +34,45 @@ public abstract class AshCommand {
 
 	public enum Command {
 
-		help("help"), history("history"), ls("ls"), man("man"), rm("rm"),
-		msg("msg"), message("message"), login("login"), logout("logout"), mk("mk"), version("version");
+		ash("ash", AshAsh.class),
+		call("call", AshCall.class),
+		cat("cat", AshCat.class),
+		cd("cd", AshCd.class),
+		cp("cp", AshCp.class),
+		curl("curl", AshCurl.class),
+		echo("echo", AshEcho.class),
+		find("find", AshFind.class),
+		help("help", AshHelp.class),
+		history("history", AshHistory.class),
+		login("login", AshLogin.class),
+		logout("logout", AshLogout.class),
+		ls("ls", AshLs.class),
+		man("man", AshMan.class),
+		message("message", AshMsg.class),
+		mk("mk", AshMk.class),
+		msg("msg", AshMsg.class),
+		set("set", AshSet.class),
+		rm("rm", AshRm.class),
+		version("version", AshVersion.class);
 
 		String command;
 
-		private Command(String command) {
+		Class<? extends AshCommand> cls;
+
+		private Command(String command, Class<? extends AshCommand> cls) {
 			this.command = command;
+			this.cls = cls;
 		}
 
-		private static final Map<String, Command> mappings = new HashMap<String, Command>();
+		private static final Map<String, Class<? extends AshCommand>> mappings = new HashMap<String, Class<? extends AshCommand>>();
 
 		static {
 			for (Command command : values()) {
-				mappings.put(command.command, command);
+				mappings.put(command.command, command.cls);
 			}
 		}
 
-		public static Command resolve(String command) {
+		public static Class<? extends AshCommand> resolve(String command) {
 			return (command != null ? mappings.get(command) : null);
 		}
 	}
@@ -53,7 +83,7 @@ public abstract class AshCommand {
 
 	public String token;
 
-	protected AshReply reply;
+	public AshReply reply;
 
 	public char[] fp = null;
 
@@ -63,7 +93,7 @@ public abstract class AshCommand {
 
 	public Integer pNumMin = null;
 
-	protected AshCommandParams params;
+	public AshCommandParams params;
 
 	public AshCommand() {
 		this.reply = new AshReply();
@@ -85,35 +115,15 @@ public abstract class AshCommand {
 
 	public abstract String[][] getDialog();
 
-	public static AshCommand getInstance(String commandString) {
-
-		Command command = AshCommand.Command.resolve(commandString);
-		if (command == null) return null;
-		switch (command) {
-		case help:
-			return new AshHelp();
-		case history:
-			return new AshHistory();
-		case ls:
-			return new AshLs();
-		case man:
-			return new AshMan();
-		case msg:
-			return new AshMsg();
-		case message:
-			return new AshMsg();
-		case rm:
-			return new AshRm();
-		case login:
-			return new AshLogin();
-		case logout:
-			return new AshLogout();
-		case mk:
-			return new AshMk();
-		case version:
-			return new AshVersion();
+	public static AshCommand getInstance(String commandString) throws AshException {
+		Class<? extends AshCommand> cls = AshCommand.Command.resolve(commandString);
+		if (cls == null) return null;
+		try {
+			return cls.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+			throw new AshException("命令执行错误");
 		}
-		return null;
 	}
 
 	protected void setParamRules(char[] fp, char[] vp, Integer pNumMax, Integer pNumMin) {

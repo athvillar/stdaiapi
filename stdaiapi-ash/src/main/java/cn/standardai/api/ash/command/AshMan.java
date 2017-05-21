@@ -3,6 +3,7 @@ package cn.standardai.api.ash.command;
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.base.AshCommand;
 import cn.standardai.api.ash.command.base.AshCommonCommand;
+import cn.standardai.api.ash.exception.AshException;
 
 public class AshMan extends AshCommonCommand {
 
@@ -11,7 +12,7 @@ public class AshMan extends AshCommonCommand {
 	}
 
 	@Override
-	public void invoke() {
+	public void invoke() throws AshException {
 
 		AshCommand command = AshCommand.getInstance(params.get(1));
 		if (command == null) {

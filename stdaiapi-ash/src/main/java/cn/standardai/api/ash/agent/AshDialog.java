@@ -6,13 +6,14 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.ash.bean.AshCommandParams;
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.base.AshCommand;
+import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.core.bean.Context;
 
 public class AshDialog {
 
-	public static String getQuestion(String dialogId, int size) throws DialogException {
+	public static String getQuestion(String dialogId, int size) throws AshException {
 
 		if (dialogId == null) throw new DialogException("缺少必要的参数");
 		String[] ss = dialogId.split(":");

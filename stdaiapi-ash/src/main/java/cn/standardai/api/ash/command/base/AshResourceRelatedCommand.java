@@ -1,20 +1,32 @@
 package cn.standardai.api.ash.command.base;
 
+import cn.standardai.api.ash.action.Action;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.resource.base.AshResource;
-import cn.standardai.api.ash.resource.base.AshResource.Resource;
 
 public abstract class AshResourceRelatedCommand extends AshCommand {
 
-	private Resource resource;
+	private AshResource resource;
 
 	@Override
 	public void invoke() throws AshException {
-		AshResource ashResource = AshResource.getInstance(this.resource);
-		this.reply = ashResource.invoke(this.getClass(), this.params, this.userId, this.token);
+
+		String comCls = this.getClass().getName();
+		comCls = comCls.substring(comCls.lastIndexOf('.') + 1).substring(3);
+		String resCls = this.resource.getClass().getName();
+		resCls = resCls.substring(resCls.lastIndexOf('.') + 1).substring(3);
+		try {
+			Action action = (Action) Class.forName("cn.standardai.api.ash.action." + comCls + resCls).newInstance();
+			action.comm = this;
+			action.res = this.resource;
+			action.exec();
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new AshException("该资源没有对应的命令");
+		}
 	}
 
-	public void setResource(Resource resource) {
+	public void setResource(AshResource resource) {
 		this.resource = resource;
 	}
 }
