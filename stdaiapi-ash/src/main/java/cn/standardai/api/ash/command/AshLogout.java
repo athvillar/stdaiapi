@@ -30,4 +30,9 @@ public class AshLogout extends AshCommonCommand {
 				+ "\tlogout";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

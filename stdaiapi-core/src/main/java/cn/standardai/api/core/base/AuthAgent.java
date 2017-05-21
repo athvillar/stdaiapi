@@ -45,11 +45,15 @@ public class AuthAgent {
 		return tokenResult.get(0).getUserId();
 	}
 
-	public void done() {
-		daoHandler.releaseSession();
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 	public String getToken() {
 		return token;
+	}
+
+	public void done() {
+		daoHandler.releaseSession();
 	}
 }

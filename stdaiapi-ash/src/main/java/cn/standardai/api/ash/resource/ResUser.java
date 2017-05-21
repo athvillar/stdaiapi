@@ -10,7 +10,7 @@ import cn.standardai.api.ash.resource.base.AshResource;
 import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.util.DateUtil;
 
-public class AshUser extends AshResource {
+public class ResUser extends AshResource {
 
 	private String userId;
 

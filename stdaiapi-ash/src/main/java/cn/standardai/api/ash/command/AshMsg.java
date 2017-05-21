@@ -93,4 +93,9 @@ public class AshMsg extends AshCommonCommand {
 				+ "\t\t在发送消息时，-u为给该用户发送消息，省略-u默认给系统管理员发送消息";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

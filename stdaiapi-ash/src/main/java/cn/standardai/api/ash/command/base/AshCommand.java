@@ -83,6 +83,8 @@ public abstract class AshCommand {
 
 	public abstract AshReply man();
 
+	public abstract String[][] getDialog();
+
 	public static AshCommand getInstance(String commandString) {
 
 		Command command = AshCommand.Command.resolve(commandString);
@@ -129,10 +131,14 @@ public abstract class AshCommand {
 	}
 
 	public JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body) throws HttpException {
+		return AshCommand.http(method, url, params, body, this.token);
+	}
+
+	public static JSONObject http(HttpMethod method, String url, Map<String, String> params, JSONObject body, String token) throws HttpException {
 		Map<String, String> headers = null;
-		if (this.token != null) {
+		if (token != null) {
 			headers = new HashMap<String, String>();
-			headers.put("token", this.token);
+			headers.put("token", token);
 		}
 		JSONObject result = null;
 		switch (method) {
@@ -155,22 +161,22 @@ public abstract class AshCommand {
 		return result;
 	}
 
-	private JSONObject httpDelete(String url, Map<String, String> headers, Map<String, String> params) {
+	public static JSONObject httpDelete(String url, Map<String, String> headers, Map<String, String> params) {
 		String s = HttpUtil.delete(url, params, headers);
 		return JSONObject.parseObject(s);
 	}
 
-	private JSONObject httpPost(String url, Map<String, String> headers, JSONObject body) {
+	public static JSONObject httpPost(String url, Map<String, String> headers, JSONObject body) {
 		String s = HttpUtil.post(url, body.toJSONString(), headers);
 		return JSONObject.parseObject(s);
 	}
 
-	private JSONObject httpPut(String url, Map<String, String> headers, Map<String, String> params, JSONObject body) {
+	public static JSONObject httpPut(String url, Map<String, String> headers, Map<String, String> params, JSONObject body) {
 		String s = HttpUtil.put(url, params, body.toJSONString(), headers);
 		return JSONObject.parseObject(s);
 	}
 
-	private JSONObject httpGet(String url, Map<String, String> headers, Map<String, String> params) {
+	public static JSONObject httpGet(String url, Map<String, String> headers, Map<String, String> params) {
 		String s = HttpUtil.get(url, params, headers);
 		return JSONObject.parseObject(s);
 	}

@@ -1,11 +1,13 @@
 package cn.standardai.api.ash.agent;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.base.AshCommand;
-import cn.standardai.api.ash.command.base.AshResourceCommand;
+import cn.standardai.api.ash.command.base.AshResourceRelatedCommand;
 import cn.standardai.api.ash.exception.AshException;
+import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.ash.exception.ParamException;
 import cn.standardai.api.ash.resource.base.AshResource.Resource;
@@ -34,7 +36,7 @@ public class AshAgent extends AuthAgent {
 		}
 
 		int paramStartIndex = 1;
-		if (ashCommand instanceof AshResourceCommand) {
+		if (ashCommand instanceof AshResourceRelatedCommand) {
 			Resource resource = null;
 			if (commands.length >= 2) {
 				resource = Resource.resolve(commands[1]);
@@ -48,7 +50,7 @@ public class AshAgent extends AuthAgent {
 			} else {
 				paramStartIndex = 2;
 			}
-			((AshResourceCommand)ashCommand).setResource(resource);
+			((AshResourceRelatedCommand)ashCommand).setResource(resource);
 		}
 
 		String[] params = new String[commands.length - paramStartIndex];
@@ -89,5 +91,28 @@ public class AshAgent extends AuthAgent {
 		}
 
 		return result;
+	}
+
+	public JSONObject dialog(JSONObject request) throws AshException {
+
+		JSONObject dialog = request.getJSONObject("dialog");
+		if (dialog == null) throw new DialogException("参数错误");
+
+		String dialogId = dialog.getString("id");
+		JSONArray answersJ = dialog.getJSONArray("answers");
+		String question = AshDialog.getQuestion(dialogId, answersJ.size());
+		if (question == null) {
+			String[] answers = new String[answersJ.size()];
+			for (int i = 0; i < answers.length; i++) {
+				answers[i] = answersJ.getString(i);
+			}
+			String command = request.getString("command");
+			String resource = request.getString("resource");
+			return AshDialog.finish(command, resource, answers, this.getToken());
+		} else {
+			JSONObject result = new JSONObject();
+			result.put("display", question);
+			return result;
+		}
 	}
 }

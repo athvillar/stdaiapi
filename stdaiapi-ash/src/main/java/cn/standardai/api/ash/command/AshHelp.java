@@ -56,4 +56,9 @@ public class AshHelp extends AshCommonCommand {
 				+ "\t名词:\t显示该名词解释";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

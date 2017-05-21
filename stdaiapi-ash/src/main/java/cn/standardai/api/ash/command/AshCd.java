@@ -28,4 +28,9 @@ public class AshCd extends AshCommonCommand {
 				+ "\tcd [资源名]\n";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

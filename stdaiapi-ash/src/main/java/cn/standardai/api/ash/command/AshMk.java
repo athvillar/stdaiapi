@@ -1,9 +1,9 @@
 package cn.standardai.api.ash.command;
 
 import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshResourceCommand;
+import cn.standardai.api.ash.command.base.AshResourceRelatedCommand;
 
-public class AshMk extends AshResourceCommand {
+public class AshMk extends AshResourceRelatedCommand {
 
 	public AshMk() {
 		setParamRules(null, null, null, null);
@@ -23,5 +23,10 @@ public class AshMk extends AshResourceCommand {
 				+ "例:\n"
 				+ "\t创建用户:\tmk user";
 		return this.reply;
+	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
 	}
 }

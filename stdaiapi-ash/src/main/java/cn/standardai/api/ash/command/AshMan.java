@@ -33,4 +33,9 @@ public class AshMan extends AshCommonCommand {
 			+ "\tman [命令名]";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

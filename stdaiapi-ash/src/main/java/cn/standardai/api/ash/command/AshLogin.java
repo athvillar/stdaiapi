@@ -37,4 +37,9 @@ public class AshLogin extends AshCommonCommand {
 				+ "\tlogin [用户名] [密码]";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

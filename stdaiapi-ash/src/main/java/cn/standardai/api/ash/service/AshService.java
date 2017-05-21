@@ -26,8 +26,8 @@ public class AshService extends BaseService<AshAgent> {
 	private Logger logger = LoggerFactory.getLogger(AshService.class);
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	public String upgradeUserById(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-ash 收到ash请求(request=" + request + ")");
+	public String ashCommand(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+		logger.info("stdaiapi-ash 收到ash command请求(request=" + request + ")");
 		JSONObject result = new JSONObject();
 		AshAgent agent = null;
 		try {
@@ -51,7 +51,28 @@ public class AshService extends BaseService<AshAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-ash 结束ash(" + result + ")");
+		logger.info("stdaiapi-ash 结束ash command(" + result + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "/dialog", method = RequestMethod.POST)
+	public String ashDialog(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+		logger.info("stdaiapi-ash 收到ash dialog请求(request=" + request + ")");
+		JSONObject result = new JSONObject();
+		AshAgent agent = null;
+		try {
+			agent = new AshAgent();
+			agent.setToken(getToken(headers));
+			result = agent.dialog(request);
+			result.put("result", "success");
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+			result.put("display", "如需帮助，请使用msg命令联系管理员");
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-ash 结束ash dialog(" + result + ")");
 		return result.toString();
 	}
 }

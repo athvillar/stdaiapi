@@ -27,4 +27,9 @@ public class AshHistory extends AshCommonCommand {
 				+ "\thistory\n";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }

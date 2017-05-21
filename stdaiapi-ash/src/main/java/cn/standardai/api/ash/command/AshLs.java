@@ -1,9 +1,9 @@
 package cn.standardai.api.ash.command;
 
 import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.base.AshResourceCommand;
+import cn.standardai.api.ash.command.base.AshResourceRelatedCommand;
 
-public class AshLs extends AshResourceCommand {
+public class AshLs extends AshResourceRelatedCommand {
 
 	public AshLs() {
 		setParamRules(new char[] {'l'}, null, 0, null);
@@ -23,5 +23,10 @@ public class AshLs extends AshResourceCommand {
 				+ "参数：\n"
 				+ "\t-l: 显示详细信息";
 		return this.reply;
+	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
 	}
 }

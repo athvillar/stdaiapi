@@ -28,4 +28,9 @@ public class AshVersion extends AshCommonCommand {
 				+ "\tversion";
 		return this.reply;
 	}
+
+	@Override
+	public String[][] getDialog() {
+		return null;
+	}
 }
