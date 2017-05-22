@@ -1,5 +1,6 @@
 package cn.standardai.api.ml.bean;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ml.exception.JSONFormatException;
@@ -77,9 +78,18 @@ public class DnnTrainSetting {
 	public void setTestLossIncreaseTolerance(Integer testLossIncreaseTolerance) {
 		this.testLossIncreaseTolerance = testLossIncreaseTolerance;
 	}
+
+	public int[] getDiverseDataRate() {
+		return diverseDataRate;
+	}
+
+	public void setDiverseDataRate(int[] diverseDataRate) {
+		this.diverseDataRate = diverseDataRate;
+	}
 	
 	/*
 	 *   "train":{
+	 *     "diverseDataRate": [8,1,1],
 	 *     "dth":1,
 	 *     "learningRate":0.07,
 	 *     "epoch":8000,
@@ -93,21 +103,23 @@ public class DnnTrainSetting {
 
 		DnnTrainSetting ts = new DnnTrainSetting();
 
-		ts.dth = json.getDouble("datasetId");
-		ts.learningRate = json.getDouble("datasetId");
-		ts.epoch = json.getInteger("datasetId");
-		ts.trainSecond = json.getInteger("datasetId");
-		ts.batchSize = json.getInteger("datasetId");
-		ts.watchEpoch = json.getInteger("datasetId");
-		ts.testLossIncreaseTolerance = json.getInteger("datasetId");
+		JSONArray diverseDataRate = json.getJSONArray("diverseDataRate");
+		int[] rates = new int[3];
+		for (int i = 0; i < rates.length; i++) {
+			if (i < diverseDataRate.size()) {
+				rates[i] = diverseDataRate.getIntValue(i);
+			} else {
+				rates[i] = 0;
+			}
+		}
+		ts.diverseDataRate = rates;
+		ts.dth = json.getDouble("dth");
+		ts.learningRate = json.getDouble("learningRate");
+		ts.epoch = json.getInteger("epoch");
+		ts.trainSecond = json.getInteger("trainSecond");
+		ts.batchSize = json.getInteger("batchSize");
+		ts.watchEpoch = json.getInteger("watchEpoch");
+		ts.testLossIncreaseTolerance = json.getInteger("testLossIncreaseTolerance");
 		return ts;
-	}
-
-	public int[] getDiverseDataRate() {
-		return diverseDataRate;
-	}
-
-	public void setDiverseDataRate(int[] diverseDataRate) {
-		this.diverseDataRate = diverseDataRate;
 	}
 }

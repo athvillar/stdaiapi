@@ -108,7 +108,7 @@ public class DnnDataSetting {
 	}
 
 	public String getData(Data data, String dataColumn) {
-		switch (dataColumn) {
+		switch (dataColumn.substring(dataColumn.lastIndexOf(".") + 1)) {
 		case "x":
 			return data.getX();
 		case "y":

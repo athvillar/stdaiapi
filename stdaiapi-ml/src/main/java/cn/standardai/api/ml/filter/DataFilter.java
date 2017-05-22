@@ -1,12 +1,17 @@
 package cn.standardai.api.ml.filter;
 
 import cn.standardai.api.ml.exception.FilterException;
+import cn.standardai.api.ml.run.ModelGhost;
 
 public abstract class DataFilter<T1, T2> {
 
 	public abstract T2 encode(T1 s) throws FilterException;
 
 	public abstract T1 decode(T2 t) throws FilterException;
+
+	public abstract boolean needInit();
+
+	public abstract void init(ModelGhost mg);
 
 	public static <T3, T4> T4 encode(T3 data, DataFilter<?, ?>[] filters) throws FilterException {
 
@@ -15,6 +20,7 @@ public abstract class DataFilter<T1, T2> {
 		for (int i = 0; i < filters.length; i++) {
 			srcData = desData;
 			DataFilter<Object, Object> f = (DataFilter<Object, Object>)filters[i];
+			if (f == null) continue;
 			desData = f.encode(srcData);
 		}
 		return (T4)desData;
@@ -32,17 +38,10 @@ public abstract class DataFilter<T1, T2> {
 		return (T4)desData;
 	}
 
-	public static void main(String[] args) throws FilterException {
-		
-		Integer a  = 1;
-		Double[] b = DataFilter.encode(a, new DataFilter[] {new TestFilter2(), new TestFilter()});
-		return;
-	}
-
 	public static DataFilter<?, ?>[] parseFilters(String s) throws FilterException {
 
 		if (s == null) return null;
-		String[] ss = s.split("|");
+		String[] ss = s.split("[|]");
 
 		DataFilter<?, ?>[] filters = new DataFilter<?, ?>[ss.length];
 		for (int i = 0; i < filters.length; i++) {
@@ -62,6 +61,7 @@ public abstract class DataFilter<T1, T2> {
 			String p = s.substring(pStart + 1, pEnd);
 			String[] ps = p.split(",");
 			DynamicFilter<?, ?, String> filter = (DynamicFilter<?, ?, String>)DataFilter.getInstance(s.substring(0, pStart));
+			if (filter == null) return null;
 			for (int i = 0; i < ps.length; i++) {
 				filter.setParam(i, ps[i]);
 			}

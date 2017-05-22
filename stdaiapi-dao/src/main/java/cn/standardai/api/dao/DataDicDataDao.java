@@ -6,9 +6,7 @@ import cn.standardai.api.dao.bean.DataDicData;
 
 public interface DataDicDataDao {
 
-	List<DataDicData> selectById(String dataDicId);
+	List<DataDicData> selectByDataDicId(String dataDicId);
 
 	void insert(List<DataDicData> param);
-
-	void deleteByDatasetId(String dataDicId);
 }

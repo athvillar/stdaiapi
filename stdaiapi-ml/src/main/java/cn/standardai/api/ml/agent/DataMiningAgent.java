@@ -163,7 +163,7 @@ public class DataMiningAgent extends AuthAgent {
 				dataList.add(data.getObject(i, type));
 			}
 		} else {
-			List<Data> data = dataDao.selectDataByDatasetId(dataId);
+			List<Data> data = dataDao.selectByDatasetId(dataId);
 			if (type == JSONObject.class) {
 				for (Data data1 : data) {
 					dataList.add((T)JSONObject.parse(data1.getX()));

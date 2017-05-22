@@ -2,11 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 数据字典数据表 -->
 <mapper namespace="cn.standardai.api.dao.DataDicDataDao">
-	<select id="selectById" parameterType="java.lang.String" resultType="cn.standardai.api.dao.bean.DataDicData">
+	<select id="selectByDataDicId" parameterType="java.lang.String" resultType="java.util.List">
 		SELECT * 
-		  FROM DATADICDATA
-		 WHERE 
-		 	DATADICID = #{dataDicId}
+			FROM DATADICDATA
+		WHERE 
+			DATADICID = #{dataDicId}
 	</select>
 	
 	<insert id="insert" parameterType="java.util.List">
@@ -17,10 +17,4 @@
 			(#{item.dataDicId}, #{item.kii}, #{item.value})
 		</foreach>
 	</insert>
-
-	<delete id="deleteByDatasetId" parameterType="java.lang.String">
-		DELETE FROM DATADICDATA 
-		 WHERE 
-		 	DATADICID = #{dataDicId}
-	</delete>
 </mapper>

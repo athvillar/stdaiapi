@@ -28,6 +28,8 @@ public class ModelGhost implements Runnable {
 
 	private DaoHandler daoHandler = new DaoHandler(true);
 
+	private String userId;
+
 	private Dnn<?> model;
 
 	private Map<String, Object> modelContext;
@@ -57,6 +59,7 @@ public class ModelGhost implements Runnable {
 	public void run() {
 
 		ModelHandler mh = new ModelHandler(daoHandler);
+		String modelId = null;
 		try {
 
 			DnnTrainSetting ts = (DnnTrainSetting) modelContext.get("trainSetting");
@@ -71,11 +74,23 @@ public class ModelGhost implements Runnable {
 			this.model.setWatchEpoch(watchEpoch);
 
 			DnnModelSetting ms = (DnnModelSetting) modelContext.get("modelSetting");
+			this.userId = ms.getUserId();
+			modelId = ms.getModelId();
 			DnnDataSetting ds = ms.getDataSetting();
 			DataHandler dh = new DataHandler(this.daoHandler);
 			List<Data> rawData = dh.getData(dh.getDataset(ms.getUserId(), ds.getDatasetId(), ds.getDatasetName()));
 			DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(ds.getxFilter());
 			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
+			for (DataFilter<?, ?> f : xFilters) {
+				if (f != null && f.needInit()) {
+					f.init(this);
+				}
+			}
+			for (DataFilter<?, ?> f : yFilters) {
+				if (f != null && f.needInit()) {
+					f.init(this);
+				}
+			}
 
 			switch (ms.getAlgorithm()) {
 			case cnn:
@@ -116,15 +131,15 @@ public class ModelGhost implements Runnable {
 			}
 
 			Model model = new Model();
-			model.setModelId(modelContext.get("modelId").toString());
-			model.setStructure(Dnn.getBytes(this.model));
+			model.setModelId(modelId);
+			model.setStructure(this.model.getBytes());
 			model.setStatus(Status.Normal.status);
 			mh.updateModelStructureById(model);
 
 		} catch (FilterException e) {
 			e.printStackTrace();
 			Model model = new Model();
-			model.setModelId(modelContext.get("modelId").toString());
+			model.setModelId(modelId);
 			model.setStatus(Status.Normal.status);
 			mh.updateModelStatusById(model);
 		} finally {
@@ -152,5 +167,17 @@ public class ModelGhost implements Runnable {
 
 	public void done() {
 		daoHandler.releaseSession();
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public DaoHandler getDaoHandler() {
+		return daoHandler;
+	}
+
+	public Dnn<?> getModel() {
+		return model;
 	}
 }

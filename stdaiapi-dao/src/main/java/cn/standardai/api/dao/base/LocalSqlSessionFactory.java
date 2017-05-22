@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import cn.standardai.api.dao.DataDao;
+import cn.standardai.api.dao.DataDicDao;
 import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.JDDao;
 import cn.standardai.api.dao.MessageDao;
@@ -130,6 +131,7 @@ public class LocalSqlSessionFactory {
 		ssf4Mysql = new SqlSessionFactoryBuilder().build(inputStream, properties);
 		ssf4Mysql.getConfiguration().addMapper(DataDao.class);
 		ssf4Mysql.getConfiguration().addMapper(DatasetDao.class);
+		ssf4Mysql.getConfiguration().addMapper(DataDicDao.class);
 		ssf4Mysql.getConfiguration().addMapper(TokenDao.class);
 		ssf4Mysql.getConfiguration().addMapper(UserDao.class);
 		ssf4Mysql.getConfiguration().addMapper(MessageDao.class);

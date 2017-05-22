@@ -53,7 +53,7 @@ public class DnnService extends BaseService<DnnAgent> {
 		JSONObject result = null;
 		try {
 			initAgent(headers, DnnAgent.class, userId);
-			result = agent.train(userId, request);
+			result = agent.train(userId, modelTemplateName, request);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

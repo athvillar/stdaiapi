@@ -27,16 +27,19 @@ public interface ModelTemplateDao {
 	@Select({"SELECT * FROM MODELTEMPLATE WHERE USERID = #{userId}"})
 	List<ModelTemplate> selectByUserId(@Param("userId") String userId);
 
-	@Insert({"INSERT INTO MODELTEMPLATE (MODELTEMPLATEID, MODELTEMPLATENAME, USERID, TYPE, SCRIPT, CREATETIME) ",
-		"VALUES (#{param.modelTemplateId}, #{param.modelTemplateName}, #{param.userId}, #{param.type}, #{param.script}, #{param.createTime})"})
+	@Insert({"INSERT INTO MODELTEMPLATE (MODELTEMPLATEID, MODELTEMPLATENAME, USERID, ALGORITHM, SCRIPT, ",
+		"DATASETID, XCOLUMN, XFILTER, YCOLUMN, YFILTER, CREATETIME) ",
+		"VALUES (#{param.modelTemplateId}, #{param.modelTemplateName}, #{param.userId}, #{param.algorithm}, ",
+		"#{param.script}, #{param.datasetId}, #{param.xColumn}, #{param.xFilter}, #{param.yColumn}, #{param.yFilter}, ",
+		"#{param.createTime})"})
 	void insert(@Param("param") ModelTemplate param);
 
 	@Update({"UPDATE MODELTEMPLATE SET SCRIPT = #{param.script}, CREATETIME = #{param.createTime} WHERE MODELTEMPLATENAME = #{param.modelTemplateName} AND USERID = #{param.userId}"})
 	void updateByKey(@Param("param") ModelTemplate param);
 
-	@Update({"UPDATE MODELTEMPLATE SET MODELTEMPLATENAME = #{param.modelTemplateName} WHERE MODELTEMPLATEID = #{param.modelTemplateId}"})
-	void updateById(@Param("param") ModelTemplate param);
-
 	@Delete({"DELETE FROM MODELTEMPLATE WHERE MODELTEMPLATEID = #{modelTemplateId}"})
 	void deleteById(@Param("modelTemplateId") String modelTemplateId);
+
+	@Delete({"DELETE FROM MODELTEMPLATE WHERE MODELTEMPLATEID = #{modelTemplateId}"})
+	void deleteByKey(@Param("modelTemplateName") String modelTemplateName, @Param("userId") String userId);
 }

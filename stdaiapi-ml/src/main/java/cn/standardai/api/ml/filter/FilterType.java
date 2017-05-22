@@ -5,7 +5,10 @@ import java.util.Map;
 
 public enum FilterType {
 
-	integerDicFilter("IntegerDicFilter", IntegerDicFilter.class);
+	IntegerDicFilter("IntegerDicFilter", IntegerDicFilter.class),
+	GrayImageFilter("GrayImageFilter", GrayImageFilter.class),
+	RGBImageFilter("RGBImageFilter", RGBImageFilter.class),
+	SequenceIntegerFilter("SequenceIntegerFilter", SequenceIntegerFilter.class);
 
 	Class<? extends DataFilter<?, ?>> cls;
 

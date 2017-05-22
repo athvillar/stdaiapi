@@ -195,16 +195,17 @@ public class Cnn extends Dnn<CnnData> {
 		}
 	}
 
-	public static byte[] getBytes(Cnn cnn) {
+	@Override
+	public byte[] getBytes() {
 
 		int size = 0;
-		int layerNum = cnn.layers.size();
+		int layerNum = this.layers.size();
 		byte[] layersSerial = new byte[layerNum];
 		Integer[] layersLength = new Integer[layerNum];
 		List<byte[]> layersBytes = new ArrayList<byte[]>();
-		for (int i = 0; i < cnn.layers.size(); i++) {
-			layersSerial[i] = cnn.layers.get(i).getSerial();
-			layersBytes.add(cnn.layers.get(i).getBytes());
+		for (int i = 0; i < this.layers.size(); i++) {
+			layersSerial[i] = this.layers.get(i).getSerial();
+			layersBytes.add(this.layers.get(i).getBytes());
 			layersLength[i] = layersBytes.get(i).length;
 			size += layersLength[i];
 			size += Integer.BYTES;

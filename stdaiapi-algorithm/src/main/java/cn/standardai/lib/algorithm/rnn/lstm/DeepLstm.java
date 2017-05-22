@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.lib.algorithm.base.Dnn;
-import cn.standardai.lib.algorithm.base.Trainable;
+import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.function.activate.Sigmoid;
@@ -47,6 +47,12 @@ public class DeepLstm extends Dnn<LstmData> {
 	public DerivableFunction σ = new Sigmoid();
 
 	public DerivableFunction tanh = new Tanh();
+
+	public DeepLstm(Lstm[] lstms) {
+		this.lstms = lstms;
+		this.inputSize = lstms[0].inputSize;
+		this.outputSize = lstms[lstms.length - 1].outputSize;
+	}
 
 	public DeepLstm(int[] layerSize, int inputSize, int outputSize) {
 		this.inputSize = inputSize;
@@ -622,7 +628,7 @@ public class DeepLstm extends Dnn<LstmData> {
 	}
 
 	public void setTrainSecond(Integer trainSecond) {
-		this.trainMillisecond = trainSecond * 1000L;
+		if (trainSecond != null) this.trainMillisecond = trainSecond * 1000L;
 	}
 
 	public void setBatchSize(Integer batchSize) {
@@ -680,7 +686,40 @@ public class DeepLstm extends Dnn<LstmData> {
 	}
 
 	public static DeepLstm getInstance(byte[] structure) {
-		// TODO Auto-generated method stub
-		return null;
+
+		int idx = 0;
+		int lstmSize = ByteUtil.getInt(structure, idx);
+		idx += Integer.BYTES;
+		Lstm[] lstm = new Lstm[lstmSize];
+
+		for (int i = 0; i < lstm.length; i++) {
+			int lstmLength = ByteUtil.getInt(structure, idx);
+			idx += Integer.BYTES;
+			byte[] lstmBytes = new byte[lstmLength];
+			System.arraycopy(structure, idx, lstmBytes, 0, lstmLength);
+			idx += lstmLength;
+			lstm[i] = Lstm.getInstance(lstmBytes);
+		}
+
+		DeepLstm deepLstm = new DeepLstm(lstm);
+		return deepLstm;
+	}
+
+	@Override
+	public byte[] getBytes() {
+		int totalLength = 0;
+		for (int i = 0; i < lstms.length; i++) {
+			totalLength += lstms[i].getByteLength();
+		}
+		byte[] bytes = new byte[totalLength + Integer.BYTES * lstms.length + Integer.BYTES];
+		int idx = 0;
+		idx += ByteUtil.putInt(bytes, lstms.length, idx);
+		for (int i = 0; i < lstms.length; i++) {
+			byte[] lstm1Bytes = lstms[i].getBytes();
+			idx += ByteUtil.putInt(bytes, lstm1Bytes.length, idx);
+			System.arraycopy(lstm1Bytes, 0, bytes, idx, lstm1Bytes.length);
+			idx += lstm1Bytes.length;
+		}
+		return bytes;
 	}
 }
