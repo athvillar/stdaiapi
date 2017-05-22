@@ -27,16 +27,15 @@ public interface DatasetDao {
 	@Select({"SELECT * FROM DATASET WHERE USERID = #{userId}"})
 	List<Dataset> selectByUserId(@Param("userId") String userId);
 
-	@Insert({"INSERT INTO DATASET (DATASETID, DATASETNAME, USERID, FORMAT, KEYWORDS,",
-		"TITLES, DATADICID1, DATADICID2, DATADICID3, SHAREPOLICY, CREATETIME) ",
-		"VALUES (#{param.datasetId}, #{param.datasetName}, #{param.userId}, #{param.format},",
-		"#{param.keywords}, #{param.titles}, #{param.dataDicId1}, #{param.dataDicId2},",
-		"#{param.dataDicId3}, #{param.sharePolicy}, NOW())"})
-	void insert(@Param("param") Dataset param);
+	@Insert({"INSERT INTO DATASET (DATASETID, DATASETNAME, DESCRIPTION, USERID, TYPE,",
+		"FORMAT, KEYWORDS, TITLES, SHAREPOLICY, CREATETIME) ",
+		"VALUES (#{param.datasetId}, #{param.datasetName}, #{param.description}, #{param.userId},",
+		"#{param.type}, #{param.format}, #{param.keywords}, #{param.titles}, #{param.sharePolicy}, NOW())"})
+	Long insert(@Param("param") Dataset param);
 
 	@Update({"UPDATE DATASET SET DATASETNAME = #{param.datasetName} WHERE DATASETID = #{param.datasetId}"})
-	void updateById(@Param("param") Dataset param);
+	Long updateById(@Param("param") Dataset param);
 
 	@Delete({"DELETE FROM DATASET WHERE DATASETID = #{datasetId}"})
-	void deleteById(@Param("datasetId") String datasetId);
+	Long deleteById(@Param("datasetId") String datasetId);
 }
