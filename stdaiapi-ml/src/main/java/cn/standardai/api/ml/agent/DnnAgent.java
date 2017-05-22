@@ -65,7 +65,7 @@ public class DnnAgent extends AuthAgent {
 		// 如果用户没有输入的话，根据数据集和算法选择filter和column
 		dataSetting.setDatasetId(dataset.getDatasetId());
 		if (dataSetting.getxColumn() == null || "".equals(dataSetting.getxColumn())) {
-			switch (dataset.getFormat().toLowerCase()) {
+			switch (dataset.getType().toLowerCase()) {
 			case "file":
 				dataSetting.setxColumn("table.data.ref");
 				break;
@@ -85,7 +85,9 @@ public class DnnAgent extends AuthAgent {
 					dataSetting.setxFilter("Json3");
 					break;
 				case "jpg":
-					dataSetting.setxFilter("RGBImageFilter");
+				case "bmp":
+				case "png":
+					dataSetting.setxFilter("RGBImageFilter|NormalizeIntegerFilter");
 					break;
 				default:
 					dataSetting.setxFilter("Default3");
@@ -98,7 +100,9 @@ public class DnnAgent extends AuthAgent {
 					dataSetting.setxFilter("Json2");
 					break;
 				case "jpg":
-					dataSetting.setxFilter("GrayImageFilter");
+				case "bmp":
+				case "png":
+					dataSetting.setxFilter("GrayImageFilter|NormalizeIntegerFilter");
 					break;
 				default:
 					dataSetting.setxFilter("Default2");

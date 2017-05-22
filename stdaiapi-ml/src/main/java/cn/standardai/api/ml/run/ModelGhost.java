@@ -19,7 +19,6 @@ import cn.standardai.api.ml.exception.FilterException;
 import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
-import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 import cn.standardai.lib.base.matrix.MatrixException;
@@ -119,12 +118,10 @@ public class ModelGhost implements Runnable {
 							break;
 						}
 						epoch += watchEpoch;
-						System.out.println("Epoch " + epoch + ",\tLoss: " + this.model.getValue("loss", epoch));
+						System.out.println("Epoch " + epoch + ",\tTrainLoss: " + this.model.getValue("trainLoss", epoch) + ",\tTestLoss: " + this.model.getValue("testLoss", epoch));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 						break;
-					} catch (UsageException e) {
-						e.printStackTrace();
 					}
 				}
 				System.out.println("finished at epoch " + epoch);

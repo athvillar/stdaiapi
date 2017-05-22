@@ -3,9 +3,7 @@ package cn.standardai.lib.algorithm.base;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.exception.UsageException;
-import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 
 public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
@@ -47,14 +45,12 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 	}
 
 	public Map<Integer, Double> getValues(String catalog) throws UsageException {
-		Map<Integer, Double> catalogMap = this.indicator.get(catalog);
-		if (catalogMap == null) throw new UsageException("无此监控项目(" + catalog + ")");
-		return catalogMap;
+		return this.indicator.get(catalog);
 	}
 
-	public Double getValue(String catalog, Integer epoch) throws UsageException {
+	public Double getValue(String catalog, Integer epoch) {
 		Map<Integer, Double> catalogMap = this.indicator.get(catalog);
-		if (catalogMap == null) throw new UsageException("无此监控项目(" + catalog + ")");
+		if (catalogMap == null) return null;
 		return catalogMap.get(epoch);
 	}
 

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 数据字典数据表 -->
 <mapper namespace="cn.standardai.api.dao.DataDicDataDao">
-	<select id="selectByDataDicId" parameterType="java.lang.String" resultType="java.util.List">
+	<select id="selectByDataDicId" parameterType="java.lang.String" resultType="cn.standardai.api.dao.bean.DataDicData">
 		SELECT * 
 			FROM DATADICDATA
 		WHERE 
