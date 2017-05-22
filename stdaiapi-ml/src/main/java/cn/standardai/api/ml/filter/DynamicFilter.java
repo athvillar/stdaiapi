@@ -3,6 +3,8 @@ package cn.standardai.api.ml.filter;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.standardai.api.ml.run.ModelGhost;
+
 public abstract class DynamicFilter<T1, T2, T3> extends DataFilter<T1, T2> {
 
 	public Map<Integer, T3> params;
@@ -15,4 +17,8 @@ public abstract class DynamicFilter<T1, T2, T3> extends DataFilter<T1, T2> {
 	public T3 getParam(Integer k) {
 		return this.params == null ? null : this.params.get(k);
 	}
+
+	public abstract boolean needInit();
+
+	public abstract void init(ModelGhost mg);
 }

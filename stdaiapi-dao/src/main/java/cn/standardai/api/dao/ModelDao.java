@@ -36,11 +36,9 @@ public interface ModelDao {
 	Model selectByIdModelTemplateId(@Param("modelId") String modelId, @Param("modelTemplateId") String modelTemplateId);
 
 	@Insert({"INSERT INTO MODEL ",
-		"(MODELID, MODELTEMPLATEID, USERID, STATUS, DATASETID, DATADICID,",
-		"PARENTMODELID, STRUCTURE, CREATETIME, UPDATETIME) ",
+		"(MODELID, MODELTEMPLATEID, USERID, STATUS, PARENTMODELID, STRUCTURE, CREATETIME, UPDATETIME) ",
 		"VALUES (#{param.modelId}, #{param.modelTemplateId}, #{param.userId}, ",
-		"#{param.status}, #{param.datasetId}, #{param.dataDicId},",
-		"#{param.parentModelId}, #{param.structure}, #{param.createTime}, #{param.createTime})"})
+		"#{param.status}, #{param.parentModelId}, #{param.structure}, #{param.createTime}, #{param.createTime})"})
 	void insert(@Param("param") Model param);
 
 	@Select({"UPDATE MODEL SET STATUS = #{param.status}, UPDATETIME = NOW() WHERE MODELID = #{param.modelId}"})

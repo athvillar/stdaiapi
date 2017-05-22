@@ -19,7 +19,6 @@ import cn.standardai.api.ml.exception.FilterException;
 import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
-import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 import cn.standardai.lib.base.matrix.MatrixException;
@@ -27,6 +26,8 @@ import cn.standardai.lib.base.matrix.MatrixException;
 public class ModelGhost implements Runnable {
 
 	private DaoHandler daoHandler = new DaoHandler(true);
+
+	private String userId;
 
 	private Dnn<?> model;
 
@@ -57,6 +58,7 @@ public class ModelGhost implements Runnable {
 	public void run() {
 
 		ModelHandler mh = new ModelHandler(daoHandler);
+		String modelId = null;
 		try {
 
 			DnnTrainSetting ts = (DnnTrainSetting) modelContext.get("trainSetting");
@@ -71,11 +73,23 @@ public class ModelGhost implements Runnable {
 			this.model.setWatchEpoch(watchEpoch);
 
 			DnnModelSetting ms = (DnnModelSetting) modelContext.get("modelSetting");
+			this.userId = ms.getUserId();
+			modelId = ms.getModelId();
 			DnnDataSetting ds = ms.getDataSetting();
 			DataHandler dh = new DataHandler(this.daoHandler);
 			List<Data> rawData = dh.getData(dh.getDataset(ms.getUserId(), ds.getDatasetId(), ds.getDatasetName()));
 			DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(ds.getxFilter());
 			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
+			for (DataFilter<?, ?> f : xFilters) {
+				if (f != null && f.needInit()) {
+					f.init(this);
+				}
+			}
+			for (DataFilter<?, ?> f : yFilters) {
+				if (f != null && f.needInit()) {
+					f.init(this);
+				}
+			}
 
 			switch (ms.getAlgorithm()) {
 			case cnn:
@@ -104,27 +118,25 @@ public class ModelGhost implements Runnable {
 							break;
 						}
 						epoch += watchEpoch;
-						System.out.println("Epoch " + epoch + ",\tLoss: " + this.model.getValue("loss", epoch));
+						System.out.println("Epoch " + epoch + ",\tTrainLoss: " + this.model.getValue("trainLoss", epoch) + ",\tTestLoss: " + this.model.getValue("testLoss", epoch));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 						break;
-					} catch (UsageException e) {
-						e.printStackTrace();
 					}
 				}
 				System.out.println("finished at epoch " + epoch);
 			}
 
 			Model model = new Model();
-			model.setModelId(modelContext.get("modelId").toString());
-			model.setStructure(Dnn.getBytes(this.model));
+			model.setModelId(modelId);
+			model.setStructure(this.model.getBytes());
 			model.setStatus(Status.Normal.status);
 			mh.updateModelStructureById(model);
 
 		} catch (FilterException e) {
 			e.printStackTrace();
 			Model model = new Model();
-			model.setModelId(modelContext.get("modelId").toString());
+			model.setModelId(modelId);
 			model.setStatus(Status.Normal.status);
 			mh.updateModelStatusById(model);
 		} finally {
@@ -152,5 +164,17 @@ public class ModelGhost implements Runnable {
 
 	public void done() {
 		daoHandler.releaseSession();
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public DaoHandler getDaoHandler() {
+		return daoHandler;
+	}
+
+	public Dnn<?> getModel() {
+		return model;
 	}
 }

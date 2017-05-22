@@ -36,7 +36,7 @@ public class DataHandler {
 	public List<Data> getData(Dataset dataset) {
 		if (dataset == null) return null;
 		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
-		List<Data> data = dataDao.selectDataByDatasetId(dataset.getDatasetId());
+		List<Data> data = dataDao.selectByDatasetId(dataset.getDatasetId());
 		return data;
 	}
 }

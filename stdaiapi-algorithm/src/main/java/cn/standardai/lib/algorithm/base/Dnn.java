@@ -3,9 +3,7 @@ package cn.standardai.lib.algorithm.base;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.exception.UsageException;
-import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 
 public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
@@ -23,7 +21,7 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	private int verifyDataCnt;
 
-	private int[] diverseDataRate = { 6, 3, 1 };
+	private int[] diverseDataRate = { 8, 1, 1 };
 
 	public Map<String, Map<Integer, Double>> indicator = new HashMap<String, Map<Integer, Double>>();
 
@@ -47,14 +45,12 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 	}
 
 	public Map<Integer, Double> getValues(String catalog) throws UsageException {
-		Map<Integer, Double> catalogMap = this.indicator.get(catalog);
-		if (catalogMap == null) throw new UsageException("无此监控项目(" + catalog + ")");
-		return catalogMap;
+		return this.indicator.get(catalog);
 	}
 
-	public Double getValue(String catalog, Integer epoch) throws UsageException {
+	public Double getValue(String catalog, Integer epoch) {
 		Map<Integer, Double> catalogMap = this.indicator.get(catalog);
-		if (catalogMap == null) throw new UsageException("无此监控项目(" + catalog + ")");
+		if (catalogMap == null) return null;
 		return catalogMap.get(epoch);
 	}
 
@@ -70,9 +66,15 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	private void diverseData() {
 		int sum = this.diverseDataRate[0] + this.diverseDataRate[1] + this.diverseDataRate[2];
-		this.testDataCnt = this.data.length * this.diverseDataRate[1] / sum;
-		this.verifyDataCnt = this.data.length * this.diverseDataRate[2] / sum;
-		this.trainDataCnt = this.data.length - testDataCnt - verifyDataCnt;
+		if (sum == 0) {
+			this.testDataCnt = 0;
+			this.verifyDataCnt = 0;
+			this.trainDataCnt = this.data.length;
+		} else {
+			this.testDataCnt = this.data.length * this.diverseDataRate[1] / sum;
+			this.verifyDataCnt = this.data.length * this.diverseDataRate[2] / sum;
+			this.trainDataCnt = this.data.length - testDataCnt - verifyDataCnt;
+		}
 	}
 
 	public T getTrainData(int index) {
@@ -99,13 +101,5 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 		return this.verifyDataCnt;
 	}
 
-	public static byte[] getBytes(Dnn<?> model) {
-		if (model instanceof DeepLstm) {
-			return DeepLstm.getBytes(model);
-		} else if (model instanceof Cnn) {
-			return Cnn.getBytes(model);
-		} else {
-			return null;
-		}
-	}
+	public abstract byte[] getBytes();
 }

@@ -15,7 +15,6 @@ public class GrayImageFilter extends ImageFilter<Integer[][]> {
 	public Integer[][] encode(String s) throws FilterException {
 
 		File file = new File(s);
-		//File file2 = new File(file.getAbsolutePath());
 		BufferedImage image;
 		try {
 			image = ImageIO.read(file);

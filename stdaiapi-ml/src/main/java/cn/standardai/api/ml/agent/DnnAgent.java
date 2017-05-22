@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.AuthAgent;
+import cn.standardai.api.core.exception.AuthException;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Model;
 import cn.standardai.api.ml.bean.DnnAlgorithm;
@@ -64,17 +65,17 @@ public class DnnAgent extends AuthAgent {
 		// 如果用户没有输入的话，根据数据集和算法选择filter和column
 		dataSetting.setDatasetId(dataset.getDatasetId());
 		if (dataSetting.getxColumn() == null || "".equals(dataSetting.getxColumn())) {
-			switch (dataset.getFormat().toLowerCase()) {
+			switch (dataset.getType().toLowerCase()) {
 			case "file":
-				dataSetting.setxColumn("ref");
+				dataSetting.setxColumn("table.data.ref");
 				break;
 			default:
-				dataSetting.setxColumn("x");
+				dataSetting.setxColumn("table.data.x");
 				break;
 			}
 		}
 		if (dataSetting.getyColumn() == null || "".equals(dataSetting.getyColumn())) {
-			dataSetting.setyColumn("y");
+			dataSetting.setyColumn("table.data.y");
 		}
 		if (dataSetting.getxFilter() == null || "".equals(dataSetting.getxFilter())) {
 			switch (algorithm) {
@@ -84,7 +85,9 @@ public class DnnAgent extends AuthAgent {
 					dataSetting.setxFilter("Json3");
 					break;
 				case "jpg":
-					dataSetting.setxFilter("RGBImageFilter");
+				case "bmp":
+				case "png":
+					dataSetting.setxFilter("RGBImageFilter|NormalizeIntegerFilter");
 					break;
 				default:
 					dataSetting.setxFilter("Default3");
@@ -97,7 +100,9 @@ public class DnnAgent extends AuthAgent {
 					dataSetting.setxFilter("Json2");
 					break;
 				case "jpg":
-					dataSetting.setxFilter("GrayImageFilter");
+				case "bmp":
+				case "png":
+					dataSetting.setxFilter("GrayImageFilter|NormalizeIntegerFilter");
 					break;
 				default:
 					dataSetting.setxFilter("Default2");
@@ -109,7 +114,7 @@ public class DnnAgent extends AuthAgent {
 			}
 		}
 		if (dataSetting.getyFilter() == null || "".equals(dataSetting.getyFilter())) {
-			dataSetting.setyFilter("Int");
+			dataSetting.setyFilter("SequenceIntegerFilter");
 		}
 	}
 
@@ -128,7 +133,9 @@ public class DnnAgent extends AuthAgent {
 	 *   }
 	 * }
 	 */
-	public JSONObject train(String name, JSONObject request) throws MLException, DnnException {
+	public JSONObject train(String userId, String modelTemplateName, JSONObject request) throws MLException, DnnException, AuthException {
+
+		if (!userId.equals(this.userId)) throw new AuthException("没有权限");
 
 		String parentModelId = request.getString("parentModelId");
 		boolean isNew = request.getBooleanValue("new");
@@ -138,9 +145,11 @@ public class DnnAgent extends AuthAgent {
 
 		DnnModelSetting modelSetting;
 		if (parentModelId == null) {
-			modelSetting = mh.findLastestModel(userId, name);
+			modelSetting = mh.findLastestModel(userId, modelTemplateName);
+			if (modelSetting == null) throw new MLException("模型不存在");
 		} else {
-			modelSetting = mh.findModel(userId, name, parentModelId);
+			modelSetting = mh.findModel(userId, modelTemplateName, parentModelId);
+			if (modelSetting == null) throw new MLException("模型不存在");
 			modelSetting.setParentModelId(parentModelId);
 		}
 		Dnn<?> dnn = createModel(modelSetting);
@@ -148,6 +157,7 @@ public class DnnAgent extends AuthAgent {
 		ModelGhost mg = new ModelGhost();
 		mg.loadModel(dnn);
 		mg.loadParam("trainSetting", ts);
+		mg.loadParam("modelSetting", modelSetting);
 
 		mh.upgradeModel2Training(modelSetting, isNew);
 		mg.invoke();

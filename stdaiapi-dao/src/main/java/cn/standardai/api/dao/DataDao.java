@@ -15,7 +15,7 @@ public interface DataDao {
 	Integer selectCountByDatasetId(@Param("datasetId") String datasetId);
 
 	@Select({"SELECT * FROM DATA WHERE DATASETID = #{datasetId}"})
-	List<Data> selectDataByDatasetId(@Param("datasetId") String datasetId);
+	List<Data> selectByDatasetId(@Param("datasetId") String datasetId);
 
 	@Insert({"INSERT INTO DATA (DATAID, DATASETID, IDX, REF, X, Y) ",
 		"VALUES (#{param.dataId}, #{param.datasetId}, #{param.idx}, #{param.ref}, #{param.x}, #{param.y})"})

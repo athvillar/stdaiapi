@@ -23,7 +23,29 @@ public class MatrixUtil {
 		return Math.sqrt(sum);
 	}
 
+	public static double l2Norm(Integer[][] m) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		double sum = 0.0;
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[i].length; j++) {
+				sum += m[i][j] * m[i][j];
+			}
+		}
+		return Math.sqrt(sum);
+	}
+
 	public static double l1Norm(Double[] m) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		double sum = 0.0;
+		for (int i = 0; i < m.length; i++) {
+			sum += Math.abs(m[i]);
+		}
+		return sum;
+	}
+
+	public static double l1Norm(Integer[] m) throws MatrixException {
 
 		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
 		double sum = 0.0;

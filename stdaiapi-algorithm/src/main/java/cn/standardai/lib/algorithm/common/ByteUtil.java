@@ -66,7 +66,7 @@ public class ByteUtil {
 		if (ds == null) return 0;
 		length += ByteUtil.putInt(bytes, ds.length, length);
 		for (int i = 0; i < ds.length; i++) {
-			length += ByteUtil.putDouble(bytes, ds[i], index);
+			length += ByteUtil.putDouble(bytes, ds[i], length);
 		}
 		return length - index;
 	}
