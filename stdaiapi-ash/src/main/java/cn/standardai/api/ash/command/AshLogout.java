@@ -19,13 +19,13 @@ public class AshLogout extends AshCommonCommand {
 
 	@Override
 	public String help() {
-		return "logout命令格式：logout";
+		return "logout";
 	}
 
 	@Override
 	public String man() {
 		return "login命令用于用户登出\n"
-				+ "用法：\n"
+				+ "语法\n"
 				+ "\tlogout";
 	}
 

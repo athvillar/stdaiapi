@@ -156,4 +156,13 @@ public abstract class AshCommand {
 	public void setToken(String token) {
 		this.token = token;
 	}
+
+	protected String fillWithSpace(String s, int n) {
+		StringBuilder sb = new StringBuilder();
+		if (s != null) sb.append(s);
+		for (int i = s == null ? 0 : s.length(); i < n; i++) {
+			sb.append("  ");
+		}
+		return sb.toString();
+	}
 }

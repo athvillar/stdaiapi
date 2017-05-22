@@ -20,4 +20,9 @@ public class IntegerDicFilter extends DicFilter<Integer> {
 		String dicName = params.get(0);
 		setDic(new DicHandler(mg.getDaoHandler()).get(mg.getUserId(), dicName));
 	}
+
+	@Override
+	public String getDescription() {
+		return "根据数据字典，将String value转换为Integer key，以及将Integer key转换为String value。";
+	}
 }

@@ -13,4 +13,8 @@ public interface Executable {
 	public void setParam(String[] params) throws AshException;
 
 	public void readParam() throws AshException;
+
+	public void setUserId(String userId);
+
+	public void setToken(String token);
 }

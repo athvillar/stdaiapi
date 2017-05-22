@@ -17,4 +17,9 @@ public class ExpInteger1D extends DimensionFilter<Integer, Integer[]> {
 		if (src == null || src.length < 1) return null;
 		return src[0];
 	}
+
+	@Override
+	public String getDescription() {
+		return "将Integer类型的数字扩展为1维Integer数组，数组长度为1。";
+	}
 }

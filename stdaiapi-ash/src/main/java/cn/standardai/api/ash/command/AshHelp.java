@@ -21,14 +21,15 @@ public class AshHelp extends AshCommonCommand {
 					+ "\tman\t\t\t\t\tmsg\t\t\t\t\tlogin\n"
 					+ "\tlogout\t\t\t\tversion\n"
 					+ "针对某资源的命令\n"
-					+ "\tcall(未完成)\t\t\tcat(未完成)\t\t\tcp(未完成)\n"
+					+ "\tcall\t\t\t\t\tcat\t\t\t\t\tcp(未完成)\n"
 					+ "\tfind(未完成)\t\t\tls\t\t\t\t\tmk\n"
 					+ "\trm\t\t\t\t\tset(未完成)\n"
 					+ "资源\n"
-					+ "\tdata(未完成)\t\t\tdic(未完成)\t\tdoc(未完成)\n"
-					+ "\tfile(未完成)\t\t\tfilter(未完成)\t\t\tmodel\n"
+					+ "\tdata(未完成)\t\t\tdic(未完成)\t\t\tdoc\n"
+					+ "\tfile(未完成)\t\t\tfilter\t\t\t\t\tmodel\n"
 					+ "\tnode(未完成)\t\t\tuser\n"
-					+ "查看某个命令的具体使用方式请输入“man 命令名”，查看某项资源介绍请输入“help 资源名”";
+					+ "查看某个命令的具体使用方式请输入\"man 命令名\"，查看某项资源介绍请输入\"help 资源类别\"，"
+					+ "使用cd命令可以在各资源间切换。";
 			return;
 		}
 
@@ -43,16 +44,16 @@ public class AshHelp extends AshCommonCommand {
 
 	@Override
 	public String help() {
-		return "help命令格式：help [名词]";
+		return "help [名词]";
 	}
 
 	@Override
 	public String man() {
 		return "help命令用于显示帮助信息\n"
-				+ "用法\n"
+				+ "语法\n"
 				+ "\thelp [名词]\n"
-				+ "参数\n"
-				+ "\t名词:\t显示该名词解释";
+				+ "用例\n"
+				+ "\thelp model，显示model的名词解释。";
 	}
 
 	@Override

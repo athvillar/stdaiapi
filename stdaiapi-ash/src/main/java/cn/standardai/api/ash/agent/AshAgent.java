@@ -3,11 +3,13 @@ package cn.standardai.api.ash.agent;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.ash.action.MkUser;
 import cn.standardai.api.ash.base.AshCommand;
 import cn.standardai.api.ash.base.AshResource;
 import cn.standardai.api.ash.base.AshResourceRelatedCommand;
 import cn.standardai.api.ash.base.Executable;
 import cn.standardai.api.ash.bean.AshReply;
+import cn.standardai.api.ash.command.AshLogin;
 import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
@@ -72,14 +74,18 @@ public class AshAgent extends AuthAgent {
 				pIndex++;
 			}
 		}
-		ashCommand.setUserId(this.userId);
-		ashCommand.setToken(this.token);
-		Executable executor = ashCommand.getExecutor();
-		executor.setParam(params);
 
 		try {
+			Executable executor = ashCommand.getExecutor();
+			executor.setParam(params);
 			ArgsHelper.check(executor);
-			//this.checkToken(this.token);
+			if (!(executor instanceof MkUser || executor instanceof AshLogin)) {
+				this.checkToken(this.token);
+				ashCommand.setUserId(this.userId);
+				ashCommand.setToken(this.token);
+				executor.setUserId(this.userId);
+				executor.setToken(this.token);
+			}
 			executor.readParam();
 			AshReply reply = executor.exec();
 			result.put("display", reply.display);

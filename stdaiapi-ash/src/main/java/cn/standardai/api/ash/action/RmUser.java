@@ -8,16 +8,21 @@ import cn.standardai.api.core.bean.Context;
 
 public class RmUser extends Action {
 
+	private String targetUser;
+
+	public RmUser() {
+		setParamRules(null, null, 1, 1);
+	}
+
 	@Override
 	public AshReply exec() throws AshException {
-		comm.http(HttpMethod.DELETE, Context.getProp().getUrl().getBiz() + "/user/" + comm.userId, null, null);
-		this.reply.display = "用户(" + comm.userId + ")已删除";
+		comm.http(HttpMethod.DELETE, Context.getProp().getUrl().getBiz() + "/user/" + targetUser, null, null);
+		this.reply.display = "用户(" + targetUser + ")已删除";
 		return this.reply;
 	}
 
 	@Override
 	public void readParam() throws AshException {
-		// TODO Auto-generated method stub
-		
+		targetUser = param.get(1);
 	}
 }

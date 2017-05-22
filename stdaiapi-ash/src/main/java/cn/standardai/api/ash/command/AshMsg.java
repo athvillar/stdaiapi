@@ -23,7 +23,8 @@ public class AshMsg extends AshCommonCommand {
 		boolean receive = false;
 		boolean all = param.has('a');
 		boolean delete = param.has('d');
-		Integer number = param.getInteger();
+		// TODO
+		//Integer number = param.getInteger();
 		String user = param.get('u');
 		String content = param.get(1);
 		if (content == null) receive = true;
@@ -48,9 +49,9 @@ public class AshMsg extends AshCommonCommand {
 			}
 
 			String result = "共有" + messages.size() + "条消息\n";
-			result += "发件人\t\t时间\t\t\t\t\t\t内容";
+			result += "发件人\t\t\t时间\t\t\t\t\t内容";
 			for (int i = 0; i < messages.size(); i++) {
-				result += "\n" + messages.getJSONObject(i).getString("fromUserId") + "\t";
+				result += "\n" + fillWithSpace(messages.getJSONObject(i).getString("fromUserId"), 15) + "\t";
 				result += DateUtil.format(messages.getJSONObject(i).getDate("createTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\t";
 				result += messages.getJSONObject(i).getString("content");
 			}
@@ -74,21 +75,28 @@ public class AshMsg extends AshCommonCommand {
 
 	@Override
 	public String help() {
-		return "msg(message)命令格式：msg [-a] [-d] [-n] [-u 用户] [内容]";
+		return "msg [-a] [-d] [-n] [-u 用户] [内容]";
 	}
 
 	@Override
 	public String man() {
 		return "msg(message)命令用于接收或发送消息\n"
-				+ "用法：\n"
+				+ "语法\n"
 				+ "\tmsg(message) [-a] [-d] [-n] [-u 用户] [内容]\n"
-				+ "参数：\n"
+				+ "参数\n"
 				+ "\t-a:\t在接收消息时，-a为显示所有信息，如没有此选项，默认显示未读消息\n"
 				+ "\t\t在发送消息时，-a为向所有人发送广播，此时-u被忽略\n"
 				+ "\t-d:\t删除历史消息，消息将被全部删除，且忽略其它参数\n"
 				+ "\t-n:\tn为显示消息的最大条数\n"
 				+ "\t-u [用户]:\t在接收消息时，-u为显示该用户的消息，默认显示所有用户消息\n"
-				+ "\t\t在发送消息时，-u为给该用户发送消息，省略-u默认给系统管理员发送消息";
+				+ "\t\t在发送消息时，-u为给该用户发送消息，省略-u默认给系统管理员发送消息\n"
+				+ "用例\n"
+				+ "\tmsg，接受新消息\n"
+				+ "\tmsg -a，查看历史消息\n"
+				+ "\tmsg -u abc \"hello world\"，给abc用户发消息\n"
+				+ "\tmsg something，给管理员发消息\n"
+				+ "\tmsg -a something，广播"
+				+ "\tmsg -d，删除消息\n";
 	}
 
 	@Override

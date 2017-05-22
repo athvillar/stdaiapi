@@ -17,4 +17,9 @@ public class ExpInteger3D extends DimensionFilter<Integer[][], Integer[][][]> {
 		if (src == null || src.length < 1) return null;
 		return src[0];
 	}
+
+	@Override
+	public String getDescription() {
+		return "将2维Integer数组扩展为3维Integer数组，数组长度为1。";
+	}
 }

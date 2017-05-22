@@ -46,4 +46,8 @@ public class NormalizeIntegerFilter extends MatrixFilter<Integer[][], Double[][]
 		return des;
 	}
 
+	@Override
+	public String getDescription() {
+		return "将2维Integer数组归一化为2维Double数组，转换后的值在0～1之间。";
+	}
 }

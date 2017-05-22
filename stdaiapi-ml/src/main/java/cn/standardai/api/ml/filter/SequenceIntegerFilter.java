@@ -26,4 +26,9 @@ public class SequenceIntegerFilter extends DicFilter<Integer> {
 		this.dic = new HashMap<String, Integer>();
 		this.arcDic = new HashMap<Integer, String>();
 	}
+
+	@Override
+	public String getDescription() {
+		return "根据数据中字符串出现的顺序，依次将其转换为从0开始的Integer数字。";
+	}
 }

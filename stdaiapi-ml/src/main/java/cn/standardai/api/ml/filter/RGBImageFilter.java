@@ -62,4 +62,9 @@ public class RGBImageFilter extends ImageFilter<Integer[][][]> {
 
 		return fileName;
 	}
+
+	@Override
+	public String getDescription() {
+		return "根据图片文件路径读取图片，并将图像每个像素的RGB值转化为1～255之间的Integer类型，输出三维数组，数组大小为图像的长＊高＊3。";
+	}
 }

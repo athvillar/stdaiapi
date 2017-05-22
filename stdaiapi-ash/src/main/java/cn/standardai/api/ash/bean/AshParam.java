@@ -35,8 +35,26 @@ public class AshParam {
 		return inChars(p, paramMap.get("_p"));
 	}
 
-	public String get(String k) {
+	public String getString(String k) {
 		return paramMap.get(k);
+	}
+
+	public Double getDouble(String k) {
+		try {
+			Double v = Double.parseDouble(paramMap.get(k));
+			return v;
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	public Integer getInteger(String k) {
+		try {
+			Integer v = Integer.parseInt(paramMap.get(k));
+			return v;
+		} catch (NumberFormatException e) {
+			return null;
+		}
 	}
 
 	public Integer getInteger() {
@@ -66,7 +84,11 @@ public class AshParam {
 					if (inStrings(p.substring(1), vp)) {
 						// -a b
 						if (i == paramStrings.length - 1) throw new ParamException(p + "缺少参数");
-						params.set(p.substring(1), paramStrings[++i]);
+						String tmp = paramStrings[++i];
+						if (tmp.startsWith("\"") && tmp.endsWith("\"") && tmp.length() >= 2) {
+							tmp = tmp.substring(1, tmp.length() - 1);
+						}
+						params.set(p.substring(1), tmp);
 						continue;
 					} else {
 						// -abc

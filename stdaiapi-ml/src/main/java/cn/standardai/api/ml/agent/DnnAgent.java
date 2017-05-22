@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.exception.AuthException;
 import cn.standardai.api.dao.bean.Dataset;
-import cn.standardai.api.dao.bean.Model;
+import cn.standardai.api.dao.bean.ModelTemplate;
 import cn.standardai.api.ml.bean.DnnAlgorithm;
 import cn.standardai.api.ml.bean.DnnDataSetting;
 import cn.standardai.api.ml.bean.DnnModelSetting;
@@ -56,6 +56,16 @@ public class DnnAgent extends AuthAgent {
 
 		JSONObject structure = request.getJSONObject("structure");
 		if (structure == null) throw new JSONFormatException("缺少模型结构(structure)");
+		try {
+			switch (algorithm) {
+			case cnn:
+				Cnn.getInstance(structure);
+			case lstm:
+				DeepLstm.getInstance(structure);
+			}
+		} catch (DnnException e) {
+			throw new MLException("模型创建脚本执行失败", e);
+		}
 
 		return mh.createModel(userId, modelTemplateName, algorithm, dataSetting, structure.toJSONString());
 	}
@@ -203,23 +213,20 @@ public class DnnAgent extends AuthAgent {
 	}
 
 	public JSONObject list() {
-		List<Model> models = mh.findModels(userId);
+		List<ModelTemplate> modelTemplates = mh.findModelTemplates(userId);
 		JSONObject result = new JSONObject();
-		JSONArray jsonModels = new JSONArray();
-		for (int i = 0; i < models.size(); i++) {
-			JSONObject jsonModel = new JSONObject();
-			jsonModel = (JSONObject) JSON.toJSON(models.get(0));
-			jsonModels.add(jsonModel);
+		JSONArray modelsJ = new JSONArray();
+		for (int i = 0; i < modelTemplates.size(); i++) {
+			JSONObject modelJ = (JSONObject) JSON.toJSON(modelTemplates.get(i));
+			modelsJ.add(modelJ);
 		}
-		result.put("models", jsonModels);
+		result.put("models", modelsJ);
 		return result;
 	}
 
-	public JSONObject delete(String modelId) throws MLException {
-		JSONObject result = new JSONObject();
-		if (mh.deleteModel(modelId, userId) == 0) {
-			throw new MLException("删除异常");
-		}
-		return result;
+	public JSONObject delete(String userId, String modelTemplateName) throws MLException, AuthException {
+		if (!userId.equals(this.userId)) throw new AuthException("没有权限");
+		if (mh.deleteModelTemplate(modelTemplateName, userId) == 0) throw new MLException("模型不存在");
+		return new JSONObject();
 	}
 }

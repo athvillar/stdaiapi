@@ -159,24 +159,20 @@ public class ModelHandler {
 		modelDao.updateStructureById(model);
 	}
 
+	public List<ModelTemplate> findModelTemplates(String userId) {
+		ModelTemplateDao modelDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
+		List<ModelTemplate> modelTemplates = modelDao.selectByUserId(userId);
+		return modelTemplates;
+	}
+
 	public List<Model> findModels(String userId) {
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		List<Model> models = modelDao.selectByUserId(userId);
 		return models;
 	}
 
-	public int deleteModel(String modelId, String userId) throws MLException {
-		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
-		Integer count = modelDao.selectCountByIdUserId(modelId, userId);
-		if (count == 0) {
-			throw new MLException("模型不存在");
-		}
-		return modelDao.deleteById(modelId);
-	}
-
-	public JSONObject createModel(String userId, String modelTemplateName, DnnAlgorithm algorithm, JSONObject data,
-			JSONObject structure) {
-		// TODO Auto-generated method stub
-		return null;
+	public int deleteModelTemplate(String modelTemplateName, String userId) throws MLException {
+		ModelTemplateDao modelTemplateDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
+		return modelTemplateDao.deleteByKey(modelTemplateName, userId);
 	}
 }

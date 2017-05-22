@@ -13,6 +13,8 @@ public abstract class DataFilter<T1, T2> {
 
 	public abstract void init(ModelGhost mg);
 
+	public abstract String getDescription();
+
 	public static <T3, T4> T4 encode(T3 data, DataFilter<?, ?>[] filters) throws FilterException {
 
 		Object srcData;

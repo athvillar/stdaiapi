@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.agent.AshAgent;
+import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.core.base.BaseService;
 import cn.standardai.api.core.exception.AuthException;
 
@@ -45,6 +46,9 @@ public class AshService extends BaseService<AshAgent> {
 		} catch (AuthException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 			result.put("display", "请使用login登陆或mk user注册");
+		} catch (AshException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+			result.put("display", "如需帮助，请使用msg命令联系管理员");
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

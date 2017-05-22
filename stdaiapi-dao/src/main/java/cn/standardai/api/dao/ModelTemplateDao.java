@@ -40,6 +40,6 @@ public interface ModelTemplateDao {
 	@Delete({"DELETE FROM MODELTEMPLATE WHERE MODELTEMPLATEID = #{modelTemplateId}"})
 	void deleteById(@Param("modelTemplateId") String modelTemplateId);
 
-	@Delete({"DELETE FROM MODELTEMPLATE WHERE MODELTEMPLATEID = #{modelTemplateId}"})
-	void deleteByKey(@Param("modelTemplateName") String modelTemplateName, @Param("userId") String userId);
+	@Delete({"DELETE FROM MODELTEMPLATE WHERE MODELTEMPLATENAME = #{modelTemplateName} AND USERID = #{userId}"})
+	Integer deleteByKey(@Param("modelTemplateName") String modelTemplateName, @Param("userId") String userId);
 }

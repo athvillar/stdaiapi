@@ -8,6 +8,7 @@ import cn.standardai.api.ash.resource.ResData;
 import cn.standardai.api.ash.resource.ResDic;
 import cn.standardai.api.ash.resource.ResDoc;
 import cn.standardai.api.ash.resource.ResFile;
+import cn.standardai.api.ash.resource.ResFilter;
 import cn.standardai.api.ash.resource.ResModel;
 import cn.standardai.api.ash.resource.ResNode;
 import cn.standardai.api.ash.resource.ResUser;
@@ -20,6 +21,7 @@ public abstract class AshResource {
 		dic("dic", ResDic.class),
 		doc("doc", ResDoc.class),
 		file("file", ResFile.class),
+		filter("filter", ResFilter.class),
 		model("model", ResModel.class),
 		node("node", ResNode.class),
 		user("user", ResUser.class);

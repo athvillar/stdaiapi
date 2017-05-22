@@ -88,7 +88,7 @@ public class ArgsHelper {
 
 		String[][] dialog = dialogs.get(executor.getClass());
 		for (int i = 0; i < dialog.length; i++) {
-			if (executor.getParam().get(dialog[i][0]) == null) {
+			if (executor.getParam().getString(dialog[i][0]) == null) {
 				throw new DialogException("缺少参数" + dialog[i][0], dialog[i][1], dialog[i][0]);
 			}
 		}

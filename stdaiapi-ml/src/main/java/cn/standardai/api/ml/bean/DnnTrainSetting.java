@@ -104,15 +104,17 @@ public class DnnTrainSetting {
 		DnnTrainSetting ts = new DnnTrainSetting();
 
 		JSONArray diverseDataRate = json.getJSONArray("diverseDataRate");
-		int[] rates = new int[3];
-		for (int i = 0; i < rates.length; i++) {
-			if (i < diverseDataRate.size()) {
-				rates[i] = diverseDataRate.getIntValue(i);
-			} else {
-				rates[i] = 0;
+		if (diverseDataRate != null) {
+			int[] rates = new int[3];
+			for (int i = 0; i < rates.length; i++) {
+				if (i < diverseDataRate.size()) {
+					rates[i] = diverseDataRate.getIntValue(i);
+				} else {
+					rates[i] = 0;
+				}
 			}
+			ts.diverseDataRate = rates;
 		}
-		ts.diverseDataRate = rates;
 		ts.dth = json.getDouble("dth");
 		ts.learningRate = json.getDouble("learningRate");
 		ts.epoch = json.getInteger("epoch");

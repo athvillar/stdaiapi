@@ -3,6 +3,7 @@ package cn.standardai.api.ash.base;
 import cn.standardai.api.ash.bean.AshParam;
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.exception.AshException;
+import cn.standardai.api.ash.exception.ParamException;
 
 public abstract class AshCommonCommand extends AshCommand implements Executable {
 
@@ -41,7 +42,7 @@ public abstract class AshCommonCommand extends AshCommand implements Executable 
 		this.pNumMin = pNumMin;
 	}
 
-	public void setParam(String[] param) throws AshException {
+	public void setParam(String[] param) throws ParamException {
 		this.param = AshParam.parse(param, fp, vp, pNumMax, pNumMin);
 	}
 

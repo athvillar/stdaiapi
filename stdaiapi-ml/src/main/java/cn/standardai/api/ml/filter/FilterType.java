@@ -14,9 +14,9 @@ public enum FilterType {
 	ExpInteger2D("ExpInteger2D", ExpInteger2D.class),
 	ExpInteger3D("ExpInteger3D", ExpInteger3D.class);
 
-	Class<? extends DataFilter<?, ?>> cls;
+	public Class<? extends DataFilter<?, ?>> cls;
 
-	String clsName;
+	public String clsName;
 
 	private FilterType(String clsName, Class<? extends DataFilter<?, ?>> cls) {
 		this.clsName = clsName;
@@ -25,13 +25,26 @@ public enum FilterType {
 
 	private static final Map<String, Class<? extends DataFilter<?, ?>>> mappings = new HashMap<String, Class<? extends DataFilter<?, ?>>>();
 
+	private static final Map<String, String> descMap = new HashMap<String, String>();
+
 	static {
 		for (FilterType type : values()) {
 			mappings.put(type.clsName, type.cls);
+		}
+		for (FilterType type : values()) {
+			try {
+				descMap.put(type.clsName, type.cls.newInstance().getDescription());
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
 	public static Class<? extends DataFilter<?, ?>> resolve(String type) {
 		return (type != null ? mappings.get(type) : null);
+	}
+
+	public static String getDescription(String type) {
+		return (type != null ? descMap.get(type) : null);
 	}
 }

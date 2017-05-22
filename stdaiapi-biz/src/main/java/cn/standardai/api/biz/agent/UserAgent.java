@@ -24,11 +24,11 @@ public class UserAgent extends AuthAgent {
 			JSONObject user = new JSONObject();
 			user.put("userId", info.get(0).getUserId());
 			user.put("email", info.get(0).getEmail());
-			user.put("registTime", DateUtil.format(info.get(0).getRegistTime(), DateUtil.YYYY__MM__DD__HH__MM__SS));
+			user.put("registTime", info.get(0).getRegistTime());
 			user.put("supportMoney", info.get(0).getSupportMoney());
 			user.put("remainMoney", info.get(0).getRemainMoney());
 			user.put("remainPixel", info.get(0).getRemainPixel());
-			user.put("lastLoginTime", DateUtil.format(info.get(0).getLastLoginTime(), DateUtil.YYYY__MM__DD__HH__MM__SS));
+			user.put("lastLoginTime", info.get(0).getLastLoginTime());
 			result.put("user", user);
 		}
 		return result;

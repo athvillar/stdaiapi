@@ -10,16 +10,19 @@ public class RmModel extends Action {
 
 	private String modelName;
 
+	public RmModel() {
+		setParamRules(null, null, 1, 1);
+	}
+
 	@Override
 	public AshReply exec() throws AshException {
-		comm.http(HttpMethod.DELETE, Context.getProp().getUrl().getMl() + "/dnn/" + comm.userId + "/" + modelName, null, null);
+		comm.http(HttpMethod.DELETE, Context.getProp().getUrl().getMl() + "/dnn/" + this.userId + "/" + modelName, null, null);
 		this.reply.display = "模型(" + comm.userId + "/" + modelName + ")已删除";
 		return this.reply;
 	}
 
 	@Override
 	public void readParam() throws AshException {
-		// TODO Auto-generated method stub
-		
+		modelName = param.get(1);
 	}
 }

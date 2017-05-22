@@ -11,9 +11,14 @@ import cn.standardai.api.core.util.DateUtil;
 
 public class LsUser extends Action {
 
+	public LsUser() {
+		setParamRules(new char[] {'l'}, null, null, null);
+	}
+
 	@Override
 	public AshReply exec() throws AshException {
-		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getBiz() + "/user/" + comm.userId, null, null);
+
+		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getBiz() + "/user/" + this.userId, null, null);
 		JSONObject user = j.getJSONObject("user");
 		if (user == null) {
 			this.reply.display = "没有用户";
@@ -22,14 +27,14 @@ public class LsUser extends Action {
 
 		String result;
 		if (this.param.has('l')) {
-			result = "userId\t\t\t\t\t\t\temail\t\t\t\t账户余额\t\t上次登录时间\t\t";
+			result = "用户名\t\t\t\t邮箱\t\t\t\t\t账户余额\t\t\t上次登录时间\t\t";
 		} else {
-			result = "userId\t\t\t\t\t\t\temail";
+			result = "用户名\t\t\t\t邮箱";
 		}
-		result += "\n" + j.getString("userId") + "\t" + j.getString("email");
+		result += "\n" + fillWithSpace(user.getString("userId"), 13) + "\t\t" + fillWithSpace(user.getString("email"), 20) + "\t";
 		if (this.param.has('l')) {
-			result += j.getDouble("remainMoney") + "\t\t";
-			result += DateUtil.format(j.getDate("lastLoginTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
+			result += fillWithSpace(user.getDouble("remainMoney").toString(), 8) + "\t\t\t";
+			result += DateUtil.format(user.getDate("lastLoginTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
 		}
 
 		this.reply.display = result;

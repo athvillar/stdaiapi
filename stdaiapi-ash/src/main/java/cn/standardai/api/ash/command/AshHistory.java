@@ -16,13 +16,13 @@ public class AshHistory extends AshCommonCommand {
 
 	@Override
 	public String help() {
-		return "history命令格式：history";
+		return "history";
 	}
 
 	@Override
 	public String man() {
 		return "history命令用于显示用户在本次登录内的命令输入历史\n"
-				+ "用法\n"
+				+ "语法\n"
 				+ "\thistory\n";
 	}
 

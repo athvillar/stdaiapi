@@ -7,6 +7,7 @@ import cn.standardai.api.ash.base.Action;
 import cn.standardai.api.ash.base.AshCommand.HttpMethod;
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.exception.AshException;
+import cn.standardai.api.ash.exception.ParamException;
 import cn.standardai.api.core.bean.Context;
 
 public class MkModel extends Action {
@@ -14,9 +15,9 @@ public class MkModel extends Action {
 	private static String[][] dialog = new String[][] {
 			new String[] {"md", "请输入模型名:"},
 			new String[] {"dt", "请输入数据名(userId/dataName):"},
-			new String[] {"xf", "请输入x过滤器(过滤器格式可参考文档－－过滤器，默认为系统推荐过滤器):"},
-			new String[] {"yf", "请输入y过滤器(过滤器格式可参考文档－－过滤器，默认为系统推荐过滤器):"},
 			new String[] {"ag", "请输入算法名(CNN, LSTM):"},
+			new String[] {"xf", "请输入x过滤器(过滤器格式可参考文档\"过滤器/filter\"，默认使用系统推荐过滤器):"},
+			new String[] {"yf", "请输入y过滤器(过滤器格式可参考文档\"过滤器/filter\"，默认使用系统推荐过滤器):"},
 			new String[] {"sr", "请输入算法JSON结构(结构说明请参考文档－－建立模型):",}
 	};
 
@@ -43,11 +44,8 @@ public class MkModel extends Action {
 	@Override
 	public AshReply exec() throws AshException {
 
-		for (int i = 0; i < dialog.length; i++) {
-			if (this.param.get(dialog[i][0]) == null) {
-				
-			}
-		}
+		if (modelName == null || "".equals(modelName)) throw new ParamException("缺少模型名");
+
 		JSONObject body = new JSONObject();
 		body.put("name", modelName);
 		body.put("algorithm", algorithm);
@@ -62,21 +60,21 @@ public class MkModel extends Action {
 		dataJ.put("x", dataXJ);
 		dataJ.put("y", dataYJ);
 		body.put("data", dataJ);
-		body.put("structure", structure);
+		body.put("structure", JSONObject.parse(structure));
 
 		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getMl() + "/dnn", null, body);
 
-		this.reply.display = "模型(id=" + j.getString("modelId") + ", name=" + comm.userId + "/" + modelName + ")建立成功";
+		this.reply.display = "模型(id=" + j.getString("id") + ", name=" + this.userId + "/" + modelName + ")建立成功";
 		return this.reply;
 	}
 
 	@Override
 	public void readParam() throws AshException {
-		this.modelName = this.param.get("md");
-		this.datasetName = this.param.get("dt");
-		this.xFilter = this.param.get("xf");
-		this.yFilter = this.param.get("yf");
-		this.algorithm = this.param.get("ag");
-		this.structure = this.param.get("sr");
+		this.modelName = this.param.getString("md");
+		this.datasetName = this.param.getString("dt");
+		this.xFilter = this.param.getString("xf");
+		this.yFilter = this.param.getString("yf");
+		this.algorithm = this.param.getString("ag");
+		this.structure = this.param.getString("sr");
 	}
 }

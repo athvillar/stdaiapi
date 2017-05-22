@@ -17,4 +17,9 @@ public class ExpInteger2D extends DimensionFilter<Integer[], Integer[][]> {
 		if (src == null || src.length < 1) return null;
 		return src[0];
 	}
+
+	@Override
+	public String getDescription() {
+		return "将1维Integer数组扩展为2维Integer数组，数组长度为1。";
+	}
 }
