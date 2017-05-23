@@ -19,7 +19,7 @@ public abstract class AshResourceRelatedCommand extends AshCommand {
 			action.res = this.resource;
 			return action;
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw new AshException("该资源没有对应的命令");
 		}
 	}

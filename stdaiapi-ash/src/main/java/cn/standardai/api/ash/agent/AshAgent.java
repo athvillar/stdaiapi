@@ -11,6 +11,7 @@ import cn.standardai.api.ash.base.Executable;
 import cn.standardai.api.ash.bean.AshReply;
 import cn.standardai.api.ash.command.AshLogin;
 import cn.standardai.api.ash.exception.AshException;
+import cn.standardai.api.ash.exception.CallbackException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.ash.exception.ParamException;
@@ -94,7 +95,21 @@ public class AshAgent extends AuthAgent {
 		} catch (DialogException e) {
 			//result.put("message", e.getMessage());
 			result.put("display", e.question);
-			result.put("callback", commandLine + " -" + e.answerField + " ");
+			JSONObject callback = new JSONObject();
+			callback.put("command", commandLine + " -" + e.answerField + " ");
+			result.put("callback", callback);
+		/*
+		// TODO 未使用
+		} catch (CallbackException e) {
+			JSONObject callback = new JSONObject();
+			callback.put("url", e.url);
+			JSONArray paramsJ = new JSONArray();
+			for (int i = 0; i < e.params.length; i++) {
+				paramsJ.add(e.params[i]);
+			}
+			callback.put("files", paramsJ);
+			result.put("callback", callback);
+		*/
 		} catch (ParamException e) {
 			result.put("message", e.getMessage());
 			result.put("display", ashCommand.help());

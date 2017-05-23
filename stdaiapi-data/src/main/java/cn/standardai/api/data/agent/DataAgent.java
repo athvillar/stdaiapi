@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -84,20 +85,27 @@ public class DataAgent extends AuthAgent {
 
 		Integer updateBaseIdx = request.getInteger("updateBaseIdx");
 		JSONArray dataJ = request.getJSONArray("data");
+		JSONObject batchSet = request.getJSONObject("batchSet");
 
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
 		Dataset dataset = datasetDao.selectByKey(datasetName, this.userId);
 		if (dataset == null) throw new DataException("数据不存在(dataName=" + datasetName + ")");
 		String datasetId = dataset.getDatasetId();
 
-		if (TYPE_FILE.equalsIgnoreCase(dataset.getType()) && updateBaseIdx == null) {
+		if (TYPE_FILE.equalsIgnoreCase(dataset.getType()) && updateBaseIdx == null && batchSet == null) {
 			throw new DataException("该数据为文件类型，不支持上传数据(dataName=" + datasetName + ")");
 		}
 
 		// save data
+		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+		Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
+		/*
+		 *  "data": [
+		 *    ["x1","y1"],
+		 *    ["x2","y2"]
+		 *  ],
+		 */
 		if (dataJ != null && dataJ.size() != 0) {
-			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
-			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
 			if (updateBaseIdx != null) {
 				// update
 				for (int i = 0; i < dataJ.size(); i++) {
@@ -121,6 +129,26 @@ public class DataAgent extends AuthAgent {
 					if (y == null) y = "";
 					insertData(MathUtil.random(32), datasetId, baseIdx + i, "", x, y);
 				}
+				baseIdx += dataJ.size();
+			}
+		}
+
+		/*
+		 *  "batchSet": {
+		 *    "label1": { "start": 1, "end": 11},
+		 *    "label2": { "start": 12, "end": 22}
+		 *  }
+		 */
+		if (batchSet != null) {
+			for (Entry<String, Object> entry : batchSet.entrySet()) {
+				String label = entry.getKey();
+				JSONObject idxs = (JSONObject)entry.getValue();
+				Integer start = idxs.getInteger("start");
+				Integer end = idxs.getInteger("end");
+				for (int i = start; i <= end; i++) {
+					if (i >= baseIdx) break;
+					updateData(datasetId, i, "", label);
+				}
 			}
 		}
 
@@ -130,7 +158,7 @@ public class DataAgent extends AuthAgent {
 	}
 
 	private long insertDataset(String datasetId, String datasetName, String description, String userId,
-			String format, String type, String keywords, String titles, Character sharePolicy, DatasetDao datasetDao) {
+			String type, String format, String keywords, String titles, Character sharePolicy, DatasetDao datasetDao) {
 		Dataset datasetParam = new Dataset();
 		datasetParam.setDatasetId(datasetId);
 		datasetParam.setDatasetName(datasetName);
@@ -187,12 +215,13 @@ public class DataAgent extends AuthAgent {
 			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
 			for (int i = 0; i < uploadfiles.length; i++) {
 				JSONObject subResult = new JSONObject();
-				subResult = saveUploadFile(uploadfiles[i]);
+				String newName = MathUtil.random(64);
+				subResult = saveUploadFile(uploadfiles[i], newName);
 				if (!"success".equals(subResult.getString("result"))) {
 					hasFailure = true;
 					continue;
 				}
-				String path = Context.getProp().getLocal().getUploadTemp() + uploadfiles[i].getOriginalFilename();
+				String path = Context.getProp().getLocal().getUploadTemp() + newName;
 				insertData(MathUtil.random(32), datasetId, baseIdx + i, path, "", "");
 			}
 		}
@@ -207,16 +236,16 @@ public class DataAgent extends AuthAgent {
 		return result;
 	}
 
-	private JSONObject saveUploadFile(MultipartFile inputFile) {
+	private JSONObject saveUploadFile(MultipartFile inputFile, String newName) {
 		JSONObject result = new JSONObject();
 		// output file buffer
 		BufferedOutputStream outputFileBuffer = null;
 		// output file
 		FileOutputStream outputFile = null;
 		// input file name
-		String inputFileName = inputFile.getOriginalFilename();
+		//String inputFileName = inputFile.getOriginalFilename();
 		// output file path
-		String outputFilePath = Context.getProp().getLocal().getUploadTemp() + inputFileName;
+		String outputFilePath = Context.getProp().getLocal().getUploadTemp() + newName;
 		if (!inputFile.isEmpty()) {
 			try {
 				outputFile = new FileOutputStream(new File(outputFilePath));

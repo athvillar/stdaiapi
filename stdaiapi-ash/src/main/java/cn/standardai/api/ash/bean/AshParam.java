@@ -3,6 +3,10 @@ package cn.standardai.api.ash.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+
 import cn.standardai.api.ash.exception.ParamException;
 
 public class AshParam {
@@ -37,6 +41,16 @@ public class AshParam {
 
 	public String getString(String k) {
 		return paramMap.get(k);
+	}
+
+	public JSONObject getJSONObject(String k) {
+		String v = paramMap.get(k);
+		return (JSONObject)JSONObject.parse(v);
+	}
+
+	public JSONArray getJSONArray(String k) {
+		String v = paramMap.get(k);
+		return (JSONArray)JSONArray.parse(v);
 	}
 
 	public Double getDouble(String k) {

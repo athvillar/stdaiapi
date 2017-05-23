@@ -46,6 +46,7 @@ public class MkUser extends Action {
 		body.put("userId", userId);
 		body.put("password", password);
 		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getBiz() + "/token", null, body);
+
 		this.reply.hidden = j.getString("token");
 		this.reply.display = "注册成功，欢迎光临！";
 		return this.reply;
