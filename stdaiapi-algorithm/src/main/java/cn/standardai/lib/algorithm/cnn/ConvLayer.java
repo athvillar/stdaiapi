@@ -21,8 +21,6 @@ public class ConvLayer extends Layer {
 
 	public List<Filter> filters = new ArrayList<Filter>();
 
-	public Double η;
-
 	public ConvLayer() {
 		super();
 	}

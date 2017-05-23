@@ -3,7 +3,7 @@ package cn.standardai.api.ml.filter;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.standardai.api.ml.run.ModelGhost;
+import cn.standardai.api.dao.base.DaoHandler;
 
 public abstract class DynamicFilter<T1, T2, T3> extends DataFilter<T1, T2> {
 
@@ -20,5 +20,5 @@ public abstract class DynamicFilter<T1, T2, T3> extends DataFilter<T1, T2> {
 
 	public abstract boolean needInit();
 
-	public abstract void init(ModelGhost mg);
+	public abstract void init(String userId, DaoHandler dh);
 }

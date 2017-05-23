@@ -17,6 +17,9 @@ public interface DataDao {
 	@Select({"SELECT * FROM DATA WHERE DATASETID = #{datasetId}"})
 	List<Data> selectByDatasetId(@Param("datasetId") String datasetId);
 
+	@Select({"SELECT * FROM DATA WHERE DATASETID = #{datasetId} ORDER BY IDX"})
+	List<Data> selectByDatasetIdOrder(@Param("datasetId") String datasetId);
+
 	@Insert({"UPDATE DATA SET X = #{param.x}, Y = #{param.y} ",
 		"WHERE DATASETID = #{param.datasetId} AND IDX = #{param.idx}"})
 	Long updateXYByKey(@Param("param") Data param);

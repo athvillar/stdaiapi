@@ -18,6 +18,7 @@ import cn.standardai.api.ml.daohandler.ModelHandler;
 import cn.standardai.api.ml.exception.FilterException;
 import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.base.Dnn;
+import cn.standardai.lib.algorithm.cnn.CnnData;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
@@ -82,27 +83,33 @@ public class ModelGhost implements Runnable {
 			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
 			for (DataFilter<?, ?> f : xFilters) {
 				if (f != null && f.needInit()) {
-					f.init(this);
+					f.init(this.userId, this.daoHandler);
 				}
 			}
 			for (DataFilter<?, ?> f : yFilters) {
 				if (f != null && f.needInit()) {
-					f.init(this);
+					f.init(this.userId, this.daoHandler);
 				}
 			}
 
 			switch (ms.getAlgorithm()) {
 			case cnn:
-				// TODO
+				CnnData[] data1 = new CnnData[rawData.size()];
+				for (int i = 0; i < rawData.size(); i++) {
+					Integer[][][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
+					Integer[] y = DataFilter.encode(ds.getData(rawData.get(i), ds.getyColumn()), yFilters);
+					data1[i] = new CnnData(x, y);
+				}
+				((Dnn<CnnData>)this.model).mountData(data1);
 				break;
 			case lstm:
-				LstmData[] data = new LstmData[rawData.size()];
+				LstmData[] data2 = new LstmData[rawData.size()];
 				for (int i = 0; i < rawData.size(); i++) {
 					Double[][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
 					Integer[] y = DataFilter.encode(ds.getData(rawData.get(i), ds.getyColumn()), yFilters);
-					data[i] = new LstmData(x, y);
+					data2[i] = new LstmData(x, y);
 				}
-				((Dnn<LstmData>)this.model).mountData(data);
+				((Dnn<LstmData>)this.model).mountData(data2);
 				break;
 			}
 
@@ -155,7 +162,7 @@ public class ModelGhost implements Runnable {
 		@Override
 		public void run() {
 			try {
-				((DeepLstm)this.model).train();
+				this.model.train();
 			} catch (DnnException | MatrixException e) {
 				e.printStackTrace();
 			}

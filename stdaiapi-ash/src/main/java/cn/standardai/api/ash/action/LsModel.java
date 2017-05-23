@@ -23,7 +23,7 @@ public class LsModel extends Action {
 
 		JSONArray models = j.getJSONArray("models");
 		if (models == null || models.size() == 0) {
-			this.reply.display = "没有记录";
+			this.reply.display = "没有模型";
 			return this.reply;
 		}
 

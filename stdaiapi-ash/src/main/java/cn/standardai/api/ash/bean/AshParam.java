@@ -99,7 +99,8 @@ public class AshParam {
 						// -a b
 						if (i == paramStrings.length - 1) throw new ParamException(p + "缺少参数");
 						String tmp = paramStrings[++i];
-						if (tmp.startsWith("\"") && tmp.endsWith("\"") && tmp.length() >= 2) {
+						// TODO
+						if (tmp.startsWith("'") && tmp.endsWith("'") && tmp.length() >= 2) {
 							tmp = tmp.substring(1, tmp.length() - 1);
 						}
 						params.set(p.substring(1), tmp);

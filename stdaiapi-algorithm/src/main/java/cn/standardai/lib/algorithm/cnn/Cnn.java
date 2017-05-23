@@ -10,15 +10,19 @@ import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.cnn.Layer.LayerType;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.StorageException;
+import cn.standardai.lib.algorithm.exception.UsageException;
+import cn.standardai.lib.base.function.Roulette;
+import cn.standardai.lib.base.matrix.MatrixException;
+import cn.standardai.lib.base.matrix.MatrixUtil;
 
 public class Cnn extends Dnn<CnnData> {
 
 	// TODO public
 	public List<Layer> layers = new ArrayList<Layer>();
 
-	private List<Integer[][][]> batchData = new ArrayList<Integer[][][]>();
+	//private List<Integer[][][]> batchData = new ArrayList<Integer[][][]>();
 
-	private List<Integer[]> batchExpect = new ArrayList<Integer[]>();
+	//private List<Integer[]> batchExpect = new ArrayList<Integer[]>();
 
 	private List<JSONObject> batchJSON = new ArrayList<JSONObject>();
 
@@ -92,7 +96,7 @@ public class Cnn extends Dnn<CnnData> {
 		return instance;
 	}
 
-	public void train(Integer batchSize, Integer batchCount) {
+	public void train() throws UsageException, MatrixException {
 		Integer trainingCount = 0;
 		do {
 			trainingCount++;
@@ -107,6 +111,7 @@ public class Cnn extends Dnn<CnnData> {
 				}
 				// TODO adjust(1);
 				adjust(batchNums.length);
+			/*
 			} else if (this.batchData.size() != 0) {
 				int[] batchNums = randBatchNums(batchSize, batchData.size());
 				clearError();
@@ -119,7 +124,38 @@ public class Cnn extends Dnn<CnnData> {
 				// TODO adjust(1);
 				adjust(batchNums.length);
 			}
-		} while (trainingCount < batchCount);
+			*/
+			} else if (this.data.length != 0) {
+				int[] batchNums = randBatchNums(batchSize, data.length);
+				clearError();
+				for (int i = 0; i < batchNums.length; i++) {
+					this.get1stLayer().setData(this.data[batchNums[i]].x);
+					this.getLastLayer().setTarget(this.data[batchNums[i]].y);
+					forward();
+					backward();
+				}
+				// TODO adjust(1);
+				adjust(batchNums.length);
+			}
+
+			if (trainingCount % watchEpoch == 0) {
+				synchronized (this.indicator) {
+					if (this.containCatalog("trainLoss")) {
+						record("trainLoss", trainingCount, MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
+					}
+					if (this.containCatalog("testLoss")) {
+						record("testLoss", trainingCount, 0.0);
+					}
+					this.indicator.notify();
+				}
+			}
+		} while (trainingCount < epoch);
+
+		// Finish indicator, tell monitor to stop monitoring
+		synchronized (this.indicator) {
+			finish();
+			this.indicator.notify();
+		}
 	}
 
 	public void forward() {
@@ -175,6 +211,28 @@ public class Cnn extends Dnn<CnnData> {
 		//backward();
 		//printSome();
 		return getLastLayer().data;
+	}
+
+	public Integer[] predictY(Integer[][][] data) {
+
+		Double[][][] y1 = predict(data);
+		Double[] y2 = new Double[y1[0][0].length];
+		for (int i = 0; i < y2.length; i++) {
+			y2[i] = y1[0][0][i];
+		}
+
+		Roulette r = new Roulette(y2);
+		int idx = r.getY();
+		Integer[] y3 = new Integer[y2.length];
+		for (int i = 0; i < y3.length; i++) {
+			if (i == idx) {
+				y3[i] = 1;
+			} else {
+				y3[i] = 0;
+			}
+		}
+
+		return y3;
 	}
 
 	private void printSome() {
@@ -255,14 +313,13 @@ public class Cnn extends Dnn<CnnData> {
 
 	public int dataCount() {
 		if (this.batchJSON != null && this.batchJSON.size() != 0) return this.batchJSON.size();
-		if (this.batchData != null && this.batchData.size() != 0) return this.batchData.size();
+		if (this.data != null && this.data.length != 0) return this.data.length;
 		return 0;
 	}
 
 	public void clearData() {
-		if (this.batchData != null) {
-			this.batchData.clear();
-			this.batchExpect.clear();
+		if (this.data != null) {
+			this.data = null;
 		}
 		if (this.batchJSON != null) {
 			this.batchJSON.clear();
@@ -272,12 +329,12 @@ public class Cnn extends Dnn<CnnData> {
 	public void addData(JSONObject param) {
 		this.batchJSON.add(param);
 	}
-
+/*
 	public void addData(Integer[][][] input, Integer[] expect) {
 		this.batchData.add(input);
 		this.batchExpect.add(expect);
 	}
-
+*/
 	private InputLayer get1stLayer() {
 		if (this.layers == null) return null;
 		return (InputLayer)this.layers.get(0);
@@ -288,7 +345,8 @@ public class Cnn extends Dnn<CnnData> {
 		return (FCLayer)this.layers.get(this.layers.size() - 1);
 	}
 
-	private int[] randBatchNums(int count, int maxSize) {
+	private int[] randBatchNums(Integer count, int maxSize) {
+		if (count == null) count = maxSize;
 		int[] batchNums = new int[count];
 		for (int i = 0; i < count; i++) {
 			batchNums[i] = new Double(Math.random() * maxSize).intValue();
@@ -304,37 +362,8 @@ public class Cnn extends Dnn<CnnData> {
 
 	@Override
 	public void setLearningRate(Double η) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setEpoch(Integer epoch) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setTrainSecond(Integer trainSecond) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setBatchSize(Integer batchSize) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setWatchEpoch(Integer watchEpoch) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setTestLossIncreaseTolerance(Integer testLossIncreaseTolerance) {
-		// TODO Auto-generated method stub
-		
+		for (int i = 0; i < this.layers.size(); i++) {
+			this.layers.get(i).setLearningRate(η);
+		}
 	}
 }

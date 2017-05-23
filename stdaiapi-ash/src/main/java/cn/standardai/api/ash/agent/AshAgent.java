@@ -28,7 +28,7 @@ public class AshAgent extends AuthAgent {
 			result.put("message", "缺少命令，如需帮助，请输入“help”");
 			return result;
 		};
-		String[] commands = commandLine.split(" ");
+		String[] commands = commandLine.replaceAll("\r", " ").replaceAll("\n", " ").split(" ");
 		if (commands == null) {
 			result.put("message", "缺少命令，如需帮助，请输入“help”");
 			return result;
@@ -62,13 +62,22 @@ public class AshAgent extends AuthAgent {
 		boolean open = false;
 		int pIndex = 0;
 		for (int i = paramStartIndex; i < commands.length; i++) {
+			commands[i] = commands[i].trim();
+			if ("".equals(commands[i])) continue;
 			if (params[pIndex] == null) {
 				params[pIndex] = commands[i];
 			} else {
 				params[pIndex] += " " + commands[i];
 			}
-			if (commands[i].startsWith("\"")) open = true;
-			if (commands[i].endsWith("\"")) open = false;
+			// TODO
+			//if (commands[i].startsWith("\"")) open = true;
+			//if (commands[i].endsWith("\"")) open = false;
+			if (commands[i].length() == 1 && commands[i].startsWith("'")) {
+				open = !open;
+			} else {
+				if (commands[i].startsWith("'")) open = true;
+				if (commands[i].endsWith("'")) open = false;
+			}
 			if (open) {
 				continue;
 			} else {

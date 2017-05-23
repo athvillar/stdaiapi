@@ -7,8 +7,13 @@ public class ExpInteger3D extends DimensionFilter<Integer[][], Integer[][][]> {
 	@Override
 	public Integer[][][] encode(Integer[][] src) throws FilterException {
 		if (src == null) return null;
-		Integer[][][] des = new Integer[1][][];
-		des[0] = src;
+		Integer[][][] des = new Integer[src.length][][];
+		for (int i = 0; i < des.length; i++) {
+			des[i] = new Integer[src[i].length][];
+			for (int j = 0; j < des[i].length; j++) {
+				des[i][j] = new Integer[] { src[i][j] };
+			}
+		}
 		return des;
 	}
 

@@ -1,9 +1,9 @@
 package cn.standardai.api.ml.filter;
 
+import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.ml.daohandler.DicHandler;
-import cn.standardai.api.ml.run.ModelGhost;
 
-public class IntegerDicFilter extends DicFilter<Integer> {
+public class IntegerDicFilter extends DicFilter<Integer, Integer> {
 
 	@Override
 	public Integer encode(String s) {
@@ -16,9 +16,9 @@ public class IntegerDicFilter extends DicFilter<Integer> {
 	}
 
 	@Override
-	public void init(ModelGhost mg) {
+	public void init(String userId, DaoHandler dh) {
 		String dicName = params.get(0);
-		setDic(new DicHandler(mg.getDaoHandler()).get(mg.getUserId(), dicName));
+		setDic(new DicHandler(dh).get(userId, dicName));
 	}
 
 	@Override

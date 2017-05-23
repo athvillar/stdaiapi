@@ -1,5 +1,6 @@
 package cn.standardai.api.ash.action;
 
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.agent.ArgsHelper;
@@ -39,7 +40,7 @@ public class MkModel extends Action {
 
 	private String algorithm;
 
-	private String structure;
+	private JSONObject structure;
 
 	@Override
 	public AshReply exec() throws AshException {
@@ -60,7 +61,7 @@ public class MkModel extends Action {
 		dataJ.put("x", dataXJ);
 		dataJ.put("y", dataYJ);
 		body.put("data", dataJ);
-		body.put("structure", JSONObject.parse(structure));
+		body.put("structure", structure);
 
 		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getMl() + "/dnn", null, body);
 
@@ -75,6 +76,10 @@ public class MkModel extends Action {
 		this.xFilter = this.param.getString("xf");
 		this.yFilter = this.param.getString("yf");
 		this.algorithm = this.param.getString("ag");
-		this.structure = this.param.getString("sr");
+		try {
+			this.structure = this.param.getJSONObject("sr");
+		} catch (JSONException e) {
+			throw new ParamException("数据格式不正确，参考算法" + this.algorithm + "结构");
+		}
 	}
 }

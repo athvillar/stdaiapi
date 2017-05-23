@@ -66,9 +66,16 @@ public class ModelHandler {
 		if (modelTemplate == null) return null;
 
 		DnnModelSetting ms = new DnnModelSetting();
+		DnnDataSetting ds = new DnnDataSetting();
 		ms.setModelTemplateId(modelTemplate.getModelTemplateId());
 		ms.setScript(modelTemplate.getScript());
 		ms.setUserId(userId);
+		ds.setDatasetId(modelTemplate.getDatasetId());
+		ds.setxColumn(modelTemplate.getxColumn());
+		ds.setxFilter(modelTemplate.getxFilter());
+		ds.setyColumn(modelTemplate.getyColumn());
+		ds.setyFilter(modelTemplate.getyFilter());
+		ms.setDataSetting(ds);
 
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		Model model = modelDao.selectByIdModelTemplateId(modelId, ms.getModelTemplateId());
@@ -112,19 +119,7 @@ public class ModelHandler {
 	public void upgradeModel2Training(DnnModelSetting dnnModel, Boolean newFlag) {
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		if (newFlag) {
-			// 新模型
-			Model model = new Model();
-			model.setModelId(MathUtil.random(31));
-			model.setModelTemplateId(dnnModel.getModelTemplateId());
-			model.setUserId(dnnModel.getUserId());
-			model.setParentModelId(dnnModel.getModelId());
-			model.setStatus(Status.Training.status);
-			model.setStructure(null);
-			model.setCreateTime(new Date());
-			model.setUpdateTime(new Date());
-			modelDao.insert(model);
-			dnnModel.setModelId(model.getModelId());
-		} else {
+			// newFlag == true, 不保留旧模型，所以是update，注意
 			if (dnnModel.getModelId() == null) {
 				// 新模型
 				Model model = new Model();
@@ -141,11 +136,25 @@ public class ModelHandler {
 			} else {
 				// 更新旧模型
 				Model model = new Model();
-				model.setModelId(model.getModelId());
+				model.setModelId(dnnModel.getModelId());
 				model.setStatus(Status.Training.status);
 				model.setUpdateTime(new Date());
 				modelDao.updateStatusById(model);
 			}
+		} else {
+			// newFlag == false, 保留旧模型，所以是insert，注意
+			// 新模型
+			Model model = new Model();
+			model.setModelId(MathUtil.random(31));
+			model.setModelTemplateId(dnnModel.getModelTemplateId());
+			model.setUserId(dnnModel.getUserId());
+			model.setParentModelId(dnnModel.getModelId());
+			model.setStatus(Status.Training.status);
+			model.setStructure(null);
+			model.setCreateTime(new Date());
+			model.setUpdateTime(new Date());
+			modelDao.insert(model);
+			dnnModel.setModelId(model.getModelId());
 		}
 	}
 

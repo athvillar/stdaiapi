@@ -63,14 +63,14 @@ public class TestCnn {
 					target[j] = 0;
 				}
 			}
-			cnn.addData(data, target);
+			//cnn.addData(data, target);
 		}
 
 		int maxTrainingCount = 50000;
 		int batchCount = 1000;
 		for (int count = 0; count < maxTrainingCount; count += batchCount) {
 			// 训练
-			cnn.train(batchCount / 3 + 1, batchCount);
+			//cnn.train(batchCount / 3 + 1, batchCount);
 			// 预测
 			Double[] trainingCorrectRates = new Double[trainingsetNums.length];
 			for (int index = 0; index < trainingsetNums.length; index++) {
@@ -172,14 +172,14 @@ public class TestCnn {
 					target[j] = 0;
 				}
 			}
-			cnn.addData(data, target);
+			//cnn.addData(data, target);
 		}
 
 		int maxTrainingCount = 10000;
 		int batchCount = 100;
 		for (int count = 0; count < maxTrainingCount; count += batchCount) {
 			// 训练
-			cnn.train(cnn.dataCount(), batchCount);
+			//cnn.train(cnn.dataCount(), batchCount);
 			// 预测
 			Double[] trainingCorrectRates = new Double[trainingsetNums.length];
 			for (int index = 0; index < trainingsetNums.length; index++) {
@@ -307,7 +307,7 @@ public class TestCnn {
 
 			double correctRate = 0;
 			double testCorrectRate = 0;
-			cnn.train(cnn.dataCount(), batchCount);
+			//cnn.train(cnn.dataCount(), batchCount);
 			// 预测
 			Double[][][] predict1 = cnn.predict(JSONObject.parseObject(data1));
 			// 输出预测
@@ -414,7 +414,7 @@ public class TestCnn {
 		cnn.addData(JSONObject.parseObject(data1));
 		//cnn.addData(JSONObject.parseObject(data2));
 		// 训练
-		cnn.train(10, 100);
+		//cnn.train(10, 100);
 		cnn.forward();
 		cnn.backward();
 
@@ -515,7 +515,7 @@ public class TestCnn {
 		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s2.jpg"), new Integer[] {1, 0});
 
 		// 训练
-		cnn.train(10, 100);
+		//cnn.train(10, 100);
 
 		// 预测
 		Double[][][] predict = cnn.predict(Image2Data.getRGB("/Users/athvillar/Downloads/q1.jpg"));
@@ -563,7 +563,7 @@ public class TestCnn {
 		//cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s2.jpg"), new Integer[] {0, 1, 0, 0});
 
 		// 训练
-		cnn.train(10, 100);
+		//cnn.train(10, 100);
 
 		double e = 0.001;
 		for (int i = 0; i < cnn.layers.size(); i++) {
@@ -632,11 +632,11 @@ public class TestCnn {
 					target[j] = 0;
 				}
 			}
-			cnn.addData(data, target);
+			//cnn.addData(data, target);
 		}
 
 		// 训练
-		cnn.train(10, 100);
+		//cnn.train(10, 100);
 
 		// 预测
 		Integer[] nums = new Integer[] {3, 88, 54, 102, 44, 91, 123};

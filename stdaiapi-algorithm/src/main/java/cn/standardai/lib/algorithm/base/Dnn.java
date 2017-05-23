@@ -3,7 +3,9 @@ package cn.standardai.lib.algorithm.base;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.exception.UsageException;
+import cn.standardai.lib.base.matrix.MatrixException;
 
 public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
@@ -11,7 +13,7 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	public final String lock = "lock";
 
-	private T[] data;
+	protected T[] data;
 
 	public ValueType dataResultType;
 
@@ -20,6 +22,16 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 	private int testDataCnt;
 
 	private int verifyDataCnt;
+
+	protected Integer epoch = 1;
+
+	protected Integer batchSize = null;
+
+	protected Integer watchEpoch = null;
+
+	protected Long trainMillisecond = null;
+
+	protected Integer testLossIncreaseTolerance = null;
 
 	private int[] diverseDataRate = { 8, 1, 1 };
 
@@ -60,7 +72,7 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 	}
 
 	public void setDiverseDataRate(int[] diverseDataRate) {
-		if (this.diverseDataRate.length != 3) return;
+		if (diverseDataRate == null || diverseDataRate.length != 3) return;
 		this.diverseDataRate = diverseDataRate;
 	}
 
@@ -101,5 +113,27 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 		return this.verifyDataCnt;
 	}
 
+	public void setEpoch(Integer epoch) {
+		if (epoch != null) this.epoch = epoch;
+	}
+
+	public void setTrainSecond(Integer trainSecond) {
+		if (trainSecond != null) this.trainMillisecond = trainSecond * 1000L;
+	}
+
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public void setTestLossIncreaseTolerance(Integer testLossIncreaseTolerance) {
+		this.testLossIncreaseTolerance = testLossIncreaseTolerance;
+	}
+
+	public void setWatchEpoch(Integer watchEpoch) {
+		this.watchEpoch = watchEpoch;
+	}
+
 	public abstract byte[] getBytes();
+
+	public abstract void train() throws DnnException, MatrixException;
 }

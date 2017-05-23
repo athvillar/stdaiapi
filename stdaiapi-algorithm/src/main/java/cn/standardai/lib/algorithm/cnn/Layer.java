@@ -42,6 +42,8 @@ public abstract class Layer implements Storable {
 
 	public Integer depth;
 
+	public Double η;
+
 	public Double[][][] data;
 
 	public Double[][][] error;
@@ -204,5 +206,9 @@ public abstract class Layer implements Storable {
 		byte[] aFBytes = new byte[bytes[index++]];
 		System.arraycopy(bytes, index, aFBytes, 0, aFBytes.length);
 		this.aF = DerivableFunction.getInstance(aFBytes);
+	}
+
+	public void setLearningRate(Double learningRate) {
+		this.η = learningRate;
 	}
 }

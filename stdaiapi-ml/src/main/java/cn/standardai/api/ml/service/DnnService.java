@@ -67,6 +67,27 @@ public class DnnService extends BaseService<DnnAgent> {
 		return result.toString();
 	}
 
+	@RequestMapping(value = "/{userId}/{modelTemplateName}/predict", method = RequestMethod.POST)
+	public String predict(@PathVariable("userId") String userId, @PathVariable("modelTemplateName") String modelTemplateName,
+			@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + "/predict POST start");
+		JSONObject result = null;
+		try {
+			initAgent(headers, DnnAgent.class, userId);
+			result = agent.predict(userId, modelTemplateName, request);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + "/predict POST finish (response:" + result.toJSONString() + ")");
+		return result.toString();
+	}
+
 	@RequestMapping(value = "/{userId}/{modelTemplateName}", method = RequestMethod.GET)
 	public String status(@PathVariable("userId") String userId, @PathVariable("modelTemplateName") String modelTemplateName, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + " GET start");

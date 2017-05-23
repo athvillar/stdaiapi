@@ -1,5 +1,6 @@
 package cn.standardai.api.ml.filter;
 
+import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.ml.exception.FilterException;
 import cn.standardai.api.ml.run.ModelGhost;
 
@@ -11,7 +12,7 @@ public abstract class DataFilter<T1, T2> {
 
 	public abstract boolean needInit();
 
-	public abstract void init(ModelGhost mg);
+	public abstract void init(String userId, DaoHandler dh);
 
 	public abstract String getDescription();
 
@@ -32,7 +33,7 @@ public abstract class DataFilter<T1, T2> {
 
 		Object srcData;
 		Object desData = data;
-		for (int i = 0; i < filters.length; i++) {
+		for (int i = filters.length - 1; i >= 0; i--) {
 			srcData = desData;
 			DataFilter<Object, Object> f = (DataFilter<Object, Object>)filters[i];
 			desData = f.decode(srcData);

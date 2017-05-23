@@ -2,9 +2,9 @@ package cn.standardai.api.ml.filter;
 
 import java.util.HashMap;
 
-import cn.standardai.api.ml.run.ModelGhost;
+import cn.standardai.api.dao.base.DaoHandler;
 
-public class SequenceIntegerFilter extends DicFilter<Integer> {
+public class SequenceIntegerFilter extends DicFilter<Integer, Integer> {
 
 	@Override
 	public Integer encode(String s) {
@@ -22,7 +22,7 @@ public class SequenceIntegerFilter extends DicFilter<Integer> {
 	}
 
 	@Override
-	public void init(ModelGhost mg) {
+	public void init(String userId, DaoHandler dh) {
 		this.dic = new HashMap<String, Integer>();
 		this.arcDic = new HashMap<Integer, String>();
 	}

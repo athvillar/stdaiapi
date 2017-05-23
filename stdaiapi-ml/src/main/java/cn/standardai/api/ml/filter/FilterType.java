@@ -12,7 +12,9 @@ public enum FilterType {
 	NormalizeIntegerFilter("NormalizeIntegerFilter", NormalizeIntegerFilter.class),
 	ExpInteger1D("ExpInteger1D", ExpInteger1D.class),
 	ExpInteger2D("ExpInteger2D", ExpInteger2D.class),
-	ExpInteger3D("ExpInteger3D", ExpInteger3D.class);
+	ExpInteger3D("ExpInteger3D", ExpInteger3D.class),
+	SmartSplitFilter("SmartSplitFilter", SmartSplitFilter.class),
+	SprInteger1D("SprInteger1D", SprInteger1D.class);
 
 	public Class<? extends DataFilter<?, ?>> cls;
 

@@ -77,6 +77,34 @@ public class MatrixUtil {
 		return sum;
 	}
 
+	public static double sum(Double[][][] m) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		double sum = 0.0;
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[i].length; j++) {
+				for (int k = 0; k < m[i].length; k++) {
+					sum += m[i][j][k];
+				}
+			}
+		}
+		return sum;
+	}
+
+	public static double sumAbs(Double[][][] m) throws MatrixException {
+
+		if (m == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);
+		double sum = 0.0;
+		for (int i = 0; i < m.length; i++) {
+			for (int j = 0; j < m[i].length; j++) {
+				for (int k = 0; k < m[i].length; k++) {
+					sum += Math.abs(m[i][j][k]);
+				}
+			}
+		}
+		return sum;
+	}
+
 	public static Double[][] plus(Double[][] m1, Double[][] m2) throws MatrixException {
 
 		if (m1 == null || m2 == null) throw new MatrixException(MatrixException.ERRMSG.NULL_ELEMENT);

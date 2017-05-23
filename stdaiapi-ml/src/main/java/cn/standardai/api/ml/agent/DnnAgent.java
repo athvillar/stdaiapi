@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.exception.AuthException;
+import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.ModelTemplate;
 import cn.standardai.api.ml.bean.DnnAlgorithm;
@@ -18,6 +19,7 @@ import cn.standardai.api.ml.daohandler.DataHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
 import cn.standardai.api.ml.exception.JSONFormatException;
 import cn.standardai.api.ml.exception.MLException;
+import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.api.ml.run.ModelGhost;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.cnn.Cnn;
@@ -52,25 +54,125 @@ public class DnnAgent extends AuthAgent {
 		Dataset dataset = dh.getDataset(this.userId, dataSetting.getDatasetId(), dataSetting.getDatasetName());
 		if (dataset == null) throw new JSONFormatException("找不到指定的数据集(datasetId=" + dataSetting.getDatasetId() + ", datasetName=" + dataSetting.getDatasetName() + ")");
 
-		setDataSetting(dataSetting, dataset, algorithm);
-
 		JSONObject structure = request.getJSONObject("structure");
 		if (structure == null) throw new JSONFormatException("缺少模型结构(structure)");
+		Cnn cnn = null;
 		try {
 			switch (algorithm) {
 			case cnn:
-				Cnn.getInstance(structure);
+				cnn = Cnn.getInstance(structure);
+				break;
 			case lstm:
 				DeepLstm.getInstance(structure);
+				break;
 			}
 		} catch (DnnException e) {
 			throw new MLException("模型创建脚本执行失败", e);
 		}
+		setDataSetting(dataSetting, dataset, algorithm, cnn);
 
 		return mh.createModel(userId, modelTemplateName, algorithm, dataSetting, structure.toJSONString());
 	}
 
-	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm) {
+	/*
+	 * {
+	 *   "name": "testlstm",
+	 *   "algorithm": "LSTM/CNN",
+	 *   "data": { ... },
+	 *   "structure": { ... }
+	 * }
+	 */
+	public JSONObject predict(String userId, String modelTemplateName, JSONObject request) throws MLException, DnnException {
+
+		String modelId = request.getString("modelId");
+		DnnModelSetting ms;
+		if (modelId == null) {
+			ms = mh.findLastestModel(userId, modelTemplateName);
+		} else {
+			ms = mh.findModel(userId, modelTemplateName, modelId);
+		}
+		if (ms == null) throw new MLException("找不到模型(" + userId + "/" + modelTemplateName + (modelId == null ? "" : "/" + modelId) + ")");
+		Dnn<?> dnn = createModel(ms);
+
+		JSONObject data = request.getJSONObject("data");
+		if (data == null) throw new JSONFormatException("缺少数据(data)");
+		DnnDataSetting ds = DnnDataSetting.parse(data);
+		Dataset dataset = dh.getDataset(this.userId, ds.getDatasetId(), ds.getDatasetName());
+		if (dataset == null) throw new JSONFormatException("找不到指定的数据集(datasetId=" + ds.getDatasetId() + ", datasetName=" + ds.getDatasetName() + ")");
+
+		if (ds.getDatasetId() == null || "".equals(ds.getDatasetId())) {
+			ds.setDatasetId(ms.getDataSetting().getDatasetId());
+		}
+		if (ds.getxColumn() == null || "".equals(ds.getxColumn())) {
+			ds.setxColumn(ms.getDataSetting().getxColumn());
+		}
+		if (ds.getxFilter() == null || "".equals(ds.getxFilter())) {
+			ds.setxFilter(ms.getDataSetting().getxFilter());
+		}
+		if (ds.getyFilter() == null || "".equals(ds.getyFilter())) {
+			ds.setyFilter(ms.getDataSetting().getyFilter());
+		}
+
+		DataHandler dh = new DataHandler(this.daoHandler);
+		List<Data> rawData = dh.getData(dataset);
+		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(ds.getxFilter());
+		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
+		for (DataFilter<?, ?> f : xFilters) {
+			if (f != null && f.needInit()) {
+				f.init(this.userId, this.daoHandler);
+			}
+		}
+		for (DataFilter<?, ?> f : yFilters) {
+			if (f != null && f.needInit()) {
+				f.init(this.userId, this.daoHandler);
+			}
+		}
+
+		JSONObject result = new JSONObject();
+		switch (ms.getAlgorithm()) {
+		case cnn:
+			Integer[][] ys1 = new Integer[rawData.size()][];
+			for (int i = 0; i < rawData.size(); i++) {
+				Integer[][][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
+				ys1[i] = ((Cnn)dnn).predictY(x);
+			}
+			result.put("y", I22J(ys1));
+			break;
+		case lstm:
+			JSONObject lstmJ = request.getJSONObject("lstm");
+			Integer terminator = null;
+			Integer steps = null;
+			if (lstmJ != null) {
+				terminator = lstmJ.getInteger("terminator");
+				steps = lstmJ.getInteger("steps");
+			}
+			Integer[][] ys2 = new Integer[rawData.size()][];
+			for (int i = 0; i < rawData.size(); i++) {
+				Double[][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
+				ys2[i] = ((DeepLstm)dnn).predictY(x, terminator, steps);
+			}
+			result.put("value", I22J(ys2));
+			break;
+		default:
+			break;
+		}
+
+		return result;
+	}
+
+	private JSONArray I22J(Integer[][] ys) {
+		JSONArray arrJ2 = new JSONArray();
+		for (int i = 0; i < ys.length; i++) {
+			JSONArray arrJ1 = new JSONArray();
+			for (int j = 0; j < ys[i].length; j++) {
+				arrJ1.add(ys[i][j]);
+			}
+			arrJ2.add(arrJ1);
+		}
+		return arrJ2;
+	}
+
+	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm, Cnn cnn) {
 
 		// 如果用户没有输入的话，根据数据集和算法选择filter和column
 		dataSetting.setDatasetId(dataset.getDatasetId());
@@ -97,7 +199,11 @@ public class DnnAgent extends AuthAgent {
 				case "jpg":
 				case "bmp":
 				case "png":
-					dataSetting.setxFilter("RGBImageFilter|NormalizeIntegerFilter");
+					if (cnn.layers.get(0).depth == 3) {
+						dataSetting.setxFilter("RGBImageFilter");
+					} else {
+						dataSetting.setxFilter("GrayImageFilter|ExpInteger3D");
+					}
 					break;
 				default:
 					dataSetting.setxFilter("Default3");
@@ -124,7 +230,14 @@ public class DnnAgent extends AuthAgent {
 			}
 		}
 		if (dataSetting.getyFilter() == null || "".equals(dataSetting.getyFilter())) {
-			dataSetting.setyFilter("SequenceIntegerFilter");
+			switch (algorithm) {
+			case cnn:
+				dataSetting.setyFilter("SequenceIntegerFilter|SprInteger1D(" + cnn.layers.get(cnn.layers.size() - 1).depth + ")");
+				break;
+			case lstm:
+				dataSetting.setyFilter("SmartSplitFilter");
+				break;
+			}
 		}
 	}
 

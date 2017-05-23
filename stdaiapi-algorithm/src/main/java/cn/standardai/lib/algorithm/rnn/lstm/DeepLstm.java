@@ -30,19 +30,9 @@ public class DeepLstm extends Dnn<LstmData> {
 
 	private boolean delay = false;
 
-	private Integer epoch = 1;
-
-	private Long trainMillisecond = null;
-
-	private Integer batchSize = null;
-
-	private Integer watchEpoch = null;
-
-	private Integer testLossIncreaseTolerance = null;
+	private Boolean selfConnect = false;
 
 	private Integer terminator = null;
-
-	private Boolean selfConnect = false;
 
 	public DerivableFunction σ = new Sigmoid();
 
@@ -615,34 +605,6 @@ public class DeepLstm extends Dnn<LstmData> {
 		return batchIndice;
 	}
 
-	public void setDth(Double dth) {
-		for (int i = 0; i < lstms.length; i++) lstms[i].setDth(dth);
-	}
-
-	public void setLearningRate(Double η) {
-		for (int i = 0; i < lstms.length; i++) lstms[i].setLearningRate(η);
-	}
-
-	public void setEpoch(Integer epoch) {
-		if (epoch != null) this.epoch = epoch;
-	}
-
-	public void setTrainSecond(Integer trainSecond) {
-		if (trainSecond != null) this.trainMillisecond = trainSecond * 1000L;
-	}
-
-	public void setBatchSize(Integer batchSize) {
-		this.batchSize = batchSize;
-	}
-
-	public void setWatchEpoch(Integer watchEpoch) {
-		this.watchEpoch = watchEpoch;
-	}
-
-	public void setTestLossIncreaseTolerance(Integer testLossIncreaseTolerance) {
-		this.testLossIncreaseTolerance = testLossIncreaseTolerance;
-	}
-
 	public void setDelay(boolean delay) {
 		this.delay = delay;
 	}
@@ -721,5 +683,13 @@ public class DeepLstm extends Dnn<LstmData> {
 			idx += lstm1Bytes.length;
 		}
 		return bytes;
+	}
+
+	public void setDth(Double dth) {
+		for (int i = 0; i < lstms.length; i++) lstms[i].setDth(dth);
+	}
+
+	public void setLearningRate(Double η) {
+		for (int i = 0; i < lstms.length; i++) lstms[i].setLearningRate(η);
 	}
 }
