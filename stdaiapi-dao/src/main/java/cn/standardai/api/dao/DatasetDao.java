@@ -38,4 +38,7 @@ public interface DatasetDao {
 
 	@Delete({"DELETE FROM DATASET WHERE DATASETID = #{datasetId}"})
 	Long deleteById(@Param("datasetId") String datasetId);
+
+	@Delete({"DELETE FROM DATASET WHERE DATASETNAME = #{datasetName} AND USERID = #{userId}"})
+	Long deleteByKey(@Param("datasetName") String datasetName, @Param("userId") String userId);
 }

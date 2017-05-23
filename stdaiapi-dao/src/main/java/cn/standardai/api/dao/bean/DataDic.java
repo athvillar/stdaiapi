@@ -6,6 +6,8 @@ public class DataDic {
 
 	private String dataDicName;
 
+	private String description;
+
 	private String userId;
 
 	private Character sharePolicy;
@@ -40,5 +42,13 @@ public class DataDic {
 
 	public void setSharePolicy(Character sharePolicy) {
 		this.sharePolicy = sharePolicy;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

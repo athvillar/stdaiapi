@@ -11,7 +11,7 @@
 	
 	<insert id="insert" parameterType="java.util.List">
 		INSERT INTO 
-			DATADICDATA (DATADICID, KEY, VALUE) 
+			DATADICDATA (DATADICID, KII, VALUE) 
 		VALUES
 		<foreach item="item" collection="list" separator=",">
 			(#{item.dataDicId}, #{item.kii}, #{item.value})

@@ -19,8 +19,8 @@ public class ResDoc extends AshResource {
 						+ "\t  \"delay\": true\n"
 						+ "\t}\n"
 						+ "\n参数说明\n"
-						+ "\tlayerSize\t\t各层深度\n"
-						+ "\tinputSize\t\t输入向量维度\n"
+						+ "\tlayerSize\t\t\t各层深度\n"
+						+ "\tinputSize\t\t\t输入向量维度\n"
 						+ "\toutputSize\t\t输出向量维度\n"
 						+ "\tdelay\t\t\t是否延迟输出"
 		},
@@ -44,8 +44,8 @@ public class ResDoc extends AshResource {
 						+ "\n参数说明\n"
 						+ "\tINPUT\t\t\t输入层\n"
 						+ "\tPOOL\t\t\tPOOLING层\n"
-						+ "\tCONV\t\t卷积层\n"
-						+ "\tFC\t\t\t输出层"
+						+ "\tCONV\t\t\t卷积层\n"
+						+ "\tFC\t\t\t\t输出层"
 		}
 	};
 

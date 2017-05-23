@@ -5,21 +5,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.BaseService;
-import cn.standardai.api.core.base.BaseService.ReturnType;
 import cn.standardai.api.core.exception.StdaiException;
 import cn.standardai.api.data.agent.DicAgent;
-import cn.standardai.api.data.agent.DataAgent;
 
 @Controller
 @RestController
@@ -31,7 +28,7 @@ public class DicService extends BaseService<DicAgent> {
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String receiveData(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data /dic 收到数据字典创建请求 ...");
+		logger.info("stdaiapi-data /data/dic 收到数据字典创建请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DicAgent.class);
@@ -45,7 +42,69 @@ public class DicService extends BaseService<DicAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /dic 结束数据字典创建 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/dic 结束数据字典创建 (" + result.toJSONString() + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String upgradeUserById(@RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-data /data/dic 收到查看数据字典请求");
+		JSONObject result = new JSONObject();
+		try {
+			initAgent(headers, DicAgent.class);
+			result = agent.listDic();
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/dic 结束查看数据字典请求(" + result + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "/{userId}/{dicName}", method = RequestMethod.GET)
+	public String upgradeUserById(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
+			@RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 收到查看数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
+		JSONObject result = new JSONObject();
+		try {
+			initAgent(headers, DicAgent.class);
+			result = agent.viewDic(userId, dicName);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 结束查看数据字典请求(" + result + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "/{userId}/{dicName}", method = RequestMethod.DELETE)
+	public String removeUserById(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
+			@RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 收到删除数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
+		JSONObject result = new JSONObject();
+		try {
+			initAgent(headers, DicAgent.class);
+			agent.removeDic(userId, dicName);
+			result.put("result", "success");
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 结束查看数据字典请求(" + result + ")");
 		return result.toString();
 	}
 }

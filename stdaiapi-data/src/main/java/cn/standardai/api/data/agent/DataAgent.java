@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -14,11 +15,13 @@ import com.github.pagehelper.StringUtil;
 
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.bean.Context;
+import cn.standardai.api.core.exception.AuthException;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Data;
+import cn.standardai.api.data.bean.SharePolicy;
 import cn.standardai.api.data.exception.DataException;
 
 public class DataAgent extends AuthAgent {
@@ -34,32 +37,6 @@ public class DataAgent extends AuthAgent {
 	private static final String FORMAT_JPG = "JPG";
 
 	private static final String FORMAT_TEXT = "TEXT";
-
-	private enum SharePolicyType {
-
-		typePublic("public", '1'), typePrivate("private", '2'), typeProtected("protected", '3');
-
-		String type;
-
-		Character sharePolicy;
-
-		private SharePolicyType(String type, Character sharePolicy) {
-			this.type = type;
-			this.sharePolicy = sharePolicy;
-		}
-
-		private static final Map<String, Character> mappings = new HashMap<String, Character>();
-
-		static {
-			for (SharePolicyType sharePolicyType : values()) {
-				mappings.put(sharePolicyType.type, sharePolicyType.sharePolicy);
-			}
-		}
-
-		public static Character resolve(String type) {
-			return (type != null ? mappings.get(type) : null);
-		}
-	};
 
 	public JSONObject saveJSONData(JSONObject dataRequest) throws DataException {
 
@@ -97,7 +74,7 @@ public class DataAgent extends AuthAgent {
 			String sharePolicyType) {
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
 		JSONObject result = new JSONObject();
-		Character sharePolicy = SharePolicyType.resolve(sharePolicyType);
+		Character sharePolicy = SharePolicy.resolve(sharePolicyType);
 		if (sharePolicy == null) {
 			result.put("msg", "error sharePolicyType(" + datasetId + ")");
 			return result;
@@ -243,5 +220,59 @@ public class DataAgent extends AuthAgent {
 	public JSONObject saveScratchFiles(JSONObject request) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public JSONObject listData() {
+
+		DatasetDao dao = daoHandler.getMySQLMapper(DatasetDao.class);
+		List<Dataset> dataset = dao.selectByUserId(userId);
+
+		JSONArray dataJ = new JSONArray();
+		for (int i = 0; i < dataset.size(); i++) {
+			JSONObject data1J = new JSONObject();
+			data1J.put("dataId", dataset.get(i).getDatasetId());
+			data1J.put("dataName", dataset.get(i).getDatasetName());
+			data1J.put("description", dataset.get(i).getDescription());
+			data1J.put("type", dataset.get(i).getType());
+			data1J.put("format", dataset.get(i).getFormat());
+			data1J.put("keywords", dataset.get(i).getKeywords());
+			data1J.put("titles", dataset.get(i).getTitles());
+			data1J.put("sharePolicy", SharePolicy.parse(dataset.get(i).getSharePolicy()));
+			data1J.put("createTime", dataset.get(i).getCreateTime());
+			dataJ.add(data1J);
+		}
+		JSONObject result = new JSONObject();
+		result.put("data", dataJ);
+
+		return result;
+	}
+
+	public JSONObject viewData(String userId, String dataName) throws AuthException {
+
+		if (!userId.equals(this.userId)) throw new AuthException("没有权限");
+		DatasetDao dao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = dao.selectByKey(dataName, userId);
+
+		JSONObject dataJ = new JSONObject();
+		dataJ.put("dataId", dataset.getDatasetId());
+		dataJ.put("dataName", dataset.getDatasetName());
+		dataJ.put("description", dataset.getDescription());
+		dataJ.put("type", dataset.getType());
+		dataJ.put("format", dataset.getFormat());
+		dataJ.put("keywords", dataset.getKeywords());
+		dataJ.put("titles", dataset.getTitles());
+		dataJ.put("sharePolicy", SharePolicy.parse(dataset.getSharePolicy()));
+		dataJ.put("createTime", dataset.getCreateTime());
+
+		JSONObject result = new JSONObject();
+		result.put("data", dataJ);
+
+		return result;
+	}
+
+	public void removeData(String userId, String dataName) throws AuthException {
+		if (!userId.equals(this.userId)) throw new AuthException("没有权限");
+		DatasetDao dao = daoHandler.getMySQLMapper(DatasetDao.class);
+		dao.deleteByKey(dataName, userId);
 	}
 }
