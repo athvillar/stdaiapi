@@ -28,13 +28,13 @@ public class DataService extends BaseService<DataAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(DataService.class);
 
-	@RequestMapping(value = "/json", method = RequestMethod.POST)
+	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String receiveData(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data /data/data/json 收到数据上传请求 ...");
+		logger.info("stdaiapi-data /data/data POST 收到创建数据请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DataAgent.class);
-			result = agent.saveJSONData(request);
+			result = agent.createData(request);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -44,17 +44,18 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data/json 结束数据上传 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/data POST 结束创建数据 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
-	@RequestMapping(value = "/files", method = RequestMethod.POST)
-	public String uploadFiles(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
-		logger.info("stdaiapi-data /data/data/files 收到文件上传请求 ...");
+	@RequestMapping(value = "/{userId}/{dataName}", method = RequestMethod.POST)
+	public String uploadFiles(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
+			@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " POST 收到更新数据请求(userId=" + userId + ", dataName=" + dataName + ")");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DataAgent.class);
-			result = agent.saveUploadFiles(uploadfiles);
+			result = agent.upgradeData(userId, dataName, request);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -64,13 +65,34 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data/files 结束文件上传 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " POST 结束更新数据 (" + result.toJSONString() + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "/{userId}/{dataName}/files", method = RequestMethod.POST)
+	public String uploadFiles(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
+			@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + "/files POST 收到上传文件请求(userId=" + userId + ", dataName=" + dataName + ")");
+		JSONObject result = null;
+		try {
+			initAgent(headers, DataAgent.class);
+			result = agent.saveUploadFiles(userId, dataName, uploadfiles);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + "/files POST 结束文件上传 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "／scratch", method = RequestMethod.POST)
 	public String scratch(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data /data/data/scratch 收到数据抓取请求 ...");
+		logger.info("stdaiapi-data /data/data/scratch POST 收到数据抓取请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DataAgent.class);
@@ -84,14 +106,14 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data/scratch 结束数据抓取 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/data/scratch POST 结束数据抓取 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String upgradeUserById(@RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-data /data/data 收到查看数据请求");
-		JSONObject result = new JSONObject();
+		logger.info("stdaiapi-data /data/data GET 收到查看数据请求");
+		JSONObject result = null;
 		try {
 			initAgent(headers, DataAgent.class);
 			result = agent.listData();
@@ -104,15 +126,15 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data 结束查看数据请求(" + result + ")");
+		logger.info("stdaiapi-data /data/data GET 结束查看数据(" + result + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/{userId}/{dataName}", method = RequestMethod.GET)
 	public String upgradeUserById(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
 			@RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " 收到查看数据请求(userId=" + userId + ", dataName=" + dataName + ")");
-		JSONObject result = new JSONObject();
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " GET 收到查看数据请求(userId=" + userId + ", dataName=" + dataName + ")");
+		JSONObject result = null;
 		try {
 			initAgent(headers, DataAgent.class);
 			result = agent.viewData(userId, dataName);
@@ -125,14 +147,14 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " 结束查看数据请求(" + result + ")");
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " GET 结束查看数据(" + result + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/{userId}/{dataName}", method = RequestMethod.DELETE)
 	public String removeUserById(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
 			@RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " 收到删除数据请求(userId=" + userId + ", dataName=" + dataName + ")");
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " DELETE 收到删除数据请求(userId=" + userId + ", dataName=" + dataName + ")");
 		JSONObject result = new JSONObject();
 		try {
 			initAgent(headers, DataAgent.class);
@@ -146,7 +168,7 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " 结束查看数据请求(" + result + ")");
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " DELETE 结束删除数据(" + result + ")");
 		return result.toString();
 	}
 }

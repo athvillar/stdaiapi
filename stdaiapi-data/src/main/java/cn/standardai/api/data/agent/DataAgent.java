@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.core.exception.AuthException;
+import cn.standardai.api.core.exception.StdaiException;
 import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.DataDao;
 import cn.standardai.api.dao.DatasetDao;
@@ -27,12 +28,15 @@ public class DataAgent extends AuthAgent {
 
 	private static final String TYPE_DATA = "DATA";
 
-	public JSONObject saveJSONData(JSONObject request) throws DataException {
-
-		JSONObject result = new JSONObject();
+	public JSONObject createData(JSONObject request) throws DataException {
 
 		String datasetName = request.getString("dataName");
 		if (datasetName == null || "".equals(datasetName)) throw new DataException("缺少数据名");
+
+		String type = request.getString("type");
+		if (type == null) type = TYPE_DATA;
+		if (!TYPE_FILE.equalsIgnoreCase(type) && !TYPE_DATA.equalsIgnoreCase(type))
+			throw new DataException("不支持的数据类型(type=" + type + ")");
 
 		String description = request.getString("description");
 		String format = request.getString("format");
@@ -46,16 +50,11 @@ public class DataAgent extends AuthAgent {
 
 		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
 		Dataset dataset = datasetDao.selectByKey(datasetName, this.userId);
-		String datasetId;
 		if (dataset != null) {
-			if (TYPE_FILE.equalsIgnoreCase(dataset.getType())) {
-				throw new DataException("该数据为文件类型，不支持上传数据");
-			}
-			datasetId = dataset.getDatasetId();
-		} else {
-			datasetId = MathUtil.random(24);
-			insertDataset(datasetId, datasetName, description, this.userId, TYPE_DATA, format, keywords, titles, sharePolicyC, datasetDao);
+			throw new DataException("数据已存在(dataName=" + datasetName + ")");
 		}
+		String datasetId = MathUtil.random(24);
+		insertDataset(datasetId, datasetName, description, this.userId, type, format, keywords, titles, sharePolicyC, datasetDao);
 
 		// save data
 		JSONArray dataJ = request.getJSONArray("data");
@@ -73,7 +72,59 @@ public class DataAgent extends AuthAgent {
 			}
 		}
 
-		// make result
+		JSONObject result = new JSONObject();
+		result.put("dataId", datasetId);
+		return result;
+	}
+
+	public JSONObject upgradeData(String userId, String datasetName, JSONObject request) throws DataException, AuthException {
+
+		if (!this.userId.equals(userId)) throw new AuthException("没有权限");
+		if (datasetName == null || "".equals(datasetName)) throw new DataException("缺少数据名");
+
+		Integer updateBaseIdx = request.getInteger("updateBaseIdx");
+		JSONArray dataJ = request.getJSONArray("data");
+
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = datasetDao.selectByKey(datasetName, this.userId);
+		if (dataset == null) throw new DataException("数据不存在(dataName=" + datasetName + ")");
+		String datasetId = dataset.getDatasetId();
+
+		if (TYPE_FILE.equalsIgnoreCase(dataset.getType()) && updateBaseIdx == null) {
+			throw new DataException("该数据为文件类型，不支持上传数据(dataName=" + datasetName + ")");
+		}
+
+		// save data
+		if (dataJ != null && dataJ.size() != 0) {
+			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
+			if (updateBaseIdx != null) {
+				// update
+				for (int i = 0; i < dataJ.size(); i++) {
+					if (i >= baseIdx) break;
+					JSONArray data1J = dataJ.getJSONArray(i);
+					if (data1J == null) continue;
+					String x = data1J.getString(0);
+					if (x == null) continue;
+					String y = data1J.getString(1);
+					if (y == null) y = "";
+					updateData(datasetId, updateBaseIdx + i, x, y);
+				}
+			} else {
+				// insert
+				for (int i = 0; i < dataJ.size(); i++) {
+					JSONArray data1J = dataJ.getJSONArray(i);
+					if (data1J == null) continue;
+					String x = data1J.getString(0);
+					if (x == null) continue;
+					String y = data1J.getString(1);
+					if (y == null) y = "";
+					insertData(MathUtil.random(32), datasetId, baseIdx + i, "", x, y);
+				}
+			}
+		}
+
+		JSONObject result = new JSONObject();
 		result.put("dataId", datasetId);
 		return result;
 	}
@@ -93,6 +144,16 @@ public class DataAgent extends AuthAgent {
 		return datasetDao.insert(datasetParam);
 	}
 
+	private long updateData(String datasetId, int idx, String x, String y) {
+		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+		Data param = new Data();
+		param.setDatasetId(datasetId);
+		param.setIdx(idx);
+		param.setX(x);
+		param.setY(y);
+		return dataDao.updateXYByKey(param);
+	}
+
 	private long insertData(String dataId, String datasetId, int idx, String ref, String x, String y) {
 		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
 		Data param = new Data();
@@ -105,17 +166,38 @@ public class DataAgent extends AuthAgent {
 		return dataDao.insert(param);
 	}
 
-	public JSONObject saveUploadFiles(MultipartFile[] uploadfiles) {
-		JSONObject result = new JSONObject();
+	public JSONObject saveUploadFiles(String userId, String datasetName, MultipartFile[] uploadfiles) throws StdaiException {
+
+		if (!this.userId.equals(userId)) throw new AuthException("没有权限");
+		if (datasetName == null || "".equals(datasetName)) throw new DataException("缺少数据名");
+
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = datasetDao.selectByKey(datasetName, this.userId);
+		String datasetId;
+		if (dataset == null) throw new AuthException("找不到该数据集");
+
+		if (!TYPE_FILE.equalsIgnoreCase(dataset.getType())) {
+			throw new DataException("该数据非文件类型，不支持上传文件(dataName=" + datasetName + ")");
+		}
+		datasetId = dataset.getDatasetId();
 
 		boolean hasFailure = false;
-		for (int i = 0; i < uploadfiles.length; i++) {
-			JSONObject subResult = new JSONObject();
-			subResult = saveUploadFile(uploadfiles[i]);
-			if (!"success".equals(subResult.getString("result")))
-				hasFailure = true;
+		if (uploadfiles != null && uploadfiles.length != 0) {
+			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
+			for (int i = 0; i < uploadfiles.length; i++) {
+				JSONObject subResult = new JSONObject();
+				subResult = saveUploadFile(uploadfiles[i]);
+				if (!"success".equals(subResult.getString("result"))) {
+					hasFailure = true;
+					continue;
+				}
+				String path = Context.getProp().getLocal().getUploadTemp() + uploadfiles[i].getOriginalFilename();
+				insertData(MathUtil.random(32), datasetId, baseIdx + i, path, "", "");
+			}
 		}
 
+		JSONObject result = new JSONObject();
 		if (hasFailure) {
 			result.put("result", "warn");
 			result.put("message", "部分文件上传失败");

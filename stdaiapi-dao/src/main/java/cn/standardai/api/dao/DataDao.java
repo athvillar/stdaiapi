@@ -17,6 +17,10 @@ public interface DataDao {
 	@Select({"SELECT * FROM DATA WHERE DATASETID = #{datasetId}"})
 	List<Data> selectByDatasetId(@Param("datasetId") String datasetId);
 
+	@Insert({"UPDATE DATA SET X = #{param.x}, Y = #{param.y} ",
+		"WHERE DATASETID = #{param.datasetId} AND IDX = #{param.idx}"})
+	Long updateXYByKey(@Param("param") Data param);
+
 	@Insert({"INSERT INTO DATA (DATAID, DATASETID, IDX, REF, X, Y) ",
 		"VALUES (#{param.dataId}, #{param.datasetId}, #{param.idx}, #{param.ref}, #{param.x}, #{param.y})"})
 	Long insert(@Param("param") Data param);

@@ -28,7 +28,7 @@ public class DicService extends BaseService<DicAgent> {
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public String receiveData(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data /data/dic 收到数据字典创建请求 ...");
+		logger.info("stdaiapi-data /data/dic POST 收到数据字典创建请求 ...");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DicAgent.class);
@@ -42,14 +42,14 @@ public class DicService extends BaseService<DicAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/dic 结束数据字典创建 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/dic POST 结束数据字典创建 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String upgradeUserById(@RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-data /data/dic 收到查看数据字典请求");
-		JSONObject result = new JSONObject();
+		logger.info("stdaiapi-data /data/dic GET 收到查看数据字典请求");
+		JSONObject result = null;
 		try {
 			initAgent(headers, DicAgent.class);
 			result = agent.listDic();
@@ -62,15 +62,15 @@ public class DicService extends BaseService<DicAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/dic 结束查看数据字典请求(" + result + ")");
+		logger.info("stdaiapi-data /data/dic GET 结束查看数据字典请求(" + result + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/{userId}/{dicName}", method = RequestMethod.GET)
 	public String upgradeUserById(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
 			@RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 收到查看数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
-		JSONObject result = new JSONObject();
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " GET 收到查看数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
+		JSONObject result = null;
 		try {
 			initAgent(headers, DicAgent.class);
 			result = agent.viewDic(userId, dicName);
@@ -83,14 +83,14 @@ public class DicService extends BaseService<DicAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 结束查看数据字典请求(" + result + ")");
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " GET 结束查看数据字典请求(" + result + ")");
 		return result.toString();
 	}
 
 	@RequestMapping(value = "/{userId}/{dicName}", method = RequestMethod.DELETE)
 	public String removeUserById(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
 			@RequestHeader HttpHeaders headers) {
-		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 收到删除数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " DELETE 收到删除数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
 		JSONObject result = new JSONObject();
 		try {
 			initAgent(headers, DicAgent.class);
@@ -104,7 +104,7 @@ public class DicService extends BaseService<DicAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " 结束查看数据字典请求(" + result + ")");
+		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " DELETE 结束查看数据字典请求(" + result + ")");
 		return result.toString();
 	}
 }
