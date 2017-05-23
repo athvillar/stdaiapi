@@ -3,15 +3,12 @@ package cn.standardai.api.data.agent;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.StringUtil;
 
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.bean.Context;
@@ -30,109 +27,68 @@ public class DataAgent extends AuthAgent {
 
 	private static final String TYPE_DATA = "DATA";
 
-	private static final String FORMAT_JSON = "JSON";
-
-	private static final String FORMAT_CSV = "CSV";
-
-	private static final String FORMAT_JPG = "JPG";
-
-	private static final String FORMAT_TEXT = "TEXT";
-
-	public JSONObject saveJSONData(JSONObject dataRequest) throws DataException {
+	public JSONObject saveJSONData(JSONObject request) throws DataException {
 
 		JSONObject result = new JSONObject();
 
-		String datasetId = dataRequest.getString("datasetId");
-		String datasetName = dataRequest.getString("datasetName");
-		String sharePolicyType = dataRequest.getString("sharePolicyType");
+		String datasetName = request.getString("dataName");
+		if (datasetName == null || "".equals(datasetName)) throw new DataException("缺少数据名");
 
-		// save dataset
-		JSONObject datasetResult = saveDateset(datasetId, datasetName, TYPE_DATA, FORMAT_JSON, sharePolicyType);
-		if (!StringUtil.isEmpty(datasetResult.getString("msg"))) {
-			throw new DataException("Failed to JsonUpload:" + datasetResult);
+		String description = request.getString("description");
+		String format = request.getString("format");
+		String keywords = request.getString("keywords");
+		String titles = request.getString("titles");
+		String sharePolicyS = request.getString("sharePolicy");
+		Character sharePolicyC = SharePolicy.resolve(sharePolicyS);
+		if (sharePolicyC == null) {
+			sharePolicyC = SharePolicy.pPublic.key;
 		}
-		datasetId = datasetResult.getString("datasetId");
+
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = datasetDao.selectByKey(datasetName, this.userId);
+		String datasetId;
+		if (dataset != null) {
+			if (TYPE_FILE.equalsIgnoreCase(dataset.getType())) {
+				throw new DataException("该数据为文件类型，不支持上传数据");
+			}
+			datasetId = dataset.getDatasetId();
+		} else {
+			datasetId = MathUtil.random(24);
+			insertDataset(datasetId, datasetName, description, this.userId, TYPE_DATA, format, keywords, titles, sharePolicyC, datasetDao);
+		}
 
 		// save data
-		JSONArray data = dataRequest.getJSONArray("data");
-		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
-		Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
-		for (int i = 0; i < data.size(); i++) {
-			JSONObject dataJson = data.getJSONObject(i);
-			if (insertData(MathUtil.random(32), datasetId, baseIdx + i, "", dataJson.getString("features"),
-					dataJson.getString("label")) == 0) {
-				throw new DataException("Failed to JsonUpload:" + "no insert data(" + datasetId + ")");
+		JSONArray dataJ = request.getJSONArray("data");
+		if (dataJ != null && dataJ.size() != 0) {
+			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
+			for (int i = 0; i < dataJ.size(); i++) {
+				JSONArray data1J = dataJ.getJSONArray(i);
+				if (data1J == null) continue;
+				String x = data1J.getString(0);
+				if (x == null) continue;
+				String y = data1J.getString(1);
+				if (y == null) y = "";
+				insertData(MathUtil.random(32), datasetId, baseIdx + i, "", x, y);
 			}
 		}
 
 		// make result
-		result.put("datasetId", datasetId);
+		result.put("dataId", datasetId);
 		return result;
 	}
 
-	private JSONObject saveDateset(String datasetId, String datasetName, String type, String format,
-			String sharePolicyType) {
-		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
-		JSONObject result = new JSONObject();
-		Character sharePolicy = SharePolicy.resolve(sharePolicyType);
-		if (sharePolicy == null) {
-			result.put("msg", "error sharePolicyType(" + datasetId + ")");
-			return result;
-		}
-		if (datasetName == null) {
-			if (datasetId == null) {
-				// 未提供id和name，insert新记录
-				datasetId = MathUtil.random(24);
-				if (insertDataset(datasetId, datasetId, userId, type, format, sharePolicy) == 0) {
-					result.put("msg", "no insert dataset(" + datasetId + ")");
-				}
-			} else {
-				// 提供id，未提供name，检索该id，未检出则报异常
-				Dataset datasetParam = new Dataset();
-				datasetParam.setDatasetId(datasetId);
-				datasetParam.setUserId(userId);
-				if (datasetDao.selectCountByIdUser(datasetParam) == 0) {
-					result.put("msg", "no dataset(" + datasetId + ")");
-				}
-			}
-		} else {
-			if (datasetId == null) {
-				// 提供name，未提供id，按照name检索，检索成功使用检出的id执行后续处理，未检出生成新id执行后续处理，并insert
-				Dataset dataset = datasetDao.selectByKey(datasetName, userId);
-				if (dataset == null) {
-					datasetId = MathUtil.random(24);
-					if (insertDataset(datasetId, datasetName, userId, type, format, sharePolicy) == 0) {
-						result.put("msg", "no insert dataset(" + datasetId + ")");
-					}
-				} else {
-					datasetId = dataset.getDatasetId();
-				}
-			} else {
-				// 提供id与name，按照id检索，未检出报异常，检出更新name
-				Dataset datasetParam = new Dataset();
-				datasetParam.setDatasetId(datasetId);
-				datasetParam.setUserId(userId);
-				if (datasetDao.selectCountByIdUser(datasetParam) == 0) {
-					result.put("msg", "no dataset(" + datasetId + ")");
-				} else {
-					datasetParam.setDatasetName(datasetName);
-					datasetDao.updateById(datasetParam);
-				}
-			}
-		}
-		result.put("datasetId", datasetId);
-		return result;
-	}
-
-	private long insertDataset(String datasetId, String datasetName, String userId, String type, String format,
-			Character sharePolicy) {
-		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+	private long insertDataset(String datasetId, String datasetName, String description, String userId,
+			String format, String type, String keywords, String titles, Character sharePolicy, DatasetDao datasetDao) {
 		Dataset datasetParam = new Dataset();
 		datasetParam.setDatasetId(datasetId);
 		datasetParam.setDatasetName(datasetName);
+		datasetParam.setDescription(description);
 		datasetParam.setUserId(userId);
-		datasetParam.setType(type);
 		datasetParam.setFormat(format);
+		datasetParam.setType(type);
+		datasetParam.setKeywords(keywords);
+		datasetParam.setTitles(titles);
 		datasetParam.setSharePolicy(sharePolicy);
 		return datasetDao.insert(datasetParam);
 	}
@@ -233,6 +189,7 @@ public class DataAgent extends AuthAgent {
 			data1J.put("dataId", dataset.get(i).getDatasetId());
 			data1J.put("dataName", dataset.get(i).getDatasetName());
 			data1J.put("description", dataset.get(i).getDescription());
+			data1J.put("userId", dataset.get(i).getUserId());
 			data1J.put("type", dataset.get(i).getType());
 			data1J.put("format", dataset.get(i).getFormat());
 			data1J.put("keywords", dataset.get(i).getKeywords());
@@ -257,6 +214,7 @@ public class DataAgent extends AuthAgent {
 		dataJ.put("dataId", dataset.getDatasetId());
 		dataJ.put("dataName", dataset.getDatasetName());
 		dataJ.put("description", dataset.getDescription());
+		dataJ.put("userId", dataset.getUserId());
 		dataJ.put("type", dataset.getType());
 		dataJ.put("format", dataset.getFormat());
 		dataJ.put("keywords", dataset.getKeywords());
