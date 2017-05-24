@@ -90,13 +90,13 @@ public class DataService extends BaseService<DataAgent> {
 		return result.toString();
 	}
 
-	@RequestMapping(value = "／scratch", method = RequestMethod.POST)
-	public String scratch(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
-		logger.info("stdaiapi-data /data/data/scratch POST 收到数据抓取请求 ...");
+	@RequestMapping(value = "/{userId}/{dataName}/scratch", method = RequestMethod.POST)
+	public String scratch(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName, @RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + "/scratch POST 收到数据抓取请求 (userId=" + userId + ", dataName=" + dataName + ")");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DataAgent.class);
-			result = agent.saveScratchFiles(request);
+			result = agent.saveScratchFiles(userId, dataName, request);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -106,7 +106,7 @@ public class DataService extends BaseService<DataAgent> {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-data /data/data/scratch POST 结束数据抓取 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + "/scratch POST 结束数据抓取 (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 

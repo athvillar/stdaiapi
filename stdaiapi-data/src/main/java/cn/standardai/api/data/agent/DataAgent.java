@@ -1,8 +1,12 @@
 package cn.standardai.api.data.agent;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -28,6 +32,8 @@ public class DataAgent extends AuthAgent {
 	private static final String TYPE_FILE = "FILE";
 
 	private static final String TYPE_DATA = "DATA";
+	
+	private static final String PARAM_EG = "{?}";
 
 	public JSONObject createData(JSONObject request) throws DataException {
 
@@ -284,9 +290,138 @@ public class DataAgent extends AuthAgent {
 		return result;
 	}
 
-	public JSONObject saveScratchFiles(JSONObject request) {
-		// TODO Auto-generated method stub
-		return null;
+	public JSONObject saveScratchFiles(String userId, String datasetName, JSONObject request) throws StdaiException {
+
+		if (!this.userId.equals(userId)) throw new AuthException("没有权限");
+		if (datasetName == null || "".equals(datasetName)) throw new DataException("缺少数据名");
+
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = datasetDao.selectByKey(datasetName, this.userId);
+		String datasetId;
+		if (dataset == null) throw new AuthException("找不到该数据集");
+
+		if (!TYPE_FILE.equalsIgnoreCase(dataset.getType())) {
+			throw new DataException("该数据非文件类型，不支持上传文件(dataName=" + datasetName + ")");
+		}
+		datasetId = dataset.getDatasetId();
+
+		boolean hasFailure = false;
+		String urlStr = request.getString("url");
+		JSONArray paramJ = request.getJSONArray("param");
+		if (paramJ != null && paramJ.size() != 0) {
+			int paramCount = 0;
+			while (true) {
+				String checkParam = PARAM_EG.replace("?", String.valueOf(paramCount));
+				if (urlStr.indexOf(checkParam) != -1) {
+					paramCount = paramCount + 1;
+				} else {
+					break;
+				}
+			}
+			
+			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
+			for (int i = 0; i < paramJ.size(); i++) {
+				JSONObject subResult = new JSONObject();
+				String newName = MathUtil.random(64);
+				subResult = saveScratchFile(urlStr, paramJ.getJSONArray(i), newName, paramCount);
+				if (!"success".equals(subResult.getString("result"))) {
+					hasFailure = true;
+					continue;
+				}
+				String path = Context.getProp().getLocal().getUploadTemp() + newName;
+				insertData(MathUtil.random(32), datasetId, baseIdx + i, path, "", "");
+			}
+		}
+
+		JSONObject result = new JSONObject();
+		if (hasFailure) {
+			result.put("result", "warn");
+			result.put("message", "部分文件上传失败");
+		} else {
+			result.put("result", "success");
+		}
+		return result;
+	}
+
+	private JSONObject saveScratchFile(String urlStr, JSONArray paramJ, String newName, int paramCount) throws DataException {
+
+		if (paramJ.size() != paramCount) throw new DataException("参数不匹配");
+		for (int i = 0; i < paramCount; i++) {
+			urlStr = urlStr.replace(PARAM_EG.replace("?", String.valueOf(i)), paramJ.getString(i));
+		}
+
+		JSONObject result = new JSONObject();
+		InputStream inputStream = null;
+		ByteArrayOutputStream bos = null;
+		BufferedOutputStream outputFileBuffer = null;
+		FileOutputStream outputFile = null;
+		String outputFilePath = Context.getProp().getLocal().getUploadTemp() + newName;
+		try {
+			URL url = new URL(urlStr);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			// 防止屏蔽程序抓取而返回403错误
+			conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+
+			inputStream = conn.getInputStream();
+			bos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int len = 0;
+			while ((len = inputStream.read(buffer)) != -1) {
+				bos.write(buffer, 0, len);
+			}
+			byte[] getData = bos.toByteArray();
+			outputFile = new FileOutputStream(new File(outputFilePath));
+			outputFileBuffer = new BufferedOutputStream(outputFile);
+			outputFileBuffer.write(getData);
+			result.put("result", "success");
+		} catch (Exception e) {
+			result.put("result", "failure");
+			result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+		} finally {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+					inputStream = null;
+				} catch (Exception e) {
+					inputStream = null;
+					result.put("result", "failure");
+					result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+				}
+			}
+			if (bos != null) {
+				try {
+					bos.close();
+					bos = null;
+				} catch (Exception e) {
+					bos = null;
+					result.put("result", "failure");
+					result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+				}
+			}
+			if (outputFileBuffer != null) {
+				try {
+					outputFileBuffer.close();
+					outputFileBuffer = null;
+				} catch (Exception e) {
+					outputFileBuffer = null;
+					result.put("result", "failure");
+					result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+				}
+			}
+			if (outputFile != null) {
+				try {
+					outputFile.close();
+					outputFile = null;
+				} catch (Exception e) {
+					outputFile = null;
+					result.put("result", "failure");
+					result.put("message", "Failed to Upload(" + e.getMessage() + ")");
+				}
+			}
+		}
+
+		return result;
 	}
 
 	public JSONObject listData() {
