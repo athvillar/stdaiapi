@@ -19,7 +19,7 @@ public class GrayImageFilter extends ImageFilter<Integer[][]> {
 		try {
 			image = ImageIO.read(file);
 		} catch (IOException e) {
-			throw new FilterException("文件读取失败", e);
+			throw new FilterException("文件读取失败(" + s + ")", e);
 		}
 
 		int width = image.getWidth();
