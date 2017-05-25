@@ -305,52 +305,100 @@ public class DataAgent extends AuthAgent {
 		}
 		datasetId = dataset.getDatasetId();
 
-		boolean hasFailure = false;
+		JSONObject result = new JSONObject();
 		String urlStr = request.getString("url");
 		JSONArray paramJ = request.getJSONArray("param");
 		if (paramJ != null && paramJ.size() != 0) {
 			int paramCount = 0;
 			while (true) {
-				String checkParam = PARAM_EG.replace("?", String.valueOf(paramCount));
-				if (urlStr.indexOf(checkParam) != -1) {
+				String wildcard = PARAM_EG.replace("?", String.valueOf(paramCount));
+				if (urlStr.indexOf(wildcard) != -1) {
 					paramCount = paramCount + 1;
 				} else {
 					break;
 				}
 			}
-			
+
+			if (paramJ.size() != paramCount) throw new DataException("参数不匹配");
+
 			DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
 			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
-			for (int i = 0; i < paramJ.size(); i++) {
-				JSONObject subResult = new JSONObject();
-				String newName = MathUtil.random(64);
-				subResult = saveScratchFile(urlStr, paramJ.getJSONArray(i), newName, paramCount);
-				if (!"success".equals(subResult.getString("result"))) {
-					hasFailure = true;
-					continue;
-				}
-				String path = Context.getProp().getLocal().getUploadTemp() + newName;
-				insertData(MathUtil.random(32), datasetId, baseIdx + i, path, "", "");
+			JSONObject subResult = saveScratchUrl(urlStr, paramJ, 0, datasetId, baseIdx);
+			if (!"success".equals(subResult.getString("result"))) {
+				result.put("result", "warn");
+				result.put("message", "部分文件上传失败");
+			} else {
+				result.put("result", "success");
 			}
 		}
-
-		JSONObject result = new JSONObject();
-		if (hasFailure) {
-			result.put("result", "warn");
-			result.put("message", "部分文件上传失败");
-		} else {
-			result.put("result", "success");
-		}
+		
 		return result;
 	}
 
-	private JSONObject saveScratchFile(String urlStr, JSONArray paramJ, String newName, int paramCount) throws DataException {
+	private JSONObject saveScratchUrl(String urlStr, JSONArray paramJ, int index, String datasetId, int baseIdx) throws DataException {
 
-		if (paramJ.size() != paramCount) throw new DataException("参数不匹配");
-		for (int i = 0; i < paramCount; i++) {
-			urlStr = urlStr.replace(PARAM_EG.replace("?", String.valueOf(i)), paramJ.getString(i));
+		JSONObject result = new JSONObject();
+		int nowBaseIdx = baseIdx;
+		String wildcard = PARAM_EG.replace("?", String.valueOf(index));
+		Object paramObj = paramJ.get(index);
+		if (paramObj instanceof JSONObject) {
+			JSONObject jsonObject = (JSONObject) paramObj;
+			Integer start = jsonObject.getInteger("start");
+			Integer end = jsonObject.getInteger("end");
+			for (int i = start; i <= end; i++) {
+				String urlAfter = changeFirst(urlStr, wildcard, String.valueOf(i));
+				if (urlAfter.indexOf(wildcard) != -1) throw new DataException("替换字符" + wildcard + "个数与对应参数不符");
+				if (index + 1 != paramJ.size()) {
+					result = saveScratchUrl(urlAfter, paramJ, index + 1, datasetId, nowBaseIdx);
+					nowBaseIdx = result.getInteger("nowBaseIdx");
+				} else {
+					String newName = MathUtil.random(64);
+					result = saveScratchFile(urlAfter, newName);
+					if (!"success".equals(result.getString("result"))) {
+						continue;
+					}
+					String path = Context.getProp().getLocal().getUploadTemp() + newName;
+					nowBaseIdx = nowBaseIdx + 1;
+					insertData(MathUtil.random(32), datasetId, nowBaseIdx, path, "", "");
+				}
+			}
+		} else if (paramObj instanceof JSONArray) {
+			JSONArray jsonArray = (JSONArray) paramObj;
+			for (int j = 0; j < jsonArray.size(); j++) {
+				JSONArray singleArray = (JSONArray) jsonArray.get(j);
+				String urlAfter = urlStr;
+				for (int k = 0; k < singleArray.size(); k++) {
+					urlAfter = changeFirst(urlAfter, wildcard, singleArray.getString(k));
+				}
+				if (urlAfter.indexOf(wildcard) != -1) throw new DataException("替换字符" + wildcard + "个数与对应参数不符");
+				if (index + 1 != paramJ.size()) {
+					result = saveScratchUrl(urlAfter, paramJ, index + 1, datasetId, nowBaseIdx);
+					nowBaseIdx = result.getInteger("nowBaseIdx");
+				} else {
+					String newName = MathUtil.random(64);
+					result = saveScratchFile(urlAfter, newName);
+					if (!"success".equals(result.getString("result"))) {
+						continue;
+					}
+					String path = Context.getProp().getLocal().getUploadTemp() + newName;
+					nowBaseIdx = nowBaseIdx + 1;
+					insertData(MathUtil.random(32), datasetId, nowBaseIdx, path, "", "");
+				}
+			}
 		}
 
+		result.put("nowBaseIdx", nowBaseIdx);
+		return result;
+	}
+	
+	private String changeFirst(String urlStr, String wildcard, String change) {
+		int index = urlStr.indexOf(wildcard);
+		return urlStr.substring(0, index) + change + urlStr.substring(index + 3);
+	}
+
+	private JSONObject saveScratchFile(String urlStr, String newName) {
+
+		System.out.println(urlStr);
 		JSONObject result = new JSONObject();
 		InputStream inputStream = null;
 		ByteArrayOutputStream bos = null;
