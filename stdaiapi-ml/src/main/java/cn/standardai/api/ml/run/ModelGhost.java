@@ -1,14 +1,19 @@
 package cn.standardai.api.ml.run;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Model;
+import cn.standardai.api.es.exception.ESException;
+import cn.standardai.api.es.service.ESService;
 import cn.standardai.api.ml.bean.DnnDataSetting;
 import cn.standardai.api.ml.bean.DnnModelSetting;
 import cn.standardai.api.ml.bean.DnnModelSetting.Status;
@@ -117,6 +122,7 @@ public class ModelGhost implements Runnable {
 			synchronized (this.model.indicator) {
 				Executor exec = Executors.newSingleThreadExecutor();
 				exec.execute(mr);
+				String trainId = MathUtil.random(32);
 				int epoch = 0;
 				while (true) {
 					try {
@@ -125,10 +131,17 @@ public class ModelGhost implements Runnable {
 							break;
 						}
 						epoch += watchEpoch;
-						System.out.println("Epoch " + epoch + ",\tTrainLoss: " + this.model.getValue("trainLoss", epoch) + ",\tTestLoss: " + this.model.getValue("testLoss", epoch));
+
+						List<Map<String, Object>> indicatorData = new ArrayList<Map<String, Object>>();
+						indicatorData.add(makeInsertData(trainId, "trainLoss", epoch, this.model.getValue("trainLoss", epoch)));
+						indicatorData.add(makeInsertData(trainId, "testLoss", epoch, this.model.getValue("testLoss", epoch)));
+						if (indicatorData != null) ESService.insert("indicator", "indicator", indicatorData);
+						//System.out.println("Epoch " + epoch + ",\tTrainLoss: " + this.model.getValue("trainLoss", epoch) + ",\tTestLoss: " + this.model.getValue("testLoss", epoch));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 						break;
+					} catch (ESException e) {
+						e.printStackTrace();
 					}
 				}
 				System.out.println("finished at epoch " + epoch);
@@ -149,6 +162,19 @@ public class ModelGhost implements Runnable {
 		} finally {
 			done();
 		}
+	}
+
+	private Map<String, Object> makeInsertData(String trainId, String indicator, Integer epoch, Double value) {
+
+		Map<String, Object> dataTemp = new HashMap<String, Object>();
+
+		dataTemp.put("trainId", trainId);
+		dataTemp.put("indicator", indicator);
+		dataTemp.put("epoch", epoch);
+		dataTemp.put("value", value);
+		dataTemp.put("time", new Date());
+
+		return dataTemp;
 	}
 
 	private class ModelRunner implements Runnable {

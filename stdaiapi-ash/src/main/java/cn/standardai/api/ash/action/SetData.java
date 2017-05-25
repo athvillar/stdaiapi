@@ -19,8 +19,8 @@ public class SetData extends Action {
 			new String[] {"dn", "请输入数据名:"},
 			new String[] {"nf", "更新或追加(U:更新, A:追加, U):"},
 			new String[] {"us", "若更新，请输入更新起始编号(0):"},
-			new String[] {"dt", "请输入数据及标签([[\"数据1数据\",\"数据1标签\"],[\"数据2数据\",\"数据2标签\"], ...]):"},
-			new String[] {"bs", "批量更新，请输入脚本({\"标签1\":{\"start\":标签1开始编号,\"end\":标签1结束编号}, ... }):"}
+			new String[] {"dt", "请输入数据及标签\n[\n\t[\"数据1数据\",\"数据1标签\"],\n\t[\"数据2数据\",\"数据2标签\"],\n\t ...\n]\n"},
+			new String[] {"bs", "批量更新，请输入脚本\n{\n\t\"标签1\":{\"start\":标签1开始编号,\"end\":标签1结束编号},\n\t\"标签2\":{\"start\":标签2开始编号,\"end\":标签2结束编号}, \n\t... \n}\n"}
 		}
 	};
 
@@ -54,7 +54,7 @@ public class SetData extends Action {
 
 		comm.http(HttpMethod.POST, Context.getProp().getUrl().getData() + "/data/" + this.userId + "/" + dataName, null, body);
 
-		this.reply.display = "数据设置成功(name=" + this.userId + "/" + dataName + ")";
+		this.reply.display = "数据设置成功(" + this.userId + "/" + dataName + ")";
 		return this.reply;
 	}
 
@@ -69,12 +69,12 @@ public class SetData extends Action {
 		try {
 			this.data = this.param.getJSONArray("dt");
 		} catch (JSONException e) {
-			throw new ParamException("数据格式不正确，参考([[\"数据1数据\",\"数据1标签\"],[\"数据2数据\",\"数据2标签\"], ...])");
+			throw new ParamException("数据格式不正确，参考\n[\n\t[\"数据1数据\",\"数据1标签\"],\n\t[\"数据2数据\",\"数据2标签\"],\n\t ...\n]\n");
 		}
 		try {
 			this.batchSet = this.param.getJSONObject("bs");
 		} catch (JSONException e) {
-			throw new ParamException("数据格式不正确，参考({\"标签1\":{\"start\":标签1开始编号,\"end\":标签1结束编号}, ... })");
+			throw new ParamException("数据格式不正确，参考\n{\n\t\"标签1\":{\"start\":标签1开始编号,\"end\":标签1结束编号},\n\t\"标签2\":{\"start\":标签2开始编号,\"end\":标签2结束编号}, \n\t... \n}\n");
 		}
 	}
 }

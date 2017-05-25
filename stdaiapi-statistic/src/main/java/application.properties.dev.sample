@@ -1,0 +1,7 @@
+app.name=stdaiapi-statistic
+app.description=${app.name} provide a service layer of statistic
+
+server.port=10105
+server.context-path=/v2
+
+spring.profiles.active=dev

@@ -59,6 +59,7 @@
 		<module>./stdaiapi-redis</module>
 		<module>./stdaiapi-math</module>
 		<module>./stdaiapi-ml</module>
+		<module>./stdaiapi-statistic</module>
 	</modules> 
 	<build>
         <plugins>

@@ -278,7 +278,7 @@ public class DeepLstm extends Dnn<LstmData> {
 				}
 				this.indicator.notify();
 			}
-			System.out.println("Epoch: " + epochCount + ", Train loss: " + totalTrainLoss + ", Test loss: " + totalTestLoss);
+			//System.out.println("Epoch: " + epochCount + ", Train loss: " + totalTrainLoss + ", Test loss: " + totalTestLoss);
 			return totalTestLoss;
 		}
 

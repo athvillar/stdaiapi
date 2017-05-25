@@ -516,6 +516,17 @@ public class DataAgent extends AuthAgent {
 		dataJ.put("sharePolicy", SharePolicy.parse(dataset.getSharePolicy()));
 		dataJ.put("createTime", dataset.getCreateTime());
 
+		DataDao dao2 = daoHandler.getMySQLMapper(DataDao.class);
+		Integer count = dao2.selectCountByDatasetId(dataset.getDatasetId());
+		Data data1 = dao2.select1ByDatasetId(dataset.getDatasetId());
+
+		dataJ.put("count", count);
+		if (data1 != null) {
+			dataJ.put("ref", data1.getRef());
+			dataJ.put("x", data1.getX());
+			dataJ.put("y", data1.getY());
+		}
+
 		JSONObject result = new JSONObject();
 		result.put("data", dataJ);
 

@@ -1,4 +1,4 @@
-package cn.standardai.api.ml;
+package cn.standardai.api.statistic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
 		logger.info("开始初始化");
 		Context.setProp(propertyConfig);
 		try {
-			if (propertyConfig.getMysql() != null) {
+			if (propertyConfig.getMysql() != null && ("mysql".equals(propertyConfig.getLocal().getDb()) || "both".equals(propertyConfig.getLocal().getDb()))) {
 				initMysql();
 			}
 			if (propertyConfig.getElasticsearch() != null) {

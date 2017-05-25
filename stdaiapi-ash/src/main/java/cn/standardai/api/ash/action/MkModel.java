@@ -65,9 +65,9 @@ public class MkModel extends Action {
 		body.put("data", dataJ);
 		body.put("structure", structure);
 
-		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getMl() + "/dnn", null, body);
+		comm.http(HttpMethod.POST, Context.getProp().getUrl().getMl() + "/dnn", null, body);
 
-		this.reply.display = "模型(id=" + j.getString("id") + ", name=" + this.userId + "/" + modelName + ")建立成功";
+		this.reply.display = "模型(" + this.userId + "/" + modelName + ")建立成功";
 		return this.reply;
 	}
 
