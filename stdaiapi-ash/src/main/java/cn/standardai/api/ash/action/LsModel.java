@@ -29,9 +29,9 @@ public class LsModel extends Action {
 
 		String result;
 		if (this.param.has('l')) {
-			result = "模型名\t\t算法\t\t创建时间\t\t\t\t结构";
+			result = "模型名\t\t算法\t\t\t创建时间\t\t\t\t结构";
 		} else {
-			result = "模型名\t\t算法\t\t创建时间";
+			result = "模型名\t\t算法\t\t\t创建时间";
 		}
 		for (int i = 0; i < models.size(); i++) {
 			result += "\n" + fillWithSpace(models.getJSONObject(i).getString("modelTemplateName"), 11) + "\t"

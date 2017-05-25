@@ -13,7 +13,8 @@ import cn.standardai.api.core.bean.Context;
 
 public class MkData extends Action {
 
-	private static String[][] dialog = new String[][] {
+	private static String[][][] dialog = new String[][][] {
+		new String[][] {
 			new String[] {"dn", "请输入数据名:"},
 			new String[] {"dc", "请输入数据描述:"},
 			new String[] {"sp", "请输入共享策略(1:public, 2:protected, 3:private):"},
@@ -22,6 +23,7 @@ public class MkData extends Action {
 			new String[] {"fl", "二进制数据请输入要上传的本地文件或文件夹全路径(可以使用通配符*):"},
 			new String[] {"se", "请输入通配符的起止范围，用逗号分隔(仅支持数字，例:1,90):"},
 			new String[] {"dt", "文本数据请输入数据标签([[\"数据1数据\",\"数据1标签\"],[\"数据2数据\",\"数据2标签\"], ...]):"}
+		}
 	};
 
 	static {
@@ -65,7 +67,7 @@ public class MkData extends Action {
 		body.put("keywords", keywords);
 		body.put("data", data);
 
-		if (files != null) {
+		if (files != null && !"".equals(files)) {
 			body.put("type", "FILE");
 		} else {
 			body.put("type", "DATA");
@@ -75,7 +77,7 @@ public class MkData extends Action {
 		JSONObject j = comm.http(HttpMethod.POST, Context.getProp().getUrl().getData() + "/data", null, body);
 
 		this.reply.display = "数据建立成功(dataId=" + j.getString("dataId") + ", name=" + this.userId + "/" + dataName + ")";
-		if (files != null) {
+		if (files != null && !"".equals(files)) {
 			String[] fileList = files.split(",");
 			String fileSendS = "";
 			for (int i = 0; i < fileList.length; i++) {

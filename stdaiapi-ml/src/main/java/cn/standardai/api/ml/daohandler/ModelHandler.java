@@ -27,7 +27,7 @@ public class ModelHandler {
 	}
 
 	public JSONObject createModel(String userId, String modelTemplateName, DnnAlgorithm algorithm,
-			DnnDataSetting dataSetting, String script) throws MLException {
+			DnnDataSetting dataSetting) throws MLException {
 
 		JSONObject result = new JSONObject();
 		ModelTemplateDao dao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
@@ -43,7 +43,7 @@ public class ModelHandler {
 			param.setModelTemplateName(modelTemplateName);
 			param.setUserId(userId);
 			param.setAlgorithm(algorithm.name());
-			param.setScript(script);
+			param.setScript(dataSetting.getStructure().toJSONString());
 			param.setDatasetId(dataSetting.getDatasetId());
 			param.setxColumn(dataSetting.getxColumn());
 			param.setxFilter(dataSetting.getxFilter());

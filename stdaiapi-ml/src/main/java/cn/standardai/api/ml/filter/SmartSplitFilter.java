@@ -4,10 +4,10 @@ import java.util.HashMap;
 
 import cn.standardai.api.dao.base.DaoHandler;
 
-public class SmartSplitFilter extends DicFilter<Integer[], Integer> {
+public class SmartSplitFilter extends DicFilter<String, String[], Integer> {
 
 	@Override
-	public Integer[] encode(String s) {
+	public String[] encode(String s) {
 		String[] ss;
 		if (s.contains(" ")) {
 			ss = s.split(" ");
@@ -16,6 +16,7 @@ public class SmartSplitFilter extends DicFilter<Integer[], Integer> {
 			ss = new String[cs.length];
 			for (int i = 0; i < ss.length; i++) {
 				ss[i] = "" + cs[i] + " ";
+				//ss[i] = "" + cs[i] + " ";
 			}
 		}
 		Integer[] is = new Integer[ss.length];
@@ -28,17 +29,17 @@ public class SmartSplitFilter extends DicFilter<Integer[], Integer> {
 			dic.put(ss[i], idx);
 			arcDic.put(idx, ss[i]);
 		}
-		return is;
+		return ss;
 	}
 
 	@Override
-	public String decode(Integer[] t) {
+	public String decode(String[] t) {
 		String s = "";
 		for (int i = 0; i < t.length; i++) {
-			if (arcDic.containsKey(t)) {
-				s += arcDic.get(t);
+			if (t[i].length() == 2 && t[i].charAt(1) == ' ') {
+				s += t[i].substring(0, 1);
 			} else {
-				s += "?";
+				s += t[i] + " ";
 			}
 		}
 		return s;

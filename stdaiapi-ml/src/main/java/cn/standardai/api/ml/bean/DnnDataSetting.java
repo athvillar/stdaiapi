@@ -19,6 +19,8 @@ public class DnnDataSetting {
 
 	private String yFilter;
 
+	private JSONObject structure;
+
 	public String getDatasetId() {
 		return datasetId;
 	}
@@ -118,5 +120,13 @@ public class DnnDataSetting {
 		default:
 			return null;
 		}
+	}
+
+	public JSONObject getStructure() {
+		return structure;
+	}
+
+	public void setStructure(JSONObject structure) {
+		this.structure = structure;
 	}
 }

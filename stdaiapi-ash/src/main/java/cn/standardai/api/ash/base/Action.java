@@ -2,7 +2,6 @@ package cn.standardai.api.ash.base;
 
 import cn.standardai.api.ash.bean.AshParam;
 import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.exception.AshException;
 import cn.standardai.api.ash.exception.ParamException;
 
 public abstract class Action implements Executable {
@@ -37,10 +36,20 @@ public abstract class Action implements Executable {
 		this.pNumMin = pNumMin;
 	}
 
-	protected void setVp(String[][] dialog) {
-		this.vp = new String[dialog.length];
-		for (int i = 0; i < this.vp.length; i++) {
-			this.vp[i] = dialog[i][0];
+	protected void setVp(String[][][] dialog) {
+		int count = 0;
+		for (int i = 0; i < dialog.length; i++) {
+			for (int j = 0; j < dialog[i].length; j++) {
+				count++;
+			}
+		}
+		this.vp = new String[count];
+		int idx = 0;
+		for (int i = 0; i < dialog.length; i++) {
+			for (int j = 0; j < dialog[i].length; j++) {
+				this.vp[idx] = dialog[i][j][0];
+				idx++;
+			}
 		}
 	}
 
@@ -69,5 +78,10 @@ public abstract class Action implements Executable {
 	@Override
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	@Override
+	public int getDialogIndex() {
+		return 0;
 	}
 }

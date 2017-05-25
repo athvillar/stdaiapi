@@ -13,13 +13,15 @@ import cn.standardai.api.core.bean.Context;
 
 public class MkModel extends Action {
 
-	private static String[][] dialog = new String[][] {
+	private static String[][][] dialog = new String[][][] {
+		new String[][] {
 			new String[] {"md", "请输入模型名:"},
 			new String[] {"dn", "请输入数据名(userId/dataName):"},
 			new String[] {"ag", "请输入算法名(CNN, LSTM):"},
 			new String[] {"xf", "请输入x过滤器(过滤器格式可参考文档\"过滤器/filter\"，默认使用系统推荐过滤器):"},
 			new String[] {"yf", "请输入y过滤器(过滤器格式可参考文档\"过滤器/filter\"，默认使用系统推荐过滤器):"},
 			new String[] {"sr", "请输入算法JSON结构(结构说明请参考文档－－建立模型):",}
+		}
 	};
 
 	static {

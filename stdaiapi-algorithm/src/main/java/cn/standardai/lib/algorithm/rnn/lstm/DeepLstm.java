@@ -615,6 +615,9 @@ public class DeepLstm extends Dnn<LstmData> {
 
 	public void setSelfConnect(boolean selfConnect) throws DnnException {
 		this.selfConnect = selfConnect;
+	}
+
+	public void setSelfConnect() throws DnnException {
 		if (this.lstms.length < 2) throw new DnnException("层数过少，无法设置层连接");
 		if (this.lstms[lstms.length - 2].outputSize != this.lstms[lstms.length - 2].inputSize) {
 			this.lstms[lstms.length - 2] = new Lstm(this.lstms[lstms.length - 1].outputSize,
@@ -647,9 +650,11 @@ public class DeepLstm extends Dnn<LstmData> {
 		return dLstm;
 	}
 
-	public static DeepLstm getInstance(byte[] structure) {
+	public static DeepLstm getInstance(byte[] structure) throws DnnException {
 
 		int idx = 0;
+		boolean delay = ByteUtil.getBoolean(structure, idx++);
+		boolean selfConnect = ByteUtil.getBoolean(structure, idx++);
 		int lstmSize = ByteUtil.getInt(structure, idx);
 		idx += Integer.BYTES;
 		Lstm[] lstm = new Lstm[lstmSize];
@@ -664,6 +669,8 @@ public class DeepLstm extends Dnn<LstmData> {
 		}
 
 		DeepLstm deepLstm = new DeepLstm(lstm);
+		deepLstm.setDelay(delay);
+		deepLstm.setSelfConnect(selfConnect);
 		return deepLstm;
 	}
 
@@ -673,8 +680,10 @@ public class DeepLstm extends Dnn<LstmData> {
 		for (int i = 0; i < lstms.length; i++) {
 			totalLength += lstms[i].getByteLength();
 		}
-		byte[] bytes = new byte[totalLength + Integer.BYTES * lstms.length + Integer.BYTES];
+		byte[] bytes = new byte[totalLength + Integer.BYTES * lstms.length + Integer.BYTES + 2];
 		int idx = 0;
+		idx += ByteUtil.putBoolean(bytes, this.delay, idx);
+		idx += ByteUtil.putBoolean(bytes, this.selfConnect, idx);
 		idx += ByteUtil.putInt(bytes, lstms.length, idx);
 		for (int i = 0; i < lstms.length; i++) {
 			byte[] lstm1Bytes = lstms[i].getBytes();

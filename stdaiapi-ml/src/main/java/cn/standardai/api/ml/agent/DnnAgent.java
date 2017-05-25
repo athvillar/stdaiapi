@@ -8,18 +8,22 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.exception.AuthException;
+import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.ModelTemplate;
 import cn.standardai.api.ml.bean.DnnAlgorithm;
 import cn.standardai.api.ml.bean.DnnDataSetting;
+import cn.standardai.api.ml.bean.DnnDicSetting;
 import cn.standardai.api.ml.bean.DnnModelSetting;
 import cn.standardai.api.ml.bean.DnnTrainSetting;
 import cn.standardai.api.ml.daohandler.DataHandler;
+import cn.standardai.api.ml.daohandler.DicHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
 import cn.standardai.api.ml.exception.JSONFormatException;
 import cn.standardai.api.ml.exception.MLException;
 import cn.standardai.api.ml.filter.DataFilter;
+import cn.standardai.api.ml.filter.SmartSplitFilter;
 import cn.standardai.api.ml.run.ModelGhost;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.cnn.Cnn;
@@ -31,6 +35,8 @@ public class DnnAgent extends AuthAgent {
 	private ModelHandler mh = new ModelHandler(daoHandler);
 
 	private DataHandler dh = new DataHandler(daoHandler);
+
+	private DicHandler dich = new DicHandler(daoHandler);
 
 	/*
 	 * {
@@ -56,6 +62,8 @@ public class DnnAgent extends AuthAgent {
 
 		JSONObject structure = request.getJSONObject("structure");
 		if (structure == null) throw new JSONFormatException("缺少模型结构(structure)");
+		dataSetting.setStructure(structure);
+
 		Cnn cnn = null;
 		try {
 			switch (algorithm) {
@@ -71,7 +79,7 @@ public class DnnAgent extends AuthAgent {
 		}
 		setDataSetting(dataSetting, dataset, algorithm, cnn);
 
-		return mh.createModel(userId, modelTemplateName, algorithm, dataSetting, structure.toJSONString());
+		return mh.createModel(userId, modelTemplateName, algorithm, dataSetting);
 	}
 
 	/*
@@ -146,18 +154,28 @@ public class DnnAgent extends AuthAgent {
 				terminator = lstmJ.getInteger("terminator");
 				steps = lstmJ.getInteger("steps");
 			}
-			Integer[][] ys2 = new Integer[rawData.size()][];
+			//Integer[][] ys2 = new Integer[rawData.size()][];
+			String[] ys2 = new String[rawData.size()];
 			for (int i = 0; i < rawData.size(); i++) {
 				Double[][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
-				ys2[i] = ((DeepLstm)dnn).predictY(x, terminator, steps);
+				//ys2[i] = ((DeepLstm)dnn).predictY(x, terminator, steps);
+				ys2[i] = DataFilter.decode(((DeepLstm)dnn).predictY(x, terminator, steps), yFilters);
 			}
-			result.put("value", I22J(ys2));
+			result.put("value", S2J(ys2));
 			break;
 		default:
 			break;
 		}
 
 		return result;
+	}
+
+	private JSONArray S2J(String[] ys) {
+		JSONArray arrJ = new JSONArray();
+		for (int i = 0; i < ys.length; i++) {
+			arrJ.add(ys[i]);
+		}
+		return arrJ;
 	}
 
 	private JSONArray I22J(Integer[][] ys) {
@@ -212,8 +230,11 @@ public class DnnAgent extends AuthAgent {
 				break;
 			case lstm:
 				switch (dataset.getFormat().toLowerCase()) {
-				case "json":
-					dataSetting.setxFilter("Json2");
+				case "text":
+				case "txt":
+					DnnDicSetting dds = createDic(dataset, dataSetting.getxColumn());
+					dataSetting.setxFilter("SmartSplitFilter|Int1DDicFilter(" + dds.getDicName() + ")|SprInt1D2Double2D(" + dds.getLength() + ")");
+					dataSetting.getStructure().put("inputSize", dds.getLength());
 					break;
 				case "jpg":
 				case "bmp":
@@ -235,10 +256,27 @@ public class DnnAgent extends AuthAgent {
 				dataSetting.setyFilter("SequenceIntegerFilter|SprInteger1D(" + cnn.layers.get(cnn.layers.size() - 1).depth + ")");
 				break;
 			case lstm:
-				dataSetting.setyFilter("SmartSplitFilter");
+				DnnDicSetting dds = createDic(dataset, dataSetting.getyColumn());
+				dataSetting.setyFilter("SmartSplitFilter|Int1DDicFilter(" + dds.getDicName() + ")");
+				dataSetting.getStructure().put("outputSize", dds.getLength());
 				break;
 			}
 		}
+	}
+
+	private DnnDicSetting createDic(Dataset dataset, String column) {
+		List<Data> data = dh.getData(dataset);
+		SmartSplitFilter f = new SmartSplitFilter();
+		f.init(this.userId, this.daoHandler);
+		for (int i = 0; i < data.size(); i++) {
+			if (column.endsWith("x")) {
+				f.encode(data.get(i).getX());
+			} else if (column.endsWith("y")) {
+				f.encode(data.get(i).getY());
+			}
+		}
+		return dich.createDic(dataset.getDatasetName() + "_" + MathUtil.random(5),
+				"根据data(" + dataset.getDatasetName() + ")生成的字典", this.userId, dataset.getSharePolicy(), f.arcDic);
 	}
 
 	/*

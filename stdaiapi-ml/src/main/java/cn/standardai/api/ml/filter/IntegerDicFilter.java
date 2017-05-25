@@ -3,7 +3,7 @@ package cn.standardai.api.ml.filter;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.ml.daohandler.DicHandler;
 
-public class IntegerDicFilter extends DicFilter<Integer, Integer> {
+public class IntegerDicFilter extends DicFilter<String, Integer, Integer> {
 
 	@Override
 	public Integer encode(String s) {

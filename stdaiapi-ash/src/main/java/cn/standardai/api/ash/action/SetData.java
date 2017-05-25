@@ -14,12 +14,14 @@ import cn.standardai.api.core.bean.Context;
 
 public class SetData extends Action {
 
-	private static String[][] dialog = new String[][] {
+	private static String[][][] dialog = new String[][][] {
+		new String[][] {
 			new String[] {"dn", "请输入数据名:"},
 			new String[] {"nf", "更新或追加(U:更新, A:追加, U):"},
 			new String[] {"us", "若更新，请输入更新起始编号(0):"},
 			new String[] {"dt", "请输入数据及标签([[\"数据1数据\",\"数据1标签\"],[\"数据2数据\",\"数据2标签\"], ...]):"},
 			new String[] {"bs", "批量更新，请输入脚本({\"标签1\":{\"start\":标签1开始编号,\"end\":标签1结束编号}, ... }):"}
+		}
 	};
 
 	static {

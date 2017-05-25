@@ -12,10 +12,12 @@ import cn.standardai.api.core.bean.Context;
 
 public class MkUser extends Action {
 
-	private static String[][] dialog = new String[][] {
+	private static String[][][] dialog = new String[][][] {
+		new String[][] {
 			new String[] {"un", "请输入用户名:"},
 			new String[] {"pw", "请输入密码:"},
 			new String[] {"em", "请输入邮箱:"}
+		}
 	};
 
 	static {

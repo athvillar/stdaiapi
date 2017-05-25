@@ -17,4 +17,6 @@ public interface Executable {
 	public void setUserId(String userId);
 
 	public void setToken(String token);
+
+	public int getDialogIndex();
 }

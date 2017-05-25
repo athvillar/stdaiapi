@@ -14,7 +14,8 @@ import cn.standardai.api.core.bean.Context;
 
 public class CallModel extends Action {
 
-	private static String[][] dialog = new String[][] {
+	private static String[][][] dialog = new String[][][] { 
+		new String[][] {
 			new String[] {"md", "请输入模型名:"},
 			new String[] {"lr", "请输入学习率(0.1, 建议范围0.01 ~ 1.0):"},
 			new String[] {"th", "请输入梯度矩阵秩的阈值(1, 建议范围1 ~ 15):"},
@@ -25,6 +26,13 @@ public class CallModel extends Action {
 			new String[] {"ts", "请输入训练时间(秒):"},
 			new String[] {"tt", "请输入测试集Loss增大次数(null):"},
 			new String[] {"ko", "是否保留旧模型(N):"},
+		},
+		new String[][] {
+			new String[] {"md", "请输入模型名:"},
+			new String[] {"dn", "请输入数据名(userId/dataName):"},
+			new String[] {"xf", "请输入x过滤器(过滤器格式可参考文档\"过滤器/filter\"，默认使用系统推荐过滤器):"},
+			new String[] {"yf", "请输入y过滤器(过滤器格式可参考文档\"过滤器/filter\"，默认使用系统推荐过滤器):"},
+		}
 	};
 
 	static {
@@ -138,5 +146,19 @@ public class CallModel extends Action {
 		testLossIncreaseTolerance = param.getInteger("tt");
 		keepOld = "y".equalsIgnoreCase(param.getString("ko"));
 		
+	}
+
+	@Override
+	public int getDialogIndex() {
+		if (this.param.has('t')) {
+			return 0;
+		} else if (this.param.has('p')) {
+			return 1;
+		} else if (this.param.has('r')) {
+			return 2;
+		} else if (this.param.has('s')) {
+			return 3;
+		}
+		return 0;
 	}
 }

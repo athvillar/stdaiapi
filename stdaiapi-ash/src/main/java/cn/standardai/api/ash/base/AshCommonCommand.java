@@ -49,4 +49,8 @@ public abstract class AshCommonCommand extends AshCommand implements Executable 
 	public AshParam getParam() {
 		return this.param;
 	}
+
+	public int getDialogIndex() {
+		return 0;
+	}
 }

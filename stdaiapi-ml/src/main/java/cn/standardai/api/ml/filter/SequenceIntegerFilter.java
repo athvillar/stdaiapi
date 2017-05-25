@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import cn.standardai.api.dao.base.DaoHandler;
 
-public class SequenceIntegerFilter extends DicFilter<Integer, Integer> {
+public class SequenceIntegerFilter extends DicFilter<String, Integer, Integer> {
 
 	@Override
 	public Integer encode(String s) {

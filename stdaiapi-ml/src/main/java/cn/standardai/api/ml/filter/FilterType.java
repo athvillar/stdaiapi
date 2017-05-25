@@ -14,7 +14,10 @@ public enum FilterType {
 	ExpInteger2D("ExpInteger2D", ExpInteger2D.class),
 	ExpInteger3D("ExpInteger3D", ExpInteger3D.class),
 	SmartSplitFilter("SmartSplitFilter", SmartSplitFilter.class),
-	SprInteger1D("SprInteger1D", SprInteger1D.class);
+	SprInteger1D("SprInteger1D", SprInteger1D.class),
+	Int1DDicFilter("Int1DDicFilter", Int1DDicFilter.class),
+	SprInt2Double1D("SprInt2Double1D", SprInt2Double1D.class),
+	SprInt1D2Double2D("SprInt1D2Double2D", SprInt1D2Double2D.class);
 
 	public Class<? extends DataFilter<?, ?>> cls;
 

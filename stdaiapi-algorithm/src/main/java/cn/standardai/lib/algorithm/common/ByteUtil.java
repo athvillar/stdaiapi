@@ -2,6 +2,15 @@ package cn.standardai.lib.algorithm.common;
 
 public class ByteUtil {
 
+	public static int putBoolean(byte[] bytes, Boolean value, int off) {
+		bytes[off] = value ? (byte)1 : (byte)0;
+		return 1;
+	}
+
+	public static boolean getBoolean(byte[] bytes, int off) {
+		return (bytes[off] == (byte)1);
+	}
+
 	public static int putInt(byte[] bytes, int value, int off) {
 		for (int i = 0; i < Integer.BYTES; i++) {
 			bytes[off + i] = (byte) value;
