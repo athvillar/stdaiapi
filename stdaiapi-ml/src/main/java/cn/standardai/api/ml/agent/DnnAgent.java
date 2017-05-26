@@ -144,7 +144,7 @@ public class DnnAgent extends AuthAgent {
 				Integer[][][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
 				ys1[i] = ((Cnn)dnn).predictY(x);
 			}
-			result.put("y", I22J(ys1));
+			result.put("value", I22J(ys1));
 			break;
 		case lstm:
 			JSONObject lstmJ = request.getJSONObject("lstm");
