@@ -335,21 +335,20 @@ public class DataAgent extends AuthAgent {
 		return result;
 	}
 
-	private JSONObject saveScratchUrl(String urlStr, JSONArray paramJ, int index, String datasetId, int baseIdx) throws DataException {
+	private JSONObject saveScratchUrl(String urlStr, JSONArray paramArray, int index, String datasetId, int baseIdx) throws DataException {
 
 		JSONObject result = new JSONObject();
 		int nowBaseIdx = baseIdx;
 		String wildcard = PARAM_EG.replace("?", String.valueOf(index));
-		Object paramObj = paramJ.get(index);
-		if (paramObj instanceof JSONObject) {
-			JSONObject jsonObject = (JSONObject) paramObj;
-			Integer start = jsonObject.getInteger("start");
-			Integer end = jsonObject.getInteger("end");
+		JSONObject paramJson = paramArray.getJSONObject(index);
+		if (paramJson.get("start") != null) {
+			Integer start = paramJson.getInteger("start");
+			Integer end = paramJson.getInteger("end");
 			for (int i = start; i <= end; i++) {
 				String urlAfter = changeFirst(urlStr, wildcard, String.valueOf(i));
 				if (urlAfter.indexOf(wildcard) != -1) throw new DataException("替换字符" + wildcard + "个数与对应参数不符");
-				if (index + 1 != paramJ.size()) {
-					result = saveScratchUrl(urlAfter, paramJ, index + 1, datasetId, nowBaseIdx);
+				if (index + 1 != paramArray.size()) {
+					result = saveScratchUrl(urlAfter, paramArray, index + 1, datasetId, nowBaseIdx);
 					nowBaseIdx = result.getInteger("nowBaseIdx");
 				} else {
 					String newName = MathUtil.random(64);
@@ -362,17 +361,13 @@ public class DataAgent extends AuthAgent {
 					insertData(MathUtil.random(32), datasetId, nowBaseIdx, path, "", "");
 				}
 			}
-		} else if (paramObj instanceof JSONArray) {
-			JSONArray jsonArray = (JSONArray) paramObj;
+		} else {
+			JSONArray jsonArray = paramJson.getJSONArray("item");
 			for (int j = 0; j < jsonArray.size(); j++) {
-				JSONArray singleArray = (JSONArray) jsonArray.get(j);
-				String urlAfter = urlStr;
-				for (int k = 0; k < singleArray.size(); k++) {
-					urlAfter = changeFirst(urlAfter, wildcard, singleArray.getString(k));
-				}
+				String urlAfter = changeFirst(urlStr, wildcard, jsonArray.getString(j));
 				if (urlAfter.indexOf(wildcard) != -1) throw new DataException("替换字符" + wildcard + "个数与对应参数不符");
-				if (index + 1 != paramJ.size()) {
-					result = saveScratchUrl(urlAfter, paramJ, index + 1, datasetId, nowBaseIdx);
+				if (index + 1 != paramArray.size()) {
+					result = saveScratchUrl(urlAfter, paramArray, index + 1, datasetId, nowBaseIdx);
 					nowBaseIdx = result.getInteger("nowBaseIdx");
 				} else {
 					String newName = MathUtil.random(64);
