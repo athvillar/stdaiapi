@@ -1,4 +1,4 @@
-package com.kingdy.parkos.statistic.bean;
+package cn.standardai.api.statistic.bean;
 
 public class AdvanceStatisticInfo {
 

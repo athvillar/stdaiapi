@@ -1,11 +1,11 @@
-package com.kingdy.parkos.statistic.service;
+package cn.standardai.api.statistic.service;
 
 import java.util.Calendar;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kingdy.parkos.statistic.exception.StatisticException;
 
 import cn.standardai.api.core.util.DateUtil;
+import cn.standardai.api.statistic.exception.StatisticException;
 
 public class HealthStatistic implements Statistic {
 

@@ -1,4 +1,4 @@
-package com.kingdy.parkos.statistic.service;
+package cn.standardai.api.statistic.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kingdy.parkos.statistic.exception.StatisticException;
 
 import cn.standardai.api.core.base.BaseService;
+import cn.standardai.api.statistic.exception.StatisticException;
 
 @Controller
 @RestController

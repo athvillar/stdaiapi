@@ -132,11 +132,11 @@ public class ModelGhost implements Runnable {
 						}
 						epoch += watchEpoch;
 
+						//System.out.println("Epoch " + epoch + ",\tTrainLoss: " + this.model.getValue("trainLoss", epoch) + ",\tTestLoss: " + this.model.getValue("testLoss", epoch));
 						List<Map<String, Object>> indicatorData = new ArrayList<Map<String, Object>>();
 						indicatorData.add(makeInsertData(trainId, "trainLoss", epoch, this.model.getValue("trainLoss", epoch)));
 						indicatorData.add(makeInsertData(trainId, "testLoss", epoch, this.model.getValue("testLoss", epoch)));
 						if (indicatorData != null) ESService.insert("indicator", "indicator", indicatorData);
-						//System.out.println("Epoch " + epoch + ",\tTrainLoss: " + this.model.getValue("trainLoss", epoch) + ",\tTestLoss: " + this.model.getValue("testLoss", epoch));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 						break;

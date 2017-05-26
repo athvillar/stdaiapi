@@ -1,4 +1,4 @@
-package com.kingdy.parkos.statistic.exception;
+package cn.standardai.api.statistic.exception;
 
 import cn.standardai.api.core.exception.StdaiException;
 

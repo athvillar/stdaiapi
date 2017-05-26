@@ -1,4 +1,4 @@
-package com.kingdy.parkos.statistic.service;
+package cn.standardai.api.statistic.service;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.kingdy.parkos.statistic.exception.StatisticException;
 
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.es.bean.AggVerb;
@@ -17,6 +16,7 @@ import cn.standardai.api.es.bean.Filter;
 import cn.standardai.api.es.bean.QueryInfo;
 import cn.standardai.api.es.exception.ESException;
 import cn.standardai.api.es.service.ESService;
+import cn.standardai.api.statistic.exception.StatisticException;
 
 public class DatapointStatistic implements Statistic {
 
