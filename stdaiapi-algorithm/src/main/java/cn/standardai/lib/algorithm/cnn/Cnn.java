@@ -124,7 +124,6 @@ public class Cnn extends Dnn<CnnData> {
 				}
 				// TODO adjust(1);
 				adjust(batchNums.length);
-			}
 			*/
 			} else if (this.data.length != 0) {
 				int[] batchNums = randBatchNums(batchSize, data.length);
@@ -148,6 +147,7 @@ public class Cnn extends Dnn<CnnData> {
 						record("testLoss", trainingCount, 0.0);
 					}
 					this.indicator.notify();
+					System.out.println("epoch:" + trainingCount + " trainLoss" + MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
 				}
 			}
 		} while (trainingCount < epoch);

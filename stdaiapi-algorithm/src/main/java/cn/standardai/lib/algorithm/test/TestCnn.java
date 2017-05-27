@@ -36,7 +36,7 @@ public class TestCnn {
 		"    {\"type\": \"INPUT\", \"width\": 100, \"height\": 100, \"depth\": 1 }," +
 		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
 		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
-		"    {\"type\": \"CONV\", \"depth\": 2, \"stride\": 1, \"padding\":1, \"learningRate\": 0.03, \"aF\": \"sigmoid\"," +
+		"    {\"type\": \"CONV\", \"depth\": 4, \"stride\": 1, \"padding\":1, \"learningRate\": 0.2, \"aF\": \"sigmoid\"," +
 		"      \"filter\": {\"width\":3, \"height\":3}" +
 		"    }," +
 		//"    {\"type\": \"RELU\", \"function\": \"max\"}," +
@@ -46,7 +46,7 @@ public class TestCnn {
 		//"    }," +
 		//"    {\"type\": \"RELU\", \"function\": \"max\"}," +
 		//"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
-		"    {\"type\": \"FC\", \"depth\": 3, \"learningRate\": 0.02, \"aF\": \"sigmoid\" }" +
+		//"    {\"type\": \"FC\", \"depth\": 4, \"learningRate\": 0.02, \"aF\": \"sigmoid\" }" +
 		"    {\"type\": \"FC\", \"depth\": 2, \"learningRate\": 0.02, \"aF\": \"sigmoid\" }" +
 		"  ]" +
 		"}";
@@ -54,8 +54,9 @@ public class TestCnn {
 		// 创建网络
 		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		int[] trainingsetNums = new int[] {1, 2, 7, 12, 18, 9, 20, 21};
+		CnnData[] cnnDatas = new CnnData[trainingsetNums.length];
 		for (int i = 0; i < trainingsetNums.length; i++) {
-			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + trainingsetNums[i] + ".bmp");
+			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[i] + ".bmp");
 			Integer[] target = new Integer[trainingsetNums.length];
 			for (int j = 0; j < target.length; j++) {
 				if (j == (trainingsetNums[i] - 1) / 11) {
@@ -64,18 +65,25 @@ public class TestCnn {
 					target[j] = 0;
 				}
 			}
+			CnnData cnnData = new CnnData(data, target);
+			cnnDatas[i] = cnnData;
 			//cnn.addData(data, target);
 		}
+		cnn.mountData(cnnDatas);
 
-		int maxTrainingCount = 50000;
-		int batchCount = 1000;
-		for (int count = 0; count < maxTrainingCount; count += batchCount) {
+		int maxTrainingCount = 30;
+		int epoch = 100;
+		//for (int count = 0; count < maxTrainingCount; count += batchCount) {
+		for (int count = 0; count < maxTrainingCount; count++) {
 			// 训练
-			//cnn.train(batchCount / 3 + 1, batchCount);
+			cnn.setBatchSize(10);
+			cnn.setEpoch(epoch);
+			cnn.setWatchEpoch(null);
+			cnn.train();
 			// 预测
 			Double[] trainingCorrectRates = new Double[trainingsetNums.length];
 			for (int index = 0; index < trainingsetNums.length; index++) {
-				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + trainingsetNums[index] + ".bmp"));
+				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[index] + ".bmp"));
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Integer maxIndex = -1;
@@ -93,7 +101,7 @@ public class TestCnn {
 			Integer[] testsetNums = new Integer[] {3, 14, 4, 15};
 			Double[] testCorrectRates = new Double[testsetNums.length];
 			for (int index = 0; index < testsetNums.length; index++) {
-				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + testsetNums[index] + ".bmp"));
+				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + testsetNums[index] + ".bmp"));
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Integer maxIndex = -1;
@@ -112,7 +120,7 @@ public class TestCnn {
 				//		"\tActual:" + maxIndex + "(" + max + ")");
 			}
 			;
-			System.out.println("Training count: " + (count + batchCount) +
+			System.out.println("Training count: " + (count) +
 					"\tTrCR:" + Statistic.avg(trainingCorrectRates) +
 					"\tTsCR:" + Statistic.avg(testCorrectRates));
 		}
@@ -127,7 +135,7 @@ public class TestCnn {
 		"    {\"type\": \"INPUT\", \"width\": 100, \"height\": 100, \"depth\": 1 }," +
 		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
 		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
-		"    {\"type\": \"CONV\", \"depth\": 8, \"stride\": 1, \"padding\":1, \"learningRate\": 0.05, \"aF\": \"sigmoid\"," +
+		"    {\"type\": \"CONV\", \"depth\": 8, \"stride\": 1, \"padding\":1, \"learningRate\": 0.2, \"aF\": \"sigmoid\"," +
 		"      \"filter\": {\"width\":3, \"height\":3}" +
 		"    }," +
 		//"    {\"type\": \"RELU\", \"function\": \"max\"}," +
@@ -180,12 +188,15 @@ public class TestCnn {
 		}
 		cnn.mountData(cnnDatas);
 
-		int maxTrainingCount = 10000;
+		int maxTrainingCount = 50;
 		int batchCount = 10;
-		for (int count = 0; count < maxTrainingCount; count += batchCount) {
+		for (int count = 0; count < maxTrainingCount; count++) {
+		//for (int count = 0; count < maxTrainingCount; count += batchCount) {
 			// 训练
 			//cnn.train(cnn.dataCount(), batchCount);
 			cnn.setEpoch(batchCount);
+			cnn.setBatchSize(15);
+			cnn.setWatchEpoch(null);
 			cnn.train();
 			// 预测
 			Double[] trainingCorrectRates = new Double[trainingsetNums.length];
