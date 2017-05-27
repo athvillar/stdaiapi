@@ -12,6 +12,7 @@ import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.algorithm.exception.UsageException;
 import cn.standardai.lib.base.function.Roulette;
+import cn.standardai.lib.base.function.Statistic;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
 
@@ -138,7 +139,7 @@ public class Cnn extends Dnn<CnnData> {
 				adjust(batchNums.length);
 			}
 
-			if (trainingCount % watchEpoch == 0) {
+			if (watchEpoch != null && trainingCount % watchEpoch == 0) {
 				synchronized (this.indicator) {
 					if (this.containCatalog("trainLoss")) {
 						record("trainLoss", trainingCount, MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
@@ -221,8 +222,11 @@ public class Cnn extends Dnn<CnnData> {
 			y2[i] = y1[0][0][i];
 		}
 
+		/*
 		Roulette r = new Roulette(y2);
 		int idx = r.getY();
+		*/
+		Integer idx = Statistic.maxIndex(y2);
 		Integer[] y3 = new Integer[y2.length];
 		for (int i = 0; i < y3.length; i++) {
 			if (i == idx) {
@@ -363,7 +367,8 @@ public class Cnn extends Dnn<CnnData> {
 	@Override
 	public void setLearningRate(Double η) {
 		for (int i = 0; i < this.layers.size(); i++) {
-			this.layers.get(i).setLearningRate(η);
+			// TODO
+			//this.layers.get(i).setLearningRate(η);
 		}
 	}
 }
