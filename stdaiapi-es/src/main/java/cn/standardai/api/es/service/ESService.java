@@ -145,7 +145,7 @@ public class ESService {
 		synchronized (client) {
 			sReqBuilder = client.prepareSearch(indice).setTypes(type);
 		}
-		sReqBuilder = sReqBuilder.setSearchType(SearchType.QUERY_THEN_FETCH).setQuery(qb);
+		sReqBuilder = sReqBuilder.setSearchType(SearchType.QUERY_AND_FETCH).setQuery(qb);
 		if (aggTerms != null && aggTerms.length > 0) {
 			sReqBuilder = sReqBuilder.addAggregation(aggTerms[0]).setSize(0);
 		}

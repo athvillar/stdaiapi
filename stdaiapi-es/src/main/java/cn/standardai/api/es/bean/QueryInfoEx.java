@@ -76,8 +76,8 @@ public class QueryInfoEx {
 
 		// Make filters
 		List<Filter> filters = new ArrayList<Filter>();
-		filters.add(new TermFilter("trainId", queryInfo.getTrainId()));
-		filters.add(new TermFilter("indicator", queryInfo.getIndicator()));
+		filters.add(new TermFilter("trainId", queryInfo.getTrainId().toLowerCase()));
+		filters.add(new TermFilter("indicator", queryInfo.getIndicator().toLowerCase()));
 
 		return filters;
 	}
@@ -88,8 +88,8 @@ public class QueryInfoEx {
 		List<AggVerb> aggrVerbs = new ArrayList<AggVerb>();
 		StatsAggVerb statsverb = new StatsAggVerb(AggType.stats, "value");
 		statsverb.getStatsTypes().add(StatsType.sum);
-		aggrVerbs.add(statsverb);
-		queryInfo.setAggrKeys(aggrKeys);
+		//aggrVerbs.add(statsverb);
+		//queryInfo.setAggrKeys(aggrKeys);
 
 		return aggrVerbs;
 	}
