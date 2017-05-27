@@ -21,6 +21,8 @@ public class StatisticFactory {
 			return new PeakStatistic();
 		case "rotationRate":
 			return new RotationRateStatistic();
+		case "indicator":
+			return new IndicatorStatistic();
 		default:
 			throw new StatisticException("Unknown statistic type(" + statisticType + ")");
 		}
