@@ -1,7 +1,9 @@
 package cn.standardai.api.es.bean;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -18,6 +20,8 @@ public class QueryInfoEx {
 	private String trainId;
 
 	private String indicator;
+	
+	private String sort;
 
 	private List<String> aggrKeys;
 
@@ -48,6 +52,14 @@ public class QueryInfoEx {
 		this.indicator = indicator;
 	}
 
+	public String getSort() {
+		return sort;
+	}
+
+	public void setSort(String sort) {
+		this.sort = sort;
+	}
+
 	public List<String> getAggrKeys() {
 		return aggrKeys;
 	}
@@ -68,6 +80,11 @@ public class QueryInfoEx {
 		if (indicator != null) {
 			queryInfo.setIndicator(indicator);
 		}
+		
+		String sort = jsonObject.getString("sort");
+		if (sort != null) {
+			queryInfo.setSort(sort);
+		}
 
 		return queryInfo;
 	}
@@ -84,7 +101,7 @@ public class QueryInfoEx {
 
 	public static List<AggVerb> makeAggrVerbs(QueryInfoEx queryInfo) throws ESException {
 
-		List<String> aggrKeys = new ArrayList<String>();
+		//List<String> aggrKeys = new ArrayList<String>();
 		List<AggVerb> aggrVerbs = new ArrayList<AggVerb>();
 		StatsAggVerb statsverb = new StatsAggVerb(AggType.stats, "value");
 		statsverb.getStatsTypes().add(StatsType.sum);
@@ -92,5 +109,20 @@ public class QueryInfoEx {
 		//queryInfo.setAggrKeys(aggrKeys);
 
 		return aggrVerbs;
+	}
+	
+	public static Map<String, String> makeSorts(QueryInfoEx queryInfo) throws ESException {
+
+		Map<String, String> sortMap = new HashMap<String, String>();
+		String COL_SPLITTER = "\\|";
+		String ORDER_SPLITTER = ":";
+		if (queryInfo.getSort() != null) {
+			for (String parse : queryInfo.getSort().split(COL_SPLITTER)) {
+				String[] sortCond = parse.split(ORDER_SPLITTER);
+				sortMap.put(sortCond[0], sortCond[1]);
+			}
+		}
+
+		return sortMap;
 	}
 }
