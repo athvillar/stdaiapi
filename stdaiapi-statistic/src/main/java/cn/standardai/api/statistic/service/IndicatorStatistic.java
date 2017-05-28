@@ -61,7 +61,6 @@ public class IndicatorStatistic implements Statistic {
 	}
 
 	private JSONObject flattenJSONObject(JSONObject target) {
-		JSONObject result = new JSONObject();
 		JSONObject data = new JSONObject();
 		JSONArray hits = target.getJSONObject("hits").getJSONArray("hits");
 		for (int i = 0; i < hits.size(); i++) {
@@ -81,7 +80,6 @@ public class IndicatorStatistic implements Statistic {
 				data.getJSONArray(source.getString("indicator")).add(simple);
 			}
 		}
-		result.put("data", data);
-		return result;
+		return data;
 	}
 }
