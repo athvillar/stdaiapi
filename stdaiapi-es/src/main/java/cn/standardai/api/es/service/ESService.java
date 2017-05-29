@@ -28,6 +28,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.Histogram.Order;
 import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -155,6 +156,73 @@ public class ESService {
 		}
 
 		return ESResultParser.parse(JSONObject.parseObject(sr.toString()), aggverbs);
+	}
+	
+	public static JSON aggregateEx(String indice, String type, List<Filter> filters, List<AggVerb> aggverbs, Map<String, String> sorts) throws ESException {
+
+		BoolQueryBuilder qb = QueryBuilders.boolQuery();
+		// Generate term queries
+		if (filters != null) {
+			for (Filter filter : filters) {
+				switch (filter.getFilterType()) {
+				case term:
+					qb.must(QueryBuilders.termQuery(filter.getField(), ((TermFilter)filter).getValue()));
+					break;
+				case range:
+					qb.must(QueryBuilders.rangeQuery(filter.getField())
+							.from(((RangeFilter)filter).getRange().getStart())
+							.to(((RangeFilter)filter).getRange().getEnd()));
+					break;
+				case bool:
+					BoolQueryBuilder subqb = QueryBuilders.boolQuery();
+					for (Filter subfilter : ((BoolFilter)filter).getFilters()) {
+						if (TermFilter.class.equals(subfilter.getClass())) {
+							if (((BoolFilter)filter).isMust()) {
+								subqb.must(QueryBuilders.termQuery(subfilter.getField(), ((TermFilter)subfilter).getValue()));
+							} else {
+								subqb.should(QueryBuilders.termQuery(subfilter.getField(), ((TermFilter)subfilter).getValue()));
+							}
+						} else if (RangeFilter.class.equals(subfilter.getClass())) {
+							if (((BoolFilter)filter).isMust()) {
+								subqb.must(QueryBuilders.rangeQuery(subfilter.getField())
+										.from(((RangeFilter)subfilter).getRange().getStart())
+										.to(((RangeFilter)subfilter).getRange().getEnd()));
+							} else {
+								subqb.should(QueryBuilders.rangeQuery(subfilter.getField())
+										.from(((RangeFilter)subfilter).getRange().getStart())
+										.to(((RangeFilter)subfilter).getRange().getEnd()));
+							}
+						}
+					}
+					qb.must(subqb);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		// Execute query
+		SearchRequestBuilder sReqBuilder = null;
+		synchronized (client) {
+			sReqBuilder = client.prepareSearch(indice).setTypes(type);
+		}
+		sReqBuilder = sReqBuilder.setSearchType(SearchType.QUERY_AND_FETCH).setQuery(qb);
+		if (sorts != null && sorts.size() > 0) {
+			for (Entry<String, String> entry : sorts.entrySet()) {
+				if ("ASC".equals(entry.getValue())) {
+					sReqBuilder = sReqBuilder.addSort(entry.getKey(), SortOrder.ASC);
+				} else {
+					sReqBuilder = sReqBuilder.addSort(entry.getKey(), SortOrder.DESC);
+				}
+			}
+		}
+		SearchResponse sr;
+		synchronized (client) {
+			sr = sReqBuilder.execute().actionGet();
+		}
+
+		return JSONObject.parseObject(sr.toString());
 	}
 
 	public static void insert(String indice, String type, List<Map<String, Object>> data) throws ESException {

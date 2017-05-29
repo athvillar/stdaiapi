@@ -1,7 +1,7 @@
 package cn.standardai.api.statistic.service;
 
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -44,80 +44,42 @@ public class IndicatorStatistic implements Statistic {
 		try {
 			List<AggVerb> aggrVerbs = QueryInfoEx.makeAggrVerbs(queryInfo);
 			List<Filter> filters = QueryInfoEx.makeFilters(queryInfo);
-			rawData = ESService.aggregate(INDICE, INDICE, filters, aggrVerbs);
+			Map<String, String> sorts = QueryInfoEx.makeSorts(queryInfo);
+			rawData = ESService.aggregateEx(INDICE, INDICE, filters, aggrVerbs, sorts);
 		} catch (ESException e) {
 			throw new StatisticException("Elasticsearch检索错误", e);
 		}
 
 		// Move aggregation results out of {}, add aggregation names
-		JSONObject firstData = flattenJSON(rawData, queryInfo.getAggrKeys());
+		JSONObject firstData = flattenJSON(rawData);
 
 		return firstData;
 	}
 
-	private JSONObject flattenJSON(JSON targetJSON, List<String> aggrKeys) {
-		if (targetJSON instanceof JSONArray) {
-			return flattenJSONArray((JSONArray) targetJSON, aggrKeys);
-		} else {
-			return flattenJSONObject((JSONObject) targetJSON, aggrKeys);
-		}
+	private JSONObject flattenJSON(JSON targetJSON) {
+		return flattenJSONObject((JSONObject) targetJSON);
 	}
 
-	private JSONObject flattenJSONArray(JSONArray target, List<String> aggrKeys) {
-
-		JSONObject destiny = new JSONObject();
-
-		if (aggrKeys == null) {
-		} else if (aggrKeys.size() > 2) {
-			destiny.put("key_field", aggrKeys.get(0));
-			destiny.put("value_field", "data");
-		} else if (aggrKeys.size() == 2) {
-			destiny.put("key_field", aggrKeys.get(0));
-			destiny.put("value_field", aggrKeys.get(1));
-		} else if (aggrKeys.size() == 1) {
-			destiny.put("value_field", aggrKeys.get(0));
-		}
-
-		JSONArray mergedJSONArray = new JSONArray();
-		for (int i = 0; i < ((JSONArray) target).size(); i++) {
-			JSONObject targetJSONObject = ((JSONArray) target).getJSONObject(i);
-			JSONObject resultJSONObject = flattenJSONObject(targetJSONObject, aggrKeys);
-			mergedJSONArray.add(resultJSONObject);
-		}
-		destiny.put("datalist", mergedJSONArray);
-
-		return destiny;
-	}
-
-	private JSONObject flattenJSONObject(JSONObject target, List<String> aggrKeys) {
-		JSONObject result = new JSONObject();
-		for (Entry<String, Object> entry : target.entrySet()) {
-			switch (entry.getKey()) {
-			case "key":
-				// {"key":"x"} -> {"aggrKey":"x"}
-				result.put(aggrKeys.get(0), entry.getValue());
-				break;
-			case "value":
-				if (entry.getValue() instanceof JSONObject) {
-					// {"key":"x", "value":{"key1":"x","key2":"x"}} ->
-					// {"key":"x", "key1":"x", "key2":"x"}
-					for (Entry<String, Object> subEntry : ((JSONObject) entry.getValue()).entrySet()) {
-						result.put(subEntry.getKey(), subEntry.getValue());
-					}
-				} else {
-					// {"key":"x", "value":[{"key":"x",
-					// "value":{"key1":"x","key2":"x"}}]} -> {"key":"x",
-					// "data":{"key":"x", "key1":"x", "key2":"x"}}
-					result.put("data",
-							flattenJSONArray((JSONArray) entry.getValue(), aggrKeys.subList(1, aggrKeys.size())));
-				}
-				break;
-			default:
-				// {"x":"y"} -> {"x":"y"}
-				result.put(entry.getKey(), entry.getValue());
-				break;
+	private JSONObject flattenJSONObject(JSONObject target) {
+		JSONObject data = new JSONObject();
+		JSONArray hits = target.getJSONObject("hits").getJSONArray("hits");
+		for (int i = 0; i < hits.size(); i++) {
+			JSONObject hit = hits.getJSONObject(i);
+			JSONObject source = hit.getJSONObject("_source");
+			if (data.getJSONArray(source.getString("indicator")) == null) {
+				JSONArray indicator = new JSONArray();
+				JSONObject simple = new JSONObject();
+				simple.put("epoch", source.get("epoch"));
+				simple.put("value", source.get("value"));
+				indicator.add(simple);
+				data.put(source.getString("indicator"), indicator);
+			} else {
+				JSONObject simple = new JSONObject();
+				simple.put("epoch", source.get("epoch"));
+				simple.put("value", source.get("value"));
+				data.getJSONArray(source.getString("indicator")).add(simple);
 			}
 		}
-		return result;
+		return data;
 	}
 }
