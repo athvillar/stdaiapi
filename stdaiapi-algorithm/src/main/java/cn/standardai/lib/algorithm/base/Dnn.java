@@ -1,6 +1,8 @@
 package cn.standardai.lib.algorithm.base;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import cn.standardai.lib.algorithm.exception.DnnException;
@@ -136,4 +138,23 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 	public abstract byte[] getBytes();
 
 	public abstract void train() throws DnnException, MatrixException;
+
+	protected List<Integer> initIndice(int length) {
+		List<Integer> indice = new LinkedList<Integer>();
+		for (int i = 0; i < length; i++) {
+			indice.add(i);
+		}
+		return indice;
+	}
+
+	protected Integer[] getNextBatchIndex(List<Integer> indice, Integer number) {
+		if (number == null) number = indice.size();
+		Integer[] batchIndice = new Integer[Math.min(indice.size(), number)];
+		for (int i = 0; i < batchIndice.length; i++) {
+			int randNumber = new Double(Math.random() * indice.size()).intValue();
+			batchIndice[i] = indice.get(randNumber);
+			indice.remove(randNumber);
+		}
+		return batchIndice;
+	}
 }

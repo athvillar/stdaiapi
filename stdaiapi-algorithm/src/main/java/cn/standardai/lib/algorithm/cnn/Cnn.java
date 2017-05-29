@@ -1,6 +1,8 @@
 package cn.standardai.lib.algorithm.cnn;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONArray;
@@ -11,7 +13,6 @@ import cn.standardai.lib.algorithm.cnn.Layer.LayerType;
 import cn.standardai.lib.algorithm.common.ByteUtil;
 import cn.standardai.lib.algorithm.exception.StorageException;
 import cn.standardai.lib.algorithm.exception.UsageException;
-import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.function.Statistic;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
@@ -98,59 +99,51 @@ public class Cnn extends Dnn<CnnData> {
 	}
 
 	public void train() throws UsageException, MatrixException {
-		Integer trainingCount = 0;
-		do {
-			trainingCount++;
-			if (this.batchJSON.size() != 0) {
-				int[] batchNums = randBatchNums(batchSize, batchJSON.size());
-				clearError();
-				for (int i = 0; i < batchNums.length; i++) {
-					this.get1stLayer().setData(this.batchJSON.get(batchNums[i]).getJSONArray("data"));
-					this.getLastLayer().setTarget(this.batchJSON.get(batchNums[i]).getJSONArray("target"));
-					forward();
-					backward();
-				}
-				// TODO adjust(1);
-				adjust(batchNums.length);
-			/*
-			} else if (this.batchData.size() != 0) {
-				int[] batchNums = randBatchNums(batchSize, batchData.size());
-				clearError();
-				for (int i = 0; i < batchNums.length; i++) {
-					this.get1stLayer().setData(this.batchData.get(batchNums[i]));
-					this.getLastLayer().setTarget(this.batchExpect.get(batchNums[i]));
-					forward();
-					backward();
-				}
-				// TODO adjust(1);
-				adjust(batchNums.length);
-			*/
-			} else if (this.data.length != 0) {
-				int[] batchNums = randBatchNums(batchSize, data.length);
-				clearError();
-				for (int i = 0; i < batchNums.length; i++) {
-					this.get1stLayer().setData(this.data[batchNums[i]].x);
-					this.getLastLayer().setTarget(this.data[batchNums[i]].y);
-					forward();
-					backward();
-				}
-				// TODO adjust(1);
-				adjust(batchNums.length);
-			}
 
-			if (watchEpoch != null && trainingCount % watchEpoch == 0) {
+		long startTime = new Date().getTime();
+		int epochCount = 0;
+		boolean needBreak = false;
+		List<Integer> indice = initIndice(getTrainDataCnt());
+
+		while (true) {
+			epochCount++;
+
+			List<Integer> indiceCopy = new LinkedList<Integer>();
+			indiceCopy.addAll(indice);
+			while (indiceCopy.size() != 0) {
+
+				Integer[] batchIndice = getNextBatchIndex(indiceCopy, batchSize);
+				clearError();
+				for (int i = 0; i < batchIndice.length; i++) {
+					this.get1stLayer().setData(this.data[batchIndice[i]].x);
+					this.getLastLayer().setTarget(this.data[batchIndice[i]].y);
+					forward();
+					backward();
+				}
+				// TODO adjust(1);
+				adjust(batchIndice.length);
+
+				if (trainMillisecond != null && (new Date().getTime() - startTime) >= trainMillisecond) {
+					needBreak = true;
+					break;
+				}
+			}
+			if (needBreak) break;
+
+			if (watchEpoch != null && epochCount % watchEpoch == 0) {
 				synchronized (this.indicator) {
 					if (this.containCatalog("trainLoss")) {
-						record("trainLoss", trainingCount, MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
+						record("trainLoss", epochCount, MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
 					}
 					if (this.containCatalog("testLoss")) {
-						record("testLoss", trainingCount, 0.0);
+						//record("testLoss", epochCount, 0.0);
 					}
 					this.indicator.notify();
-					System.out.println("epoch:" + trainingCount + " trainLoss" + MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
+					System.out.println("epoch:" + epochCount + " trainLoss" + MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
 				}
 			}
-		} while (trainingCount < epoch);
+			if (epoch != null && epochCount >= epoch) break;
+		}
 
 		// Finish indicator, tell monitor to stop monitoring
 		synchronized (this.indicator) {
@@ -189,10 +182,6 @@ public class Cnn extends Dnn<CnnData> {
 				//layers.get(i).printFilter();
 			}
 		}
-	}
-
-	private boolean canFinish(Integer trainingCount) {
-		return true;
 	}
 
 	public Double[][][] predict(JSONObject data) {
@@ -237,24 +226,6 @@ public class Cnn extends Dnn<CnnData> {
 		}
 
 		return y3;
-	}
-
-	private void printSome() {
-
-		for (int l = 0; l < this.layers.size(); l++) {
-			System.out.println("\n------" + l + "th--- " + this.layers.get(l).getClass().toString().substring(this.layers.get(l).getClass().toString().lastIndexOf(".")+1) + "'s data-");
-			for (int i = 0; i < this.layers.get(l).data[0][0].length; i++) {
-				System.out.print(this.layers.get(l).data[0][0][i] + ",\t");
-			}
-			/*
-			if (this.layers.get(l) instanceof ConvLayer) {
-				System.out.println("\nand the filter:");
-				for (int i = 0; i < ((ConvLayer)this.layers.get(l)).filters.get(0).w[0][0].length; i++) {
-					System.out.print(((ConvLayer)this.layers.get(l)).filters.get(0).w[0][0][i] + ",\t");
-				}
-			}
-			*/
-		}
 	}
 
 	@Override
@@ -347,15 +318,6 @@ public class Cnn extends Dnn<CnnData> {
 	private FCLayer getLastLayer() {
 		if (this.layers == null) return null;
 		return (FCLayer)this.layers.get(this.layers.size() - 1);
-	}
-
-	private int[] randBatchNums(Integer count, int maxSize) {
-		if (count == null) count = maxSize;
-		int[] batchNums = new int[count];
-		for (int i = 0; i < count; i++) {
-			batchNums[i] = new Double(Math.random() * maxSize).intValue();
-		}
-		return batchNums;
 	}
 
 	@Override

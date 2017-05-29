@@ -18,8 +18,8 @@ public class TestCnn {
 	 */
 	public static void main(String[] args) {
 		try {
-			test15Faces();
-			//test2Faces();
+			//test15Faces();
+			test2Faces();
 			//test44();
 			//testChangeW();
 			//testYale();
@@ -72,11 +72,11 @@ public class TestCnn {
 		cnn.mountData(cnnDatas);
 
 		int maxTrainingCount = 300;
-		int epoch = 50;
+		int epoch = 20;
 		//for (int count = 0; count < maxTrainingCount; count += batchCount) {
 		for (int count = 0; count < maxTrainingCount; count++) {
 			// 训练
-			cnn.setBatchSize(10);
+			cnn.setBatchSize(null);
 			cnn.setEpoch(epoch);
 			cnn.setWatchEpoch(null);
 			cnn.train();

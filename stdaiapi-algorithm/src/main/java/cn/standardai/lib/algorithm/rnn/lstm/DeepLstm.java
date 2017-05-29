@@ -586,25 +586,6 @@ public class DeepLstm extends Dnn<LstmData> {
 		}
 	}
 
-	private List<Integer> initIndice(int length) {
-		List<Integer> indice = new LinkedList<Integer>();
-		for (int i = 0; i < length; i++) {
-			indice.add(i);
-		}
-		return indice;
-	}
-
-	private Integer[] getNextBatchIndex(List<Integer> indice, Integer number) {
-		if (number == null) number = indice.size();
-		Integer[] batchIndice = new Integer[Math.min(indice.size(), number)];
-		for (int i = 0; i < batchIndice.length; i++) {
-			int randNumber = new Double(Math.random() * indice.size()).intValue();
-			batchIndice[i] = indice.get(randNumber);
-			indice.remove(randNumber);
-		}
-		return batchIndice;
-	}
-
 	public void setDelay(boolean delay) {
 		this.delay = delay;
 	}
