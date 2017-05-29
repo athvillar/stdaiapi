@@ -71,8 +71,8 @@ public class TestCnn {
 		}
 		cnn.mountData(cnnDatas);
 
-		int maxTrainingCount = 30;
-		int epoch = 100;
+		int maxTrainingCount = 300;
+		int epoch = 50;
 		//for (int count = 0; count < maxTrainingCount; count += batchCount) {
 		for (int count = 0; count < maxTrainingCount; count++) {
 			// 训练
@@ -134,8 +134,8 @@ public class TestCnn {
 		"  \"layers\" : [" +
 		"    {\"type\": \"INPUT\", \"width\": 100, \"height\": 100, \"depth\": 1 }," +
 		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
-		"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
-		"    {\"type\": \"CONV\", \"depth\": 8, \"stride\": 1, \"padding\":1, \"learningRate\": 0.2, \"aF\": \"sigmoid\"," +
+		//"    {\"type\": \"POOL\", \"method\": \"max\", \"spatial\": 2, \"stride\": 2}," +
+		"    {\"type\": \"CONV\", \"depth\": 8, \"stride\": 1, \"padding\":1, \"learningRate\": 0.3, \"aF\": \"sigmoid\"," +
 		"      \"filter\": {\"width\":3, \"height\":3}" +
 		"    }," +
 		//"    {\"type\": \"RELU\", \"function\": \"max\"}," +
@@ -195,7 +195,7 @@ public class TestCnn {
 			// 训练
 			//cnn.train(cnn.dataCount(), batchCount);
 			cnn.setEpoch(batchCount);
-			cnn.setBatchSize(15);
+			cnn.setBatchSize(null);
 			cnn.setWatchEpoch(null);
 			cnn.train();
 			// 预测

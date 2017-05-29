@@ -1,17 +1,15 @@
 package cn.standardai.api.ash.agent;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.action.MkUser;
 import cn.standardai.api.ash.base.AshCommand;
+import cn.standardai.api.ash.base.AshCommonCommand;
 import cn.standardai.api.ash.base.AshResource;
 import cn.standardai.api.ash.base.AshResourceRelatedCommand;
 import cn.standardai.api.ash.base.Executable;
 import cn.standardai.api.ash.bean.AshReply;
-import cn.standardai.api.ash.command.AshLogin;
 import cn.standardai.api.ash.exception.AshException;
-import cn.standardai.api.ash.exception.CallbackException;
 import cn.standardai.api.ash.exception.DialogException;
 import cn.standardai.api.ash.exception.HttpException;
 import cn.standardai.api.ash.exception.ParamException;
@@ -89,7 +87,7 @@ public class AshAgent extends AuthAgent {
 			Executable executor = ashCommand.getExecutor();
 			executor.setParam(params);
 			ArgsHelper.check(executor);
-			if (!(executor instanceof MkUser || executor instanceof AshLogin)) {
+			if (!(executor instanceof MkUser || executor instanceof AshCommonCommand)) {
 				this.checkToken(this.token);
 				ashCommand.setUserId(this.userId);
 				ashCommand.setToken(this.token);
@@ -122,40 +120,13 @@ public class AshAgent extends AuthAgent {
 		} catch (ParamException e) {
 			result.put("message", e.getMessage());
 			result.put("display", ashCommand.help());
-			//result.put("hidden", reply.hidden);
 		} catch (HttpException e) {
 			result.put("message", e.getMessage());
-			//result.put("display", "如需帮助，请使用msg命令联系管理员");
-			//result.put("hidden", reply.hidden);
 		} catch (AshException e) {
 			result.put("message", e.getMessage());
 			result.put("display", "如需帮助，请使用msg命令联系管理员");
-			//result.put("hidden", reply.hidden);
 		}
 
 		return result;
 	}
-/*
-	public JSONObject dialog(JSONObject request) throws AshException {
-
-		JSONObject dialog = request.getJSONObject("dialog");
-		if (dialog == null) throw new DialogException("参数错误");
-
-		String dialogId = dialog.getString("id");
-		JSONArray answersJ = dialog.getJSONArray("answers");
-		String question = ArgsHelper.getQuestion(dialogId, answersJ.size());
-		if (question == null) {
-			String[] answers = new String[answersJ.size()];
-			for (int i = 0; i < answers.length; i++) {
-				answers[i] = answersJ.getString(i);
-			}
-			String command = request.getString("command");
-			String resource = request.getString("resource");
-			return ArgsHelper.finish(command, resource, answers, this.token);
-		} else {
-			JSONObject result = new JSONObject();
-			result.put("display", question);
-			return result;
-		}
-	}*/
 }

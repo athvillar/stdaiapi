@@ -32,15 +32,8 @@ public class AshService extends BaseService<AshAgent> {
 		JSONObject result = new JSONObject();
 		AshAgent agent = null;
 		try {
-			String[] inputs = request.getString("ash").split(" ");
-			//if ((inputs != null && inputs.length >= 1 && "login".equals(inputs[0])) ||
-			//		(inputs.length >= 2 && "mk".equals(inputs[0]) && "user".equals(inputs[1]))) {
-				agent = new AshAgent();
-				agent.setToken(this.getToken(headers));
-			//} else {
-			//	initAgent(headers, AshAgent.class);
-			//	agent = this.agent;
-			//}
+			agent = new AshAgent();
+			agent.setToken(this.getToken(headers));
 			result = agent.exec(request);
 			result.put("result", "success");
 		} catch (AuthException e) {
