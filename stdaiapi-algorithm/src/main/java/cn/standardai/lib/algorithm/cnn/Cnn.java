@@ -92,6 +92,7 @@ public class Cnn extends Dnn<CnnData> {
 
 	public void train() throws UsageException, MatrixException {
 
+		if (trainMillisecond == null && testLossIncreaseTolerance == null) epoch = 1;
 		long startTime = new Date().getTime();
 		int epochCount = 0;
 		boolean needBreak = false;

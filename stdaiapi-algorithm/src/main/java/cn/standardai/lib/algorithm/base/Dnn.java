@@ -25,7 +25,7 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	private int verifyDataCnt;
 
-	protected Integer epoch = 1;
+	protected Integer epoch = null;
 
 	protected Integer batchSize = null;
 
