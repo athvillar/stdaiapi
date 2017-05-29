@@ -49,6 +49,8 @@ public class ModelHandler {
 			param.setxFilter(dataSetting.getxFilter());
 			param.setyColumn(dataSetting.getyColumn());
 			param.setyFilter(dataSetting.getyFilter());
+			// TODO
+			param.setSharePolicy('2');
 			param.setCreateTime(new Date());
 			dao.insert(param);
 			result.put("id", param.getModelTemplateId());
@@ -168,7 +170,19 @@ public class ModelHandler {
 		modelDao.updateStructureById(model);
 	}
 
-	public List<ModelTemplate> findModelTemplates(String userId) {
+	public List<ModelTemplate> findModelTemplatesByPrivilege(String userId) {
+		ModelTemplateDao modelDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
+		List<ModelTemplate> modelTemplates = modelDao.selectByPrivilege(userId);
+		return modelTemplates;
+	}
+
+	public List<ModelTemplate> findModelTemplatesByUserIdPrivilege(String userId) {
+		ModelTemplateDao modelDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
+		List<ModelTemplate> modelTemplates = modelDao.selectByUserIdPrivilege(userId);
+		return modelTemplates;
+	}
+
+	public List<ModelTemplate> findModelTemplatesByUserId(String userId) {
 		ModelTemplateDao modelDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
 		List<ModelTemplate> modelTemplates = modelDao.selectByUserId(userId);
 		return modelTemplates;

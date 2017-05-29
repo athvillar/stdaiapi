@@ -47,7 +47,7 @@ public class DicService extends BaseService<DicAgent> {
 	}
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
-	public String upgradeUserById(@RequestHeader HttpHeaders headers) {
+	public String list(@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-data /data/dic GET 收到查看数据字典请求");
 		JSONObject result = null;
 		try {
@@ -66,8 +66,28 @@ public class DicService extends BaseService<DicAgent> {
 		return result.toString();
 	}
 
+	@RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+	public String listById(@PathVariable("userId") String userId, @RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-data /data/dic/" + userId + " GET 收到查看数据字典请求");
+		JSONObject result = null;
+		try {
+			initAgent(headers, DicAgent.class);
+			result = agent.listDic(userId);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/dic/" + userId + " GET 结束查看数据字典请求(" + result + ")");
+		return result.toString();
+	}
+
 	@RequestMapping(value = "/{userId}/{dicName}", method = RequestMethod.GET)
-	public String upgradeUserById(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
+	public String view(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
 			@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " GET 收到查看数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
 		JSONObject result = null;
@@ -88,7 +108,7 @@ public class DicService extends BaseService<DicAgent> {
 	}
 
 	@RequestMapping(value = "/{userId}/{dicName}", method = RequestMethod.DELETE)
-	public String removeUserById(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
+	public String remove(@PathVariable("userId") String userId, @PathVariable("dicName") String dicName,
 			@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-data /data/dic/" + userId + "/" + dicName + " DELETE 收到删除数据字典请求(userId=" + userId + ", dicName=" + dicName + ")");
 		JSONObject result = new JSONObject();

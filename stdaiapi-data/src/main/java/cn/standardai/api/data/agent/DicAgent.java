@@ -80,13 +80,46 @@ public class DicAgent extends AuthAgent {
 	public JSONObject listDic() {
 
 		DataDicDao dao = daoHandler.getMySQLMapper(DataDicDao.class);
-		List<DataDic> dataDic = dao.selectByUserId(userId);
+		List<DataDic> dataDic = dao.selectByPrivilege(this.userId);
 
 		JSONArray dicsJ = new JSONArray();
 		for (int i = 0; i < dataDic.size(); i++) {
 			JSONObject dicJ = new JSONObject();
 			dicJ.put("dicId", dataDic.get(i).getDataDicId());
-			dicJ.put("dicName", dataDic.get(i).getDataDicName());
+			if (this.userId.equals(dataDic.get(i).getUserId())) {
+				dicJ.put("dicName", dataDic.get(i).getDataDicName());
+			} else {
+				dicJ.put("dicName", dataDic.get(i).getUserId() + "/" + dataDic.get(i).getDataDicName());
+			}
+			dicJ.put("description", dataDic.get(i).getDescription());
+			dicJ.put("sharePolicy", SharePolicy.parse(dataDic.get(i).getSharePolicy()));
+			dicsJ.add(dicJ);
+		}
+		JSONObject result = new JSONObject();
+		result.put("dic", dicsJ);
+
+		return result;
+	}
+
+	public JSONObject listDic(String userId) {
+
+		DataDicDao dao = daoHandler.getMySQLMapper(DataDicDao.class);
+		List<DataDic> dataDic;
+		if (userId.equals(this.userId)) {
+			dataDic = dao.selectByUserId(userId);
+		} else {
+			dataDic = dao.selectByUserIdPrivilege(userId);
+		}
+
+		JSONArray dicsJ = new JSONArray();
+		for (int i = 0; i < dataDic.size(); i++) {
+			JSONObject dicJ = new JSONObject();
+			dicJ.put("dicId", dataDic.get(i).getDataDicId());
+			if (this.userId.equals(dataDic.get(i).getUserId())) {
+				dicJ.put("dicName", dataDic.get(i).getDataDicName());
+			} else {
+				dicJ.put("dicName", dataDic.get(i).getUserId() + "/" + dataDic.get(i).getDataDicName());
+			}
 			dicJ.put("description", dataDic.get(i).getDescription());
 			dicJ.put("sharePolicy", SharePolicy.parse(dataDic.get(i).getSharePolicy()));
 			dicsJ.add(dicJ);
@@ -99,9 +132,13 @@ public class DicAgent extends AuthAgent {
 
 	public JSONObject viewDic(String userId, String dicName) throws AuthException {
 
-		if (!userId.equals(this.userId)) throw new AuthException("没有权限");
 		DataDicDao dao = daoHandler.getMySQLMapper(DataDicDao.class);
-		DataDic dataDic = dao.selectByKey(dicName, userId);
+		DataDic dataDic;
+		if (userId.equals(this.userId)) {
+			dataDic = dao.selectByKey(dicName, userId);
+		} else {
+			dataDic = dao.selectByKeyPrivilege(dicName, userId);
+		}
 
 		JSONObject dicJ = new JSONObject();
 		dicJ.put("dicId", dataDic.getDataDicId());

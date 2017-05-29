@@ -12,6 +12,8 @@ public class CatDic extends Action {
 
 	private String dicName;
 
+	private String pDicName;
+
 	public CatDic() {
 		setParamRules(null, null, 1, 1);
 	}
@@ -19,7 +21,7 @@ public class CatDic extends Action {
 	@Override
 	public AshReply exec() throws AshException {
 
-		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/dic/" + this.userId + "/" + dicName, null, null);
+		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/dic/" + pDicName, null, null);
 
 		JSONObject dicJ = j.getJSONObject("dic");
 		if (dicJ == null) {
@@ -37,5 +39,10 @@ public class CatDic extends Action {
 	@Override
 	public void readParam() throws AshException {
 		dicName = param.get(1);
+		if (dicName != null && dicName.indexOf('/') != -1) {
+			pDicName = dicName;
+		} else {
+			pDicName = this.userId + "/" + dicName;
+		}
 	}
 }

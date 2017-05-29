@@ -11,14 +11,23 @@ import cn.standardai.api.core.bean.Context;
 
 public class LsDic extends Action {
 
+	private String targetUserId;
+
 	public LsDic() {
-		setParamRules(new char[] {'l'}, null, null, null);
+		setParamRules(new char[] {'a', 'l'}, new String[] {"u"}, null, 0);
 	}
 
 	@Override
 	public AshReply exec() throws AshException {
 
-		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/dic", null, null);
+		JSONObject j;
+		if (param.has('a')) {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/dic", null, null);
+		} else if (targetUserId != null) {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/dic/" + targetUserId, null, null);
+		} else {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/dic/" + this.userId, null, null);
+		}
 
 		JSONArray data = j.getJSONArray("dic");
 		if (data == null || data.size() == 0) {
@@ -46,6 +55,6 @@ public class LsDic extends Action {
 
 	@Override
 	public void readParam() throws AshException {
-		return;
+		targetUserId = param.getString("u");
 	}
 }

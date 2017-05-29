@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.ash.exception.ParamException;
@@ -39,8 +38,14 @@ public class AshParam {
 		return inChars(p, paramMap.get("_p"));
 	}
 
-	public String getString(String k) {
+	public String get(String k) {
 		return paramMap.get(k);
+	}
+
+	public String getString(String k) {
+		String s = paramMap.get(k);
+		if (s == null || "".equals(s)) return null;
+		return s;
 	}
 
 	public JSONObject getJSONObject(String k) {

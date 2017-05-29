@@ -111,7 +111,7 @@ public class DataService extends BaseService<DataAgent> {
 	}
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
-	public String upgradeUserById(@RequestHeader HttpHeaders headers) {
+	public String listData(@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-data /data/data GET 收到查看数据请求");
 		JSONObject result = null;
 		try {
@@ -130,8 +130,28 @@ public class DataService extends BaseService<DataAgent> {
 		return result.toString();
 	}
 
+	@RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+	public String listDataByUserId(@PathVariable("userId") String userId, @RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-data /data/data/" + userId + " GET 收到查看数据请求");
+		JSONObject result = null;
+		try {
+			initAgent(headers, DataAgent.class);
+			result = agent.listData(userId);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-data /data/data/" + userId + " GET 结束查看数据(" + result + ")");
+		return result.toString();
+	}
+
 	@RequestMapping(value = "/{userId}/{dataName}", method = RequestMethod.GET)
-	public String upgradeUserById(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
+	public String viewData(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
 			@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " GET 收到查看数据请求(userId=" + userId + ", dataName=" + dataName + ")");
 		JSONObject result = null;
@@ -152,7 +172,7 @@ public class DataService extends BaseService<DataAgent> {
 	}
 
 	@RequestMapping(value = "/{userId}/{dataName}", method = RequestMethod.DELETE)
-	public String removeUserById(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
+	public String remove(@PathVariable("userId") String userId, @PathVariable("dataName") String dataName,
 			@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-data /data/data/" + userId + "/" + dataName + " DELETE 收到删除数据请求(userId=" + userId + ", dataName=" + dataName + ")");
 		JSONObject result = new JSONObject();

@@ -24,6 +24,8 @@ public class ModelTemplate {
 
 	private String yFilter;
 
+	private Character sharePolicy;
+
 	private Date createTime;
 
 	public String getDatasetId() {
@@ -112,5 +114,13 @@ public class ModelTemplate {
 
 	public void setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
+	}
+
+	public Character getSharePolicy() {
+		return sharePolicy;
+	}
+
+	public void setSharePolicy(Character sharePolicy) {
+		this.sharePolicy = sharePolicy;
 	}
 }

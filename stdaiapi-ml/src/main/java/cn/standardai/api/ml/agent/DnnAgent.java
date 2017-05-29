@@ -358,13 +358,31 @@ public class DnnAgent extends AuthAgent {
 		}
 	}
 
-	public JSONObject status(String id) {
+	public JSONObject view(String id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public JSONObject list() {
-		List<ModelTemplate> modelTemplates = mh.findModelTemplates(userId);
+		List<ModelTemplate> modelTemplates = mh.findModelTemplatesByPrivilege(this.userId);
+		JSONObject result = new JSONObject();
+		JSONArray modelsJ = new JSONArray();
+		for (int i = 0; i < modelTemplates.size(); i++) {
+			JSONObject modelJ = (JSONObject) JSON.toJSON(modelTemplates.get(i));
+			modelsJ.add(modelJ);
+		}
+		result.put("models", modelsJ);
+		return result;
+	}
+
+	public JSONObject list(String userId) {
+
+		List<ModelTemplate> modelTemplates;
+		if (userId.equals(this.userId)) {
+			modelTemplates = mh.findModelTemplatesByUserId(userId);
+		} else {
+			modelTemplates = mh.findModelTemplatesByUserIdPrivilege(userId);
+		}
 		JSONObject result = new JSONObject();
 		JSONArray modelsJ = new JSONArray();
 		for (int i = 0; i < modelTemplates.size(); i++) {

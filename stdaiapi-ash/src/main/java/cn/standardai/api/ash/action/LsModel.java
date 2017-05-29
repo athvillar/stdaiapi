@@ -12,14 +12,23 @@ import cn.standardai.api.core.util.DateUtil;
 
 public class LsModel extends Action {
 
+	private String targetUserId;
+
 	public LsModel() {
-		setParamRules(new char[] {'l'}, null, null, null);
+		setParamRules(new char[] {'a', 'l'}, new String[] {"u"}, null, 0);
 	}
 
 	@Override
 	public AshReply exec() throws AshException {
 
-		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getMl() + "/dnn", null, null);
+		JSONObject j;
+		if (param.has('a')) {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getMl() + "/dnn", null, null);
+		} else if (targetUserId != null) {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getMl() + "/dnn/" + targetUserId, null, null);
+		} else {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getMl() + "/dnn/" + this.userId, null, null);
+		}
 
 		JSONArray models = j.getJSONArray("models");
 		if (models == null || models.size() == 0) {
@@ -47,7 +56,6 @@ public class LsModel extends Action {
 
 	@Override
 	public void readParam() throws AshException {
-		// TODO Auto-generated method stub
-		
+		targetUserId = param.getString("u");
 	}
 }

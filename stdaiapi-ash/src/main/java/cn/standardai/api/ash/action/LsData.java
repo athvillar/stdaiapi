@@ -12,14 +12,23 @@ import cn.standardai.api.core.util.DateUtil;
 
 public class LsData extends Action {
 
+	private String targetUserId;
+
 	public LsData() {
-		setParamRules(new char[] {'l'}, null, null, null);
+		setParamRules(new char[] {'a', 'l'}, new String[] {"u"}, null, 0);
 	}
 
 	@Override
 	public AshReply exec() throws AshException {
 
-		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/data", null, null);
+		JSONObject j;
+		if (param.has('a')) {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/data", null, null);
+		} else if (targetUserId != null) {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/data/" + targetUserId, null, null);
+		} else {
+			j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/data/" + this.userId, null, null);
+		}
 
 		JSONArray data = j.getJSONArray("data");
 		if (data == null || data.size() == 0) {
@@ -29,16 +38,16 @@ public class LsData extends Action {
 
 		String result;
 		if (this.param.has('l')) {
-			result = "数据名\t\t类型\t\t关键词\t\t格式\t\t创建时间\t\t\t\t描述";
+			result = "数据名\t\t\t\t类型\t\t关键词\t\t\t格式\t\t\t创建时间\t\t\t\t描述";
 		} else {
-			result = "数据名\t\t类型\t\t关键词\t\t格式\t\t创建时间";
+			result = "数据名\t\t\t\t关键词";
 		}
 		for (int i = 0; i < data.size(); i++) {
-			result += "\n" + fillWithSpace(data.getJSONObject(i).getString("dataName"), 11) + "\t"
-					+ fillWithSpace(data.getJSONObject(i).getString("type"), 9) + "\t"
-					+ fillWithSpace(data.getJSONObject(i).getString("keywords"), 9) + "\t"
-					+ fillWithSpace(data.getJSONObject(i).getString("format"), 9) + "\t"
-					+ DateUtil.format(data.getJSONObject(i).getDate("createTime"), DateUtil.YYYY__MM__DD__HH__MM__SS);
+			result += "\n" + fillWithSpace(data.getJSONObject(i).getString("dataName"), 20) + "\t";
+			if (this.param.has('l')) result += fillWithSpace(data.getJSONObject(i).getString("type"), 9) + "\t";
+			result += fillWithSpace(data.getJSONObject(i).getString("keywords"), 11) + "\t";
+			if (this.param.has('l')) result += fillWithSpace(data.getJSONObject(i).getString("format"), 9) + "\t";
+			if (this.param.has('l')) result += DateUtil.format(data.getJSONObject(i).getDate("createTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\t";
 			if (this.param.has('l')) result += data.getJSONObject(i).getString("description");
 		}
 		result += "\n共" + data.size() + "条数据";
@@ -49,6 +58,6 @@ public class LsData extends Action {
 
 	@Override
 	public void readParam() throws AshException {
-		return;
+		targetUserId = param.getString("u");
 	}
 }

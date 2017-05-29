@@ -14,8 +14,17 @@ public interface DataDicDao {
 	@Select({"SELECT * FROM DATADIC WHERE DATADICNAME = #{dataDicName} AND USERID = #{userId}"})
 	DataDic selectByKey(@Param("dataDicName") String dataDicName, @Param("userId") String userId);
 
+	@Select({"SELECT * FROM DATADIC WHERE DATADICNAME = #{dataDicName} AND USERID = #{userId} AND SHAREPOLICY IN ('1','2')"})
+	DataDic selectByKeyPrivilege(@Param("dataDicName") String dataDicName, @Param("userId") String userId);
+
 	@Select({"SELECT * FROM DATADIC WHERE USERID = #{userId}"})
 	List<DataDic> selectByUserId(@Param("userId") String userId);
+
+	@Select({"SELECT * FROM DATADIC WHERE USERID = #{userId} OR SHAREPOLICY IN ('1','2')"})
+	List<DataDic> selectByPrivilege(@Param("userId") String userId);
+
+	@Select({"SELECT * FROM DATADIC WHERE USERID = #{userId} AND SHAREPOLICY IN ('1','2')"})
+	List<DataDic> selectByUserIdPrivilege(@Param("userId") String userId);
 
 	@Insert({"INSERT INTO DATADIC (DATADICID, DATADICNAME, DESCRIPTION, USERID, SHAREPOLICY) ",
 		"VALUES (#{param.dataDicId}, #{param.dataDicName}, #{param.description}, #{param.userId}, #{param.sharePolicy})"})

@@ -19,18 +19,10 @@ import cn.standardai.lib.base.matrix.MatrixUtil;
 
 public class Cnn extends Dnn<CnnData> {
 
-	// TODO public
 	public List<Layer> layers = new ArrayList<Layer>();
-
-	//private List<Integer[][][]> batchData = new ArrayList<Integer[][][]>();
-
-	//private List<Integer[]> batchExpect = new ArrayList<Integer[]>();
-
-	private List<JSONObject> batchJSON = new ArrayList<JSONObject>();
 
 	/*
 		{
-		  "maxTrainingCount" : 10,
 		  "layers" : [
 		    {"type": "INPUT", "width": 24, "height": 24, "depth": 3 },
 		    {"type": "CONV", "depth": 16, "stride": 1, "padding":1,
@@ -131,15 +123,35 @@ public class Cnn extends Dnn<CnnData> {
 			if (needBreak) break;
 
 			if (watchEpoch != null && epochCount % watchEpoch == 0) {
+				forward();
+
+				Double[] trainLoss = MatrixUtil.create(this.data.length, 0.0);
+				// Loss for train, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
+				for (int j = 0; j < this.data.length; j++) {
+					Double[][][] a = this.predict(this.data[j].x);
+					// 对每一个输出y
+					if (a[0][0] != null) {
+						for (int k = 0; k < a.length; k++) {
+							if (this.data[j].y[k] == 1) {
+								trainLoss[j] += Math.log(a[0][0][k]);
+							} else {
+								trainLoss[j] += Math.log(1 - a[0][0][k]);
+							}
+						}
+					}
+					trainLoss[j] *= -1;
+				}
+
+				double totalTrainLoss = MatrixUtil.sum(trainLoss) / this.data.length;
 				synchronized (this.indicator) {
 					if (this.containCatalog("trainLoss")) {
-						record("trainLoss", epochCount, MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
+						record("trainLoss", epochCount, totalTrainLoss);
 					}
 					if (this.containCatalog("testLoss")) {
 						//record("testLoss", epochCount, 0.0);
 					}
 					this.indicator.notify();
-					System.out.println("epoch:" + epochCount + " trainLoss" + MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
+					//System.out.println("epoch:" + epochCount + " trainLoss" + MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
 				}
 			}
 			if (epoch != null && epochCount >= epoch) break;
@@ -182,15 +194,6 @@ public class Cnn extends Dnn<CnnData> {
 				//layers.get(i).printFilter();
 			}
 		}
-	}
-
-	public Double[][][] predict(JSONObject data) {
-		loadData(data);
-		forward();
-		// TODO no backward
-		//backward();
-		//printSome();
-		return getLastLayer().data;
 	}
 
 	public Double[][][] predict(Integer[][][] data) {
@@ -287,7 +290,6 @@ public class Cnn extends Dnn<CnnData> {
 	}
 
 	public int dataCount() {
-		if (this.batchJSON != null && this.batchJSON.size() != 0) return this.batchJSON.size();
 		if (this.data != null && this.data.length != 0) return this.data.length;
 		return 0;
 	}
@@ -296,20 +298,8 @@ public class Cnn extends Dnn<CnnData> {
 		if (this.data != null) {
 			this.data = null;
 		}
-		if (this.batchJSON != null) {
-			this.batchJSON.clear();
-		}
 	}
 
-	public void addData(JSONObject param) {
-		this.batchJSON.add(param);
-	}
-/*
-	public void addData(Integer[][][] input, Integer[] expect) {
-		this.batchData.add(input);
-		this.batchExpect.add(expect);
-	}
-*/
 	private InputLayer get1stLayer() {
 		if (this.layers == null) return null;
 		return (InputLayer)this.layers.get(0);

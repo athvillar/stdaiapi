@@ -470,13 +470,52 @@ public class DataAgent extends AuthAgent {
 	public JSONObject listData() {
 
 		DatasetDao dao = daoHandler.getMySQLMapper(DatasetDao.class);
-		List<Dataset> dataset = dao.selectByUserId(userId);
+		List<Dataset> dataset = dao.selectByPrivilege(this.userId);
 
 		JSONArray dataJ = new JSONArray();
 		for (int i = 0; i < dataset.size(); i++) {
 			JSONObject data1J = new JSONObject();
 			data1J.put("dataId", dataset.get(i).getDatasetId());
-			data1J.put("dataName", dataset.get(i).getDatasetName());
+			if (this.userId.equals(dataset.get(i).getUserId())) {
+				data1J.put("dataName", dataset.get(i).getDatasetName());
+			} else {
+				data1J.put("dataName", dataset.get(i).getUserId() + "/" + dataset.get(i).getDatasetName());
+			}
+			data1J.put("description", dataset.get(i).getDescription());
+			data1J.put("userId", dataset.get(i).getUserId());
+			data1J.put("type", dataset.get(i).getType());
+			data1J.put("format", dataset.get(i).getFormat());
+			data1J.put("keywords", dataset.get(i).getKeywords());
+			data1J.put("titles", dataset.get(i).getTitles());
+			data1J.put("sharePolicy", SharePolicy.parse(dataset.get(i).getSharePolicy()));
+			data1J.put("createTime", dataset.get(i).getCreateTime());
+			dataJ.add(data1J);
+		}
+		JSONObject result = new JSONObject();
+		result.put("data", dataJ);
+
+		return result;
+	}
+
+	public JSONObject listData(String userId) {
+
+		DatasetDao dao = daoHandler.getMySQLMapper(DatasetDao.class);
+		List<Dataset> dataset;
+		if (userId.equals(this.userId)) {
+			dataset = dao.selectByUserId(userId);
+		} else {
+			dataset = dao.selectByUserIdPrivilege(userId);
+		}
+
+		JSONArray dataJ = new JSONArray();
+		for (int i = 0; i < dataset.size(); i++) {
+			JSONObject data1J = new JSONObject();
+			data1J.put("dataId", dataset.get(i).getDatasetId());
+			if (this.userId.equals(dataset.get(i).getUserId())) {
+				data1J.put("dataName", dataset.get(i).getDatasetName());
+			} else {
+				data1J.put("dataName", dataset.get(i).getUserId() + "/" + dataset.get(i).getDatasetName());
+			}
 			data1J.put("description", dataset.get(i).getDescription());
 			data1J.put("userId", dataset.get(i).getUserId());
 			data1J.put("type", dataset.get(i).getType());
@@ -495,35 +534,41 @@ public class DataAgent extends AuthAgent {
 
 	public JSONObject viewData(String userId, String dataName) throws AuthException {
 
-		if (!userId.equals(this.userId)) throw new AuthException("没有权限");
+		//if (!userId.equals(this.userId)) throw new AuthException("没有权限");
 		DatasetDao dao = daoHandler.getMySQLMapper(DatasetDao.class);
-		Dataset dataset = dao.selectByKey(dataName, userId);
-
-		JSONObject dataJ = new JSONObject();
-		dataJ.put("dataId", dataset.getDatasetId());
-		dataJ.put("dataName", dataset.getDatasetName());
-		dataJ.put("description", dataset.getDescription());
-		dataJ.put("userId", dataset.getUserId());
-		dataJ.put("type", dataset.getType());
-		dataJ.put("format", dataset.getFormat());
-		dataJ.put("keywords", dataset.getKeywords());
-		dataJ.put("titles", dataset.getTitles());
-		dataJ.put("sharePolicy", SharePolicy.parse(dataset.getSharePolicy()));
-		dataJ.put("createTime", dataset.getCreateTime());
-
-		DataDao dao2 = daoHandler.getMySQLMapper(DataDao.class);
-		Integer count = dao2.selectCountByDatasetId(dataset.getDatasetId());
-		Data data1 = dao2.select1ByDatasetId(dataset.getDatasetId());
-
-		dataJ.put("count", count);
-		if (data1 != null) {
-			dataJ.put("ref", data1.getRef());
-			dataJ.put("x", data1.getX());
-			dataJ.put("y", data1.getY());
+		Dataset dataset;
+		if (userId.equals(this.userId)) {
+			dataset = dao.selectByKey(dataName, userId);
+		} else {
+			dataset = dao.selectByKeyPrivilege(dataName, userId);
 		}
 
 		JSONObject result = new JSONObject();
-		result.put("data", dataJ);
+		if (dataset != null) {
+			JSONObject dataJ = new JSONObject();
+			dataJ.put("dataId", dataset.getDatasetId());
+			dataJ.put("dataName", dataset.getDatasetName());
+			dataJ.put("description", dataset.getDescription());
+			dataJ.put("userId", dataset.getUserId());
+			dataJ.put("type", dataset.getType());
+			dataJ.put("format", dataset.getFormat());
+			dataJ.put("keywords", dataset.getKeywords());
+			dataJ.put("titles", dataset.getTitles());
+			dataJ.put("sharePolicy", SharePolicy.parse(dataset.getSharePolicy()));
+			dataJ.put("createTime", dataset.getCreateTime());
+
+			DataDao dao2 = daoHandler.getMySQLMapper(DataDao.class);
+			Integer count = dao2.selectCountByDatasetId(dataset.getDatasetId());
+			Data data1 = dao2.select1ByDatasetId(dataset.getDatasetId());
+
+			dataJ.put("count", count);
+			if (data1 != null) {
+				dataJ.put("ref", data1.getRef());
+				dataJ.put("x", data1.getX());
+				dataJ.put("y", data1.getY());
+			}
+			result.put("data", dataJ);
+		}
 
 		return result;
 	}

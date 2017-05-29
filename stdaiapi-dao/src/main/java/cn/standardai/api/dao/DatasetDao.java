@@ -24,8 +24,17 @@ public interface DatasetDao {
 	@Select({"SELECT * FROM DATASET WHERE DATASETNAME = #{datasetName} AND USERID = #{userId}"})
 	Dataset selectByKey(@Param("datasetName") String datasetName, @Param("userId") String userId);
 
+	@Select({"SELECT * FROM DATASET WHERE DATASETNAME = #{datasetName} AND USERID = #{userId} AND SHAREPOLICY IN ('1','2')"})
+	Dataset selectByKeyPrivilege(@Param("datasetName") String datasetName, @Param("userId") String userId);
+
+	@Select({"SELECT * FROM DATASET WHERE USERID = #{userId} OR SHAREPOLICY IN ('1','2')"})
+	List<Dataset> selectByPrivilege(@Param("userId") String userId);
+
 	@Select({"SELECT * FROM DATASET WHERE USERID = #{userId}"})
 	List<Dataset> selectByUserId(@Param("userId") String userId);
+
+	@Select({"SELECT * FROM DATASET WHERE USERID = #{userId} AND SHAREPOLICY IN ('1','2')"})
+	List<Dataset> selectByUserIdPrivilege(@Param("userId") String userId);
 
 	@Insert({"INSERT INTO DATASET (DATASETID, DATASETNAME, DESCRIPTION, USERID, TYPE,",
 		"FORMAT, KEYWORDS, TITLES, SHAREPOLICY, CREATETIME) ",

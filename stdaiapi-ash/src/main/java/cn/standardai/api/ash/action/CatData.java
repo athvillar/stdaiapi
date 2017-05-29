@@ -13,6 +13,8 @@ public class CatData extends Action {
 
 	private String dataName;
 
+	private String pDataName;
+
 	public CatData() {
 		setParamRules(null, null, 1, 1);
 	}
@@ -20,7 +22,7 @@ public class CatData extends Action {
 	@Override
 	public AshReply exec() throws AshException {
 
-		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/data/" + this.userId + "/" + dataName, null, null);
+		JSONObject j = comm.http(HttpMethod.GET, Context.getProp().getUrl().getData() + "/data/" + pDataName, null, null);
 
 		JSONObject dataJ = j.getJSONObject("data");
 		if (dataJ == null) {
@@ -62,5 +64,10 @@ public class CatData extends Action {
 	@Override
 	public void readParam() throws AshException {
 		dataName = param.get(1);
+		if (dataName != null && dataName.indexOf('/') != -1) {
+			pDataName = dataName;
+		} else {
+			pDataName = this.userId + "/" + dataName;
+		}
 	}
 }

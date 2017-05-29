@@ -89,12 +89,12 @@ public class DnnService extends BaseService<DnnAgent> {
 	}
 
 	@RequestMapping(value = "/{userId}/{modelTemplateName}", method = RequestMethod.GET)
-	public String status(@PathVariable("userId") String userId, @PathVariable("modelTemplateName") String modelTemplateName, @RequestHeader HttpHeaders headers) {
+	public String view(@PathVariable("userId") String userId, @PathVariable("modelTemplateName") String modelTemplateName, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + " GET start");
 		JSONObject result = null;
 		try {
 			initAgent(headers, DnnAgent.class, userId);
-			result = agent.status(modelTemplateName);
+			result = agent.view(modelTemplateName);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -105,6 +105,26 @@ public class DnnService extends BaseService<DnnAgent> {
 			if (agent != null) agent.done();
 		}
 		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + " GET finish (response:" + result.toJSONString() + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+	public String listByUserId(@PathVariable("userId") String userId, @RequestHeader HttpHeaders headers) {
+		logger.info("stdaiapi-ml /dnn/" + userId + " GET start");
+		JSONObject result = null;
+		try {
+			initAgent(headers, DnnAgent.class);
+			result = agent.list(userId);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-ml /dnn/" + userId + " GET finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
 

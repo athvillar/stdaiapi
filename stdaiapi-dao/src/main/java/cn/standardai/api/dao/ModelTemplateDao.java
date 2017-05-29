@@ -27,11 +27,17 @@ public interface ModelTemplateDao {
 	@Select({"SELECT * FROM MODELTEMPLATE WHERE USERID = #{userId}"})
 	List<ModelTemplate> selectByUserId(@Param("userId") String userId);
 
+	@Select({"SELECT * FROM MODELTEMPLATE WHERE USERID = #{userId} OR SHAREPOLICY IN ('1','2')"})
+	List<ModelTemplate> selectByPrivilege(@Param("userId") String userId);
+
+	@Select({"SELECT * FROM MODELTEMPLATE WHERE USERID = #{userId} AND SHAREPOLICY IN ('1','2')"})
+	List<ModelTemplate> selectByUserIdPrivilege(@Param("userId") String userId);
+
 	@Insert({"INSERT INTO MODELTEMPLATE (MODELTEMPLATEID, MODELTEMPLATENAME, USERID, ALGORITHM, SCRIPT, ",
-		"DATASETID, XCOLUMN, XFILTER, YCOLUMN, YFILTER, CREATETIME) ",
+		"DATASETID, XCOLUMN, XFILTER, YCOLUMN, YFILTER, SHAREPOLICY, CREATETIME) ",
 		"VALUES (#{param.modelTemplateId}, #{param.modelTemplateName}, #{param.userId}, #{param.algorithm}, ",
 		"#{param.script}, #{param.datasetId}, #{param.xColumn}, #{param.xFilter}, #{param.yColumn}, #{param.yFilter}, ",
-		"#{param.createTime})"})
+		"#{param.sharePolicy}, #{param.createTime})"})
 	void insert(@Param("param") ModelTemplate param);
 
 	@Update({"UPDATE MODELTEMPLATE SET SCRIPT = #{param.script}, CREATETIME = #{param.createTime} WHERE MODELTEMPLATENAME = #{param.modelTemplateName} AND USERID = #{param.userId}"})
