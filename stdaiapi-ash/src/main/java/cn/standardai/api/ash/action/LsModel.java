@@ -38,12 +38,12 @@ public class LsModel extends Action {
 
 		String result;
 		if (this.param.has('l')) {
-			result = "模型名\t\t算法\t\t\t创建时间\t\t\t\t结构";
+			result = "模型名\t\t\t\t算法\t\t\t创建时间\t\t\t\t结构";
 		} else {
-			result = "模型名\t\t算法\t\t\t创建时间";
+			result = "模型名\t\t\t\t算法\t\t\t创建时间";
 		}
 		for (int i = 0; i < models.size(); i++) {
-			result += "\n" + fillWithSpace(models.getJSONObject(i).getString("modelTemplateName"), 11) + "\t"
+			result += "\n" + fillWithSpace(models.getJSONObject(i).getString("userId") + "/" + models.getJSONObject(i).getString("modelTemplateName"), 21) + "\t"
 							+ fillWithSpace(models.getJSONObject(i).getString("algorithm"), 8) + "\t"
 							+ DateUtil.format(models.getJSONObject(i).getDate("createTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\t";
 			if (this.param.has('l')) result += models.getJSONObject(i).getString("script");

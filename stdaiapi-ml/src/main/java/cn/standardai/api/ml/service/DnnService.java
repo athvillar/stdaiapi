@@ -93,7 +93,7 @@ public class DnnService extends BaseService<DnnAgent> {
 		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + " GET start");
 		JSONObject result = null;
 		try {
-			initAgent(headers, DnnAgent.class, userId);
+			initAgent(headers, DnnAgent.class);
 			result = agent.view(userId, modelTemplateName);
 			result = successResponse(result);
 		} catch (StdaiException e) {
@@ -147,7 +147,7 @@ public class DnnService extends BaseService<DnnAgent> {
 		logger.info("stdaiapi-ml /dnn GET finish (response:" + result.toJSONString() + ")");
 		return result.toString();
 	}
-	
+
 	@RequestMapping(value = "/{userId}/{modelTemplateName}", method = RequestMethod.DELETE)
 	public String delete(@PathVariable("userId") String userId, @PathVariable("modelTemplateName") String modelTemplateName, @RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-ml /dnn/" + userId + "/" + modelTemplateName + " DELETE start");
