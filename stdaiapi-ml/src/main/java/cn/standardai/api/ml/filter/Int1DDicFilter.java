@@ -25,7 +25,7 @@ public class Int1DDicFilter extends DicFilter<String[], Integer[], Integer> {
 
 	@Override
 	public void init(String userId, DaoHandler dh) {
-		String dicName = params.get(0);
+		String dicName = params == null ? null : params.get(0);
 		setDic(new DicHandler(dh).get(userId, dicName));
 	}
 

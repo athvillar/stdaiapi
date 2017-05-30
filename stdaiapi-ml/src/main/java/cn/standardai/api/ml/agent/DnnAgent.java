@@ -21,9 +21,12 @@ import cn.standardai.api.ml.bean.DnnTrainSetting;
 import cn.standardai.api.ml.daohandler.DataHandler;
 import cn.standardai.api.ml.daohandler.DicHandler;
 import cn.standardai.api.ml.daohandler.ModelHandler;
+import cn.standardai.api.ml.exception.FilterException;
 import cn.standardai.api.ml.exception.JSONFormatException;
 import cn.standardai.api.ml.exception.MLException;
 import cn.standardai.api.ml.filter.DataFilter;
+import cn.standardai.api.ml.filter.DicFilter;
+import cn.standardai.api.ml.filter.SequenceIntegerFilter;
 import cn.standardai.api.ml.filter.SmartSplitFilter;
 import cn.standardai.api.ml.run.ModelGhost;
 import cn.standardai.lib.algorithm.base.Dnn;
@@ -141,11 +144,13 @@ public class DnnAgent extends AuthAgent {
 		switch (ms.getAlgorithm()) {
 		case cnn:
 			Integer[][] ys1 = new Integer[rawData.size()][];
+			String[] ys = new String[rawData.size()];
 			for (int i = 0; i < rawData.size(); i++) {
 				Integer[][][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
-				ys1[i] = ((Cnn)dnn).predictY(x);
+				//ys1[i] = ((Cnn)dnn).predictY(x);
+				ys[i] = DataFilter.decode(((Cnn)dnn).predictY(x), yFilters);
 			}
-			result.put("value", I22J(ys1));
+			result.put("value", ys);
 			break;
 		case lstm:
 			JSONObject lstmJ = request.getJSONObject("lstm");
@@ -191,7 +196,7 @@ public class DnnAgent extends AuthAgent {
 		return arrJ2;
 	}
 
-	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm, Cnn cnn) {
+	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm, Cnn cnn) throws FilterException {
 
 		// 如果用户没有输入的话，根据数据集和算法选择filter和column
 		dataSetting.setDatasetId(dataset.getDatasetId());
@@ -233,7 +238,7 @@ public class DnnAgent extends AuthAgent {
 				switch (dataset.getFormat().toLowerCase()) {
 				case "text":
 				case "txt":
-					DnnDicSetting dds = createDic(dataset, dataSetting.getxColumn());
+					DnnDicSetting dds = createDic(new SmartSplitFilter(), dataset, dataSetting.getxColumn());
 					dataSetting.setxFilter("SmartSplitFilter|Int1DDicFilter(" + dds.getDicName() + ")|SprInt1D2Double2D(" + dds.getLength() + ")");
 					dataSetting.getStructure().put("inputSize", dds.getLength());
 					break;
@@ -254,20 +259,20 @@ public class DnnAgent extends AuthAgent {
 		if (dataSetting.getyFilter() == null || "".equals(dataSetting.getyFilter())) {
 			switch (algorithm) {
 			case cnn:
-				dataSetting.setyFilter("SequenceIntegerFilter|SprInteger1D(" + cnn.layers.get(cnn.layers.size() - 1).depth + ")");
+				DnnDicSetting dds1 = createDic(new SequenceIntegerFilter(), dataset, dataSetting.getyColumn());
+				dataSetting.setyFilter("SequenceIntegerFilter(" + dds1.getDicName() + ")|SprInteger1D(" + cnn.layers.get(cnn.layers.size() - 1).depth + ")");
 				break;
 			case lstm:
-				DnnDicSetting dds = createDic(dataset, dataSetting.getyColumn());
-				dataSetting.setyFilter("SmartSplitFilter|Int1DDicFilter(" + dds.getDicName() + ")");
-				dataSetting.getStructure().put("outputSize", dds.getLength());
+				DnnDicSetting dds2 = createDic(new SmartSplitFilter(), dataset, dataSetting.getyColumn());
+				dataSetting.setyFilter("SmartSplitFilter|Int1DDicFilter(" + dds2.getDicName() + ")");
+				dataSetting.getStructure().put("outputSize", dds2.getLength());
 				break;
 			}
 		}
 	}
 
-	private DnnDicSetting createDic(Dataset dataset, String column) {
+	private DnnDicSetting createDic(DicFilter f, Dataset dataset, String column) throws FilterException {
 		List<Data> data = dh.getData(dataset);
-		SmartSplitFilter f = new SmartSplitFilter();
 		f.init(this.userId, this.daoHandler);
 		for (int i = 0; i < data.size(); i++) {
 			if (column.endsWith("x")) {

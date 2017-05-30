@@ -3,6 +3,7 @@ package cn.standardai.api.ml.filter;
 import java.util.HashMap;
 
 import cn.standardai.api.dao.base.DaoHandler;
+import cn.standardai.api.ml.daohandler.DicHandler;
 
 public class SequenceIntegerFilter extends DicFilter<String, Integer, Integer> {
 
@@ -23,8 +24,13 @@ public class SequenceIntegerFilter extends DicFilter<String, Integer, Integer> {
 
 	@Override
 	public void init(String userId, DaoHandler dh) {
-		this.dic = new HashMap<String, Integer>();
-		this.arcDic = new HashMap<Integer, String>();
+		String dicName = params == null ? null : params.get(0);
+		if (dicName == null || "".equals(dicName)) {
+			this.dic = new HashMap<String, Integer>();
+			this.arcDic = new HashMap<Integer, String>();
+		} else {
+			setDic(new DicHandler(dh).get(userId, dicName));
+		}
 	}
 
 	@Override
