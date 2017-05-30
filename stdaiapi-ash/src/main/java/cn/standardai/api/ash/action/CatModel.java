@@ -55,7 +55,7 @@ public class CatModel extends Action {
 			result += "\t训练开始时间\t" + DateUtil.format(trainJ.getDate("startTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\n";
 			result += "\t训练结束时间\t" + DateUtil.format(trainJ.getDate("endTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\n";
 			Integer seconds = trainJ.getInteger("totalSecond");
-			if (seconds != null) result += "\t用时\t\t\t" + seconds / 60 / 60 + "小时" + seconds / 60 + "分\n";
+			if (seconds != null) result += "\t用时\t\t\t" + seconds / 60 / 60 + "小时" + seconds / 60 % 60 + "分\n";
 			if (trainJ.getInteger("epochCnt") != null) result += "\tepoch\t\t" + trainJ.getInteger("epochCnt") + "\n";
 			result += "\tepoch数据量\t" + trainJ.getInteger("epochDataCnt");
 

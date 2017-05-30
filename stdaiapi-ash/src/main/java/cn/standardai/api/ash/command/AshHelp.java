@@ -19,6 +19,7 @@ public class AshHelp extends AshCommonCommand {
 					+ "\tash(未完成)\t解析ash脚本，执行批处理任务\n"
 					+ "\tcd\t\t\t在资源之间切换\n"
 					+ "\tcurl(未完成)\t模拟shell的curl命令，发送http request\n"
+					+ "\thelp\t\t显示帮助信息\n"
 					+ "\tman\t\t\t查看命令帮助\n"
 					+ "\tmsg\t\t\t收发系统内消息\n"
 					+ "\tlogin\t\t用户登陆\n"

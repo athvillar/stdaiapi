@@ -89,8 +89,11 @@ public class MkData extends Action {
 					fileSendS += " -F files=@'" + fileList[i] + "'";
 				}
 			}
+			// TODO
+			//this.reply.display += "\n请使用命令\"curl -XPOST -H 'token: " + this.token + "'" + fileSendS + " " +
+			//		Context.getProp().getUrl().getData() + "/data/" + this.userId + "/" + dataName + "/files\"上传数据。";
 			this.reply.display += "\n请使用命令\"curl -XPOST -H 'token: " + this.token + "'" + fileSendS + " " +
-					Context.getProp().getUrl().getData() + "/data/" + this.userId + "/" + dataName + "/files\"上传数据。";
+					"http://123.56.253.228/data/v1/data/" + this.userId + "/" + dataName + "/files\"上传数据。";
 			// 回调文件上传
 			//String display = "数据上传中(dataId=" + j.getString("dataId") + ", name=" + this.userId + "/" + dataName + ")";
 			//throw new CallbackException("数据上传回调", display,
