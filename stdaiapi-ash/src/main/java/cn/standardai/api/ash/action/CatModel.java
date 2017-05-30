@@ -51,7 +51,7 @@ public class CatModel extends Action {
 		if (trainJ != null) {
 			result += "\n";
 			result += "训练信息\n";
-			result += "\t状态\t\t" + trainJ.getDate("endTime") == null ? "训练结束\n" : "训练中\n";
+			result += "\t状态\t\t" + (trainJ.getDate("endTime") == null ? "训练结束\n" : "训练中\n");
 			result += "\t训练开始时间\t" + DateUtil.format(trainJ.getDate("startTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\n";
 			result += "\t训练结束时间\t" + DateUtil.format(trainJ.getDate("endTime"), DateUtil.YYYY__MM__DD__HH__MM__SS) + "\n";
 			Integer seconds = trainJ.getInteger("totalSecond");

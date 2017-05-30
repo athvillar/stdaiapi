@@ -89,11 +89,11 @@ public class AshAgent extends AuthAgent {
 			ArgsHelper.check(executor);
 			if (!(executor instanceof MkUser || executor instanceof AshCommonCommand)) {
 				this.checkToken(this.token);
-				ashCommand.setUserId(this.userId);
-				ashCommand.setToken(this.token);
-				executor.setUserId(this.userId);
-				executor.setToken(this.token);
 			}
+			ashCommand.setUserId(this.userId);
+			ashCommand.setToken(this.token);
+			executor.setUserId(this.userId);
+			executor.setToken(this.token);
 			executor.readParam();
 			AshReply reply = executor.exec();
 			result.put("display", reply.display);
