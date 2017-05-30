@@ -106,7 +106,7 @@ public class DeepLstm extends Dnn<LstmData> {
 		}
 		// Finish indicator, tell monitor to stop monitoring
 		synchronized (this.indicator) {
-			finish();
+			finish(epochCount);
 			this.indicator.notify();
 		}
 		epochCount = 0;

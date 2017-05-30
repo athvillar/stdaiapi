@@ -12,6 +12,7 @@ import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.ModelTemplate;
+import cn.standardai.api.dao.bean.Train;
 import cn.standardai.api.ml.bean.DnnAlgorithm;
 import cn.standardai.api.ml.bean.DnnDataSetting;
 import cn.standardai.api.ml.bean.DnnDicSetting;
@@ -358,9 +359,47 @@ public class DnnAgent extends AuthAgent {
 		}
 	}
 
-	public JSONObject view(String id) {
-		// TODO Auto-generated method stub
-		return null;
+	public JSONObject view(String userId, String modelTemplateName) {
+
+		DnnModelSetting model;
+		JSONObject result = new JSONObject();
+		if (userId.equals(this.userId)) {
+			model = mh.findLastestModel(userId, modelTemplateName);
+		} else {
+			model = mh.findLastestModelPrivilege(userId, modelTemplateName);
+		}
+		if (model == null) return result;
+
+		JSONObject modelJ = new JSONObject();
+		modelJ.put("modelName", userId + "/" + modelTemplateName);
+		modelJ.put("algorithm", model.getAlgorithm().algorithm);
+		modelJ.put("createTime", model.getCreateTime());
+		modelJ.put("structure", model.getScript());
+
+		if (model.getDataSetting() != null) {
+			JSONObject dataJ = new JSONObject();
+			dataJ.put("dataName", model.getDataSetting().getDatasetName());
+			dataJ.put("xColumn", model.getDataSetting().getxColumn());
+			dataJ.put("xFilter", model.getDataSetting().getxFilter());
+			dataJ.put("yColumn", model.getDataSetting().getyColumn());
+			dataJ.put("yFilter", model.getDataSetting().getyFilter());
+			modelJ.put("data", dataJ);
+		}
+
+		Train train = mh.findLastestTrainByModelId(model.getModelId());
+		if (train != null) {
+			JSONObject trainJ = new JSONObject();
+			trainJ.put("trainId", train.getTrainId());
+			trainJ.put("epochDataCnt", train.getEpochDataCnt());
+			trainJ.put("epochCnt", train.getEpochCnt());
+			trainJ.put("startTime", train.getStartTime());
+			trainJ.put("endTime", train.getEndTime());
+			trainJ.put("totalSecond", train.getTotalSecond());
+			modelJ.put("train", trainJ);
+		}
+
+		result.put("model", modelJ);
+		return result;
 	}
 
 	public JSONObject list() {

@@ -12,6 +12,7 @@ import cn.standardai.api.core.util.MathUtil;
 import cn.standardai.api.dao.base.DaoHandler;
 import cn.standardai.api.dao.bean.Data;
 import cn.standardai.api.dao.bean.Model;
+import cn.standardai.api.dao.bean.Train;
 import cn.standardai.api.es.exception.ESException;
 import cn.standardai.api.es.service.ESService;
 import cn.standardai.api.ml.bean.DnnDataSetting;
@@ -25,7 +26,6 @@ import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.base.Dnn;
 import cn.standardai.lib.algorithm.cnn.CnnData;
 import cn.standardai.lib.algorithm.exception.DnnException;
-import cn.standardai.lib.algorithm.rnn.lstm.DeepLstm;
 import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 import cn.standardai.lib.base.matrix.MatrixException;
 
@@ -118,12 +118,19 @@ public class ModelGhost implements Runnable {
 				break;
 			}
 
+			Train train = new Train();
+			train.setTrainId(MathUtil.random(32));
+			train.setStartTime(new Date());
+			train.setModelId(modelId);
+			train.setEpochDataCnt(rawData.size());
+			mh.insertTrain(train);
+
 			ModelRunner mr = new ModelRunner(this.model);
+			int epoch = 0;
 			synchronized (this.model.indicator) {
 				Executor exec = Executors.newSingleThreadExecutor();
 				exec.execute(mr);
-				String trainId = MathUtil.random(32);
-				int epoch = 0;
+				String trainId = train.getTrainId();
 				while (true) {
 					try {
 						this.model.indicator.wait();
@@ -146,6 +153,11 @@ public class ModelGhost implements Runnable {
 				}
 				System.out.println("finished at epoch " + epoch);
 			}
+
+			train.setEndTime(new Date());
+			train.setEpochCnt(this.model.getValue("final", 0).intValue());
+			train.setTotalSecond((train.getEndTime().getTime() - train.getStartTime().getTime()) / 1000);
+			mh.updateTrain(train);
 
 			Model model = new Model();
 			model.setModelId(modelId);

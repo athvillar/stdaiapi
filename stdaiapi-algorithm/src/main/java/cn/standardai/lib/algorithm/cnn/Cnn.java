@@ -160,7 +160,7 @@ public class Cnn extends Dnn<CnnData> {
 
 		// Finish indicator, tell monitor to stop monitoring
 		synchronized (this.indicator) {
-			finish();
+			finish(epochCount);
 			this.indicator.notify();
 		}
 	}

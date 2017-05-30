@@ -8,17 +8,15 @@ public class Train {
 
 	private String modelId;
 
-	private String datasetId;
-
 	private Integer epochDataCnt;
 
 	private Integer epochCnt;
 
-	private Date createTime;
+	private Date startTime;
 
-	private Date updateTime;
+	private Date endTime;
 
-	private Integer totalSecond;
+	private Long totalSecond;
 
 	public String getTrainId() {
 		return trainId;
@@ -34,14 +32,6 @@ public class Train {
 
 	public void setModelId(String modelId) {
 		this.modelId = modelId;
-	}
-
-	public String getDatasetId() {
-		return datasetId;
-	}
-
-	public void setDatasetId(String datasetId) {
-		this.datasetId = datasetId;
 	}
 
 	public Integer getEpochDataCnt() {
@@ -60,27 +50,27 @@ public class Train {
 		this.epochCnt = epochCnt;
 	}
 
-	public Date getCreateTime() {
-		return createTime;
+	public Date getStartTime() {
+		return startTime;
 	}
 
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
 	}
 
-	public Date getUpdateTime() {
-		return updateTime;
+	public Date getEndTime() {
+		return endTime;
 	}
 
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
 	}
 
-	public Integer getTotalSecond() {
+	public Long getTotalSecond() {
 		return totalSecond;
 	}
 
-	public void setTotalSecond(Integer totalSecond) {
+	public void setTotalSecond(Long totalSecond) {
 		this.totalSecond = totalSecond;
 	}
 }

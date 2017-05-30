@@ -47,9 +47,11 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 		return this.indicator.containsKey(catalog);
 	}
 
-	public void finish() throws UsageException {
+	public void finish(Integer epochCount) throws UsageException {
 		// TODO nothing added, reserved, now just for finish indicator
-		this.indicator.put("final", new HashMap<Integer, Double>());
+		Map<Integer, Double> finalIndicator = new HashMap<Integer, Double>();
+		finalIndicator.put(0, 0.0 + epochCount);
+		this.indicator.put("final", finalIndicator);
 	}
 
 	public void record(String catalog, Integer epoch, Double value) throws UsageException {

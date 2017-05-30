@@ -94,7 +94,7 @@ public class DnnService extends BaseService<DnnAgent> {
 		JSONObject result = null;
 		try {
 			initAgent(headers, DnnAgent.class, userId);
-			result = agent.view(modelTemplateName);
+			result = agent.view(userId, modelTemplateName);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());

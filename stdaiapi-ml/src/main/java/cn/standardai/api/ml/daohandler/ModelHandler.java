@@ -7,11 +7,15 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.standardai.api.core.util.DateUtil;
 import cn.standardai.api.core.util.MathUtil;
+import cn.standardai.api.dao.DatasetDao;
 import cn.standardai.api.dao.ModelDao;
 import cn.standardai.api.dao.ModelTemplateDao;
+import cn.standardai.api.dao.TrainDao;
 import cn.standardai.api.dao.base.DaoHandler;
+import cn.standardai.api.dao.bean.Dataset;
 import cn.standardai.api.dao.bean.Model;
 import cn.standardai.api.dao.bean.ModelTemplate;
+import cn.standardai.api.dao.bean.Train;
 import cn.standardai.api.ml.bean.DnnAlgorithm;
 import cn.standardai.api.ml.bean.DnnDataSetting;
 import cn.standardai.api.ml.bean.DnnModelSetting;
@@ -95,6 +99,9 @@ public class ModelHandler {
 		ModelTemplate modelTemplate = modelTemplateDao.selectByKey(modelTemplateName, userId);
 		if (modelTemplate == null) return null;
 
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = datasetDao.selectById(modelTemplate.getDatasetId());
+
 		DnnModelSetting ms = new DnnModelSetting();
 		DnnDataSetting ds = new DnnDataSetting();
 		ms.setModelTemplateId(modelTemplate.getModelTemplateId());
@@ -102,6 +109,7 @@ public class ModelHandler {
 		ms.setAlgorithm(DnnAlgorithm.resolve(modelTemplate.getAlgorithm()));
 		ms.setScript(modelTemplate.getScript());
 		ds.setDatasetId(modelTemplate.getDatasetId());
+		ds.setDatasetName(dataset == null ? modelTemplate.getDatasetId() : dataset.getUserId() + "/" + dataset.getDatasetName());
 		ds.setxColumn(modelTemplate.getxColumn());
 		ds.setxFilter(modelTemplate.getxFilter());
 		ds.setyColumn(modelTemplate.getyColumn());
@@ -197,5 +205,54 @@ public class ModelHandler {
 	public int deleteModelTemplate(String modelTemplateName, String userId) throws MLException {
 		ModelTemplateDao modelTemplateDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
 		return modelTemplateDao.deleteByKey(modelTemplateName, userId);
+	}
+
+	public void insertTrain(Train train) {
+		TrainDao modelTemplateDao = daoHandler.getMySQLMapper(TrainDao.class);
+		modelTemplateDao.insert(train);
+	}
+
+	public void updateTrain(Train train) {
+		TrainDao modelTemplateDao = daoHandler.getMySQLMapper(TrainDao.class);
+		modelTemplateDao.updateById(train);
+	}
+
+	public DnnModelSetting findLastestModelPrivilege(String userId, String modelTemplateName) {
+
+		ModelTemplateDao modelTemplateDao = daoHandler.getMySQLMapper(ModelTemplateDao.class);
+		ModelTemplate modelTemplate = modelTemplateDao.selectByKeyPrivilege(modelTemplateName, userId);
+		if (modelTemplate == null) return null;
+
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+		Dataset dataset = datasetDao.selectById(modelTemplate.getDatasetId());
+
+		DnnModelSetting ms = new DnnModelSetting();
+		DnnDataSetting ds = new DnnDataSetting();
+		ms.setModelTemplateId(modelTemplate.getModelTemplateId());
+		ms.setUserId(userId);
+		ms.setAlgorithm(DnnAlgorithm.resolve(modelTemplate.getAlgorithm()));
+		ms.setScript(modelTemplate.getScript());
+		ds.setDatasetId(modelTemplate.getDatasetId());
+		ds.setDatasetName(dataset == null ? modelTemplate.getDatasetId() : dataset.getUserId() + "/" + dataset.getDatasetName());
+		ds.setxColumn(modelTemplate.getxColumn());
+		ds.setxFilter(modelTemplate.getxFilter());
+		ds.setyColumn(modelTemplate.getyColumn());
+		ds.setyFilter(modelTemplate.getyFilter());
+		ms.setDataSetting(ds);
+
+		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
+		Model model = modelDao.selectLatestByModelTemplateId(ms.getModelTemplateId());
+		if (model == null) return ms;
+		ms.setModelId(model.getModelId());
+		ms.setParentModelId(model.getParentModelId());
+		ms.setStructure(model.getStructure());
+
+		return ms;
+	}
+
+	public Train findLastestTrainByModelId(String modelId) {
+		TrainDao dao = daoHandler.getMySQLMapper(TrainDao.class);
+		Train train = dao.selectLatestByModelId(modelId);
+		return train;
 	}
 }

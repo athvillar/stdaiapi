@@ -24,6 +24,9 @@ public interface ModelTemplateDao {
 	@Select({"SELECT * FROM MODELTEMPLATE WHERE MODELTEMPLATENAME = #{modelTemplateName} AND USERID = #{userId}"})
 	ModelTemplate selectByKey(@Param("modelTemplateName") String modelTemplateName, @Param("userId") String userId);
 
+	@Select({"SELECT * FROM MODELTEMPLATE WHERE MODELTEMPLATENAME = #{modelTemplateName} AND USERID = #{userId} AND SHAREPOLICY IN ('1','2')"})
+	ModelTemplate selectByKeyPrivilege(@Param("modelTemplateName") String modelTemplateName, @Param("userId") String userId);
+
 	@Select({"SELECT * FROM MODELTEMPLATE WHERE USERID = #{userId}"})
 	List<ModelTemplate> selectByUserId(@Param("userId") String userId);
 

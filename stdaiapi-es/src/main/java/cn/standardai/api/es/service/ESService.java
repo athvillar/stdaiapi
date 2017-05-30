@@ -207,7 +207,7 @@ public class ESService {
 		synchronized (client) {
 			sReqBuilder = client.prepareSearch(indice).setTypes(type);
 		}
-		sReqBuilder = sReqBuilder.setSearchType(SearchType.QUERY_AND_FETCH).setQuery(qb);
+		sReqBuilder = sReqBuilder.setSearchType(SearchType.QUERY_AND_FETCH).setQuery(qb).setSize(9999);
 		if (sorts != null && sorts.size() > 0) {
 			for (Entry<String, String> entry : sorts.entrySet()) {
 				if ("ASC".equals(entry.getValue())) {

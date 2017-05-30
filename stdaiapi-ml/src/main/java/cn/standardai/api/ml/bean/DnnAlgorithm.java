@@ -7,7 +7,7 @@ public enum DnnAlgorithm {
 
 	cnn("cnn"), lstm("lstm");
 
-	String algorithm;
+	public String algorithm;
 
 	private DnnAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
