@@ -19,8 +19,8 @@ public class AshLs extends AshResourceRelatedCommand {
 				+ "\t-l: 显示资源详细信息\n"
 				+ "\t-u 用户名: 显示该用户共享的资源\n"
 				+ "用例\n"
-				+ "\tls model -l，查看模型详细信息。"
-				+ "\tls data -al，查看所有人共享的数据详细信息。"
+				+ "\tls model -l，查看模型详细信息。\n"
+				+ "\tls data -al，查看所有人共享的数据详细信息。\n"
 				+ "\tls model -u A，查看A用户共享的模型信息。";
 	}
 }
