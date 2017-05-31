@@ -25,7 +25,7 @@ public class AshMsg extends AshCommonCommand {
 		boolean delete = param.has('d');
 		// TODO
 		//Integer number = param.getInteger();
-		String user = param.get('u');
+		String user = param.get("u");
 		String content = param.get(1);
 		if (content == null) receive = true;
 
