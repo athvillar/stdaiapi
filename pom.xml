@@ -53,12 +53,14 @@
 		<module>./stdaiapi-ash</module>
 		<module>./stdaiapi-biz</module>
 		<module>./stdaiapi-core</module>
+		<module>./stdaiapi-distribute</module>
 		<module>./stdaiapi-dao</module>
 		<module>./stdaiapi-data</module>
 		<module>./stdaiapi-es</module>
 		<module>./stdaiapi-redis</module>
 		<module>./stdaiapi-math</module>
 		<module>./stdaiapi-ml</module>
+		<module>./stdaiapi-node</module>
 		<module>./stdaiapi-statistic</module>
 	</modules> 
 	<build>
