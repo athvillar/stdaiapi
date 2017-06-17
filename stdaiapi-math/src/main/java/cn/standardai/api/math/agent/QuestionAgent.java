@@ -19,12 +19,15 @@ public class QuestionAgent {
 			QuestionParam baseValue = newParam(max, min, type, round);
 			String opString = baseValue.toString();
 			int opLevel = 2;
-			for (int j = 1; j < chain; j++) {
+			for (int j = 0; j < chain; j++) {
 				int operator = getOperator(level);
-				if (type == 1 && operator == 4) operator = 3;
 				QuestionParam opValue = newParam(baseValue, operator, max, min, round, type);
 				try {
-					baseValue.operate(opValue, operator);
+					if (type == 1 && operator == 4) {
+						baseValue.operate(opValue, 3);
+					} else {
+						baseValue.operate(opValue, operator);
+					}
 				} catch (OperationException e) {
 					continue;
 				}
@@ -46,10 +49,19 @@ public class QuestionAgent {
 					opLevel = 2;
 					break;
 				case 4:
-					if (opLevel == 1) {
-						opString = "(" + opString + ") ÷ " + (opValue.negative() ? ("(" + opValue + ")") : opValue);
+					if (type == 1) {
+						if (opString.contains(" ")) {
+							opString = baseValue + " ÷ " + "(" + opString + ")";
+						} else {
+							opString = baseValue + " ÷ " + opString;
+						}
+						baseValue = opValue;
 					} else {
-						opString += " ÷ " + (opValue.negative() ? ("(" + opValue + ")") : opValue);
+						if (opLevel == 1) {
+							opString = "(" + opString + ") ÷ " + (opValue.negative() ? ("(" + opValue + ")") : opValue);
+						} else {
+							opString += " ÷ " + (opValue.negative() ? ("(" + opValue + ")") : opValue);
+						}
 					}
 					opLevel = 2;
 					break;

@@ -33,13 +33,14 @@ public class QuestionService extends BaseService {
 			int maxInt = (max == null ? 100 : Integer.parseInt(max));
 			int minInt = (min == null ? 0 : Integer.parseInt(min));
 			int numInt = (num == null ? 20 : Integer.parseInt(num));
-			int chainInt = (chain == null ? 2 : Integer.parseInt(chain));
-			if (chainInt < 2) chainInt = 2;
+			int chainInt = (chain == null ? 1 : Integer.parseInt(chain));
+			if (chainInt < 1) chainInt = 1;
 			int levelInt = (level == null ? 3 : Integer.parseInt(level));
 			if (levelInt > 3 || levelInt < 1) levelInt = 3;
 			int typeInt = (type == null ? 1 : Integer.parseInt(type));
 			if (typeInt > 3 || typeInt < 1) typeInt = 1;
 			int roundInt = (round == null ? 0 : Integer.parseInt(round));
+			if (roundInt < 1) typeInt = 1;
 			result = agent.generate(maxInt, minInt, numInt, chainInt, levelInt, typeInt, roundInt);
 			result = successResponse(result);
 		} catch (Exception e) {
@@ -64,7 +65,7 @@ public class QuestionService extends BaseService {
 		String resultString = "";
 		JSONArray qa = result.getJSONArray("qa");
 		for (int i = 0; i < qa.size(); i++) {
-			resultString += "<font size=4 color=\"#BBB\">" + (i + 1) + ". </font>";
+			resultString += "<font size=4 style=\"line-height:150%;\" color=\"#BBB\">" + (i + 1) + ". </font>";
 			resultString += "<font size=4 color=\"#000\">" + qa.getJSONObject(i).getString("q")+ "</font>";
 			resultString += "<font size=4 color=\"#FFF\">" + qa.getJSONObject(i).getString("a") + "</font>";
 			resultString += "<br/>";
