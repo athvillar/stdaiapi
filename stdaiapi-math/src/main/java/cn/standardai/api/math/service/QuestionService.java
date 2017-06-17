@@ -40,7 +40,7 @@ public class QuestionService extends BaseService {
 			int typeInt = (type == null ? 1 : Integer.parseInt(type));
 			if (typeInt > 3 || typeInt < 1) typeInt = 1;
 			int roundInt = (round == null ? 0 : Integer.parseInt(round));
-			if (roundInt < 1) typeInt = 1;
+			if (roundInt < 1) roundInt = 1;
 			result = agent.generate(maxInt, minInt, numInt, chainInt, levelInt, typeInt, roundInt);
 			result = successResponse(result);
 		} catch (Exception e) {
