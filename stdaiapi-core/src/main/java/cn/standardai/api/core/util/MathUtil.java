@@ -95,4 +95,23 @@ public class MathUtil {
 		}
 		return String.valueOf(c);
 	}
+
+	public static Integer getGreatestCommonDivisor(Integer a, Integer b) {
+		if (a == null || b == null) return null;
+		if (a == 0 || b == 0) return null;
+		int p1, p2;
+		if (a > b) {
+			p1 = a;
+			p2 = b;
+		} else {
+			p1 = b;
+			p2 = a;
+		}
+		while (true) {
+			int remainder = p1 % p2;
+			if (remainder == 0) return p2;
+			p1 = p2;
+			p2 = remainder;
+		}
+	}
 }

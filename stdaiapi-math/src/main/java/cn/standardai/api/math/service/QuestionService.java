@@ -17,14 +17,15 @@ import cn.standardai.api.math.agent.QuestionAgent;
 @Controller
 @RestController
 @EnableAutoConfiguration
-@RequestMapping("/question")
+@RequestMapping("/questions")
 public class QuestionService extends BaseService {
 
 	private Logger logger = LoggerFactory.getLogger(QuestionService.class);
 
-	@RequestMapping(value = "/plusMinus", method = RequestMethod.GET)
-	public String plusMinus(String max, String min, String num) {
-		logger.info("Start /question/plusMinus?min=" + min + "&max=" + max + "&num=" + num);
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String generate(String max, String min, String num, String round, String chain, String level, String type) {
+		logger.info("Start /question/plusMinus?max=" + max + "&min=" + min + "&round=" + round + "&num=" + num
+				 + "&chain=" + chain + "&level=" + level + "&type=" + type);
 		QuestionAgent agent = null;
 		JSONObject result = null;
 		try {
@@ -32,7 +33,14 @@ public class QuestionService extends BaseService {
 			int maxInt = (max == null ? 100 : Integer.parseInt(max));
 			int minInt = (min == null ? 0 : Integer.parseInt(min));
 			int numInt = (num == null ? 20 : Integer.parseInt(num));
-			result = agent.getPlusMinus(maxInt, minInt, numInt);
+			int chainInt = (chain == null ? 2 : Integer.parseInt(chain));
+			if (chainInt < 2) chainInt = 2;
+			int levelInt = (level == null ? 3 : Integer.parseInt(level));
+			if (levelInt > 3 || levelInt < 1) levelInt = 3;
+			int typeInt = (type == null ? 1 : Integer.parseInt(type));
+			if (typeInt > 3 || typeInt < 1) typeInt = 1;
+			int roundInt = (round == null ? 0 : Integer.parseInt(round));
+			result = agent.generate(maxInt, minInt, numInt, chainInt, levelInt, typeInt, roundInt);
 			result = successResponse(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -46,23 +54,22 @@ public class QuestionService extends BaseService {
 		return result.toString();
 	}
 
-	@RequestMapping(value = "/pm", method = RequestMethod.GET)
-	public String generate1(String max, String min, String num) {
-		logger.info("Start /question/pm?min=" + min + "&max=" + max + "&num=" + num);
+	@RequestMapping(value = "/plain", method = RequestMethod.GET)
+	public String generate1(String max, String min, String num, String round, String chain, String level, String type) {
 
-		JSONObject result = JSONObject.parseObject(plusMinus(max, min, num));
+		JSONObject result = JSONObject.parseObject(generate(max, min, num, round, chain, level, type));
 		if (!"success".equals(result.getString("result"))) {
 			return "生成失败(" + result.getString("message") + ")";
 		}
 		String resultString = "";
 		JSONArray qa = result.getJSONArray("qa");
 		for (int i = 0; i < qa.size(); i++) {
-			resultString += (i + 1) + ". ";
-			resultString += qa.getJSONObject(i).getString("q");
+			resultString += "<font size=4 color=\"#BBB\">" + (i + 1) + ". </font>";
+			resultString += "<font size=4 color=\"#000\">" + qa.getJSONObject(i).getString("q")+ "</font>";
+			resultString += "<font size=4 color=\"#FFF\">" + qa.getJSONObject(i).getString("a") + "</font>";
 			resultString += "<br/>";
 		}
 
-		logger.info("Finish /question/pm (" + result + ")");
 		return resultString;
 	}
 }
