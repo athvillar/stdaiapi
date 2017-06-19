@@ -66,7 +66,7 @@ public class DeepLstm extends Dnn<LstmData> {
 
 	public void train() throws DnnException, MatrixException {
 
-		if (trainMillisecond == null && testLossIncreaseTolerance == null) epoch = 1;
+		if (epoch == null && trainMillisecond == null && testLossIncreaseTolerance == null) epoch = 1;
 		long startTime = new Date().getTime();
 		List<Integer> indice = initIndice(getTrainDataCnt());
 		boolean needBreak = false;

@@ -69,19 +69,20 @@ public class DnnAgent extends AuthAgent {
 		dataSetting.setStructure(structure);
 
 		Cnn cnn = null;
+		DeepLstm lstm = null;
 		try {
 			switch (algorithm) {
 			case cnn:
 				cnn = Cnn.getInstance(structure);
 				break;
 			case lstm:
-				DeepLstm.getInstance(structure);
+				lstm = DeepLstm.getInstance(structure);
 				break;
 			}
 		} catch (DnnException e) {
 			throw new MLException("模型创建脚本执行失败", e);
 		}
-		setDataSetting(dataSetting, dataset, algorithm, cnn);
+		setDataSetting(dataSetting, dataset, algorithm, cnn, lstm);
 
 		return mh.createModel(userId, modelTemplateName, algorithm, dataSetting);
 	}
@@ -196,7 +197,7 @@ public class DnnAgent extends AuthAgent {
 		return arrJ2;
 	}
 
-	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm, Cnn cnn) throws FilterException {
+	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm, Cnn cnn, DeepLstm lstm) throws FilterException {
 
 		// 如果用户没有输入的话，根据数据集和算法选择filter和column
 		dataSetting.setDatasetId(dataset.getDatasetId());
@@ -226,7 +227,7 @@ public class DnnAgent extends AuthAgent {
 					if (cnn.layers.get(0).depth == 3) {
 						dataSetting.setxFilter("RGBImageFilter");
 					} else {
-						dataSetting.setxFilter("GrayImageFilter|ExpInteger3D");
+						dataSetting.setxFilter("GrayImageFilter|ResizeFilter(" + cnn.layers.get(0).width + "," + cnn.layers.get(0).height + ")|ExpInteger3D");
 					}
 					break;
 				default:

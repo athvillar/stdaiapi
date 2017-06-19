@@ -33,6 +33,36 @@ public class Statistic {
 		return max;
 	}
 
+	public static Integer max(Integer[][] input) {
+		if (input == null || input.length == 0) {
+			return null;
+		}
+		int max = input[0][0];
+		for (int i = 0; i < input.length; i++) {
+			for (int j = 0; j < input[i].length; j++) {
+				if (input[i][j] > max) {
+					max = input[i][j];
+				}
+			}
+		}
+		return max;
+	}
+
+	public static Integer min(Integer[][] input) {
+		if (input == null || input.length == 0) {
+			return null;
+		}
+		int min = input[0][0];
+		for (int i = 0; i < input.length; i++) {
+			for (int j = 0; j < input[i].length; j++) {
+				if (input[i][j] < min) {
+					min = input[i][j];
+				}
+			}
+		}
+		return min;
+	}
+
 	public static Integer max(Integer...args) {
 		if (args == null || args.length == 0) {
 			return null;

@@ -18,7 +18,7 @@ public class NormalizeIntegerFilter extends MatrixFilter<Integer[][], Double[][]
 		Double[][] des = new Double[src.length][];
 		for (int i = 0; i < des.length; i++) {
 			des[i] = new Double[src[i].length];
-			for (int j = 0; j < des.length; j++) {
+			for (int j = 0; j < des[i].length; j++) {
 				des[i][j] = 1.0 * src[i][j] / l2;
 			}
 		}

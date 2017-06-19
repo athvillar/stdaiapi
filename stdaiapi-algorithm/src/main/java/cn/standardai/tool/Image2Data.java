@@ -4,35 +4,25 @@
 */
 package cn.standardai.tool;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-/**
- * 图片处理
- * @author 韩晴
- *
- */
+import cn.standardai.lib.base.function.Statistic;
+
 public class Image2Data {
 
 	public static void main(String[] args) {
-		String file = "/Users/athvillar/Downloads/q1.jpg";
+		String file1 = "/Users/athvillar/Documents/test/test1.jpg";
+		String file2 = "/Users/athvillar/Documents/test/test2.jpg";
+		String file3 = "/Users/athvillar/Documents/test/test3.jpg";
 		try {
-			Integer[][][] d1 = getRGB(file);
-			for (int i = 0; i < d1.length; i++) {
-				for (int j = 0; j < d1[i].length; j++) {
-					for (int k = 0; k < d1[i][j].length; k++) {
-						System.out.print(d1[i][j][k] + ",");
-					}
-					System.out.println();
-				}
-				System.out.println("--------");
-			}
+			Integer[] c1 = grayCalculas(getGray2(file1), 0);
+			drawCalculas(file2, c1, 0);
+			Integer[] c2 = grayCalculas(getGray2(file1), 1);
+			drawCalculas(file3, c2, 1);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -78,9 +68,9 @@ public class Image2Data {
 		for (int i= 0 ; i < width ; i++) {
 			for (int j = 0 ; j < height; j++) {
 				int rgb = image.getRGB(i, j);
-				int R =(rgb & 0xff0000 ) >> 16 ;
-				int G= (rgb & 0xff00 ) >> 8 ;
-				int B= (rgb & 0xff );
+				int R = (rgb & 0xff0000 ) >> 16 ;
+				int G = (rgb & 0xff00 ) >> 8 ;
+				int B = (rgb & 0xff );
 				data[i][j][0] = R;
 			}
 		}
@@ -102,9 +92,9 @@ public class Image2Data {
 		for (int i= 0 ; i < width ; i++) {
 			for (int j = 0 ; j < height; j++) {
 				int rgb = image.getRGB(i, j);
-				int R =(rgb & 0xff0000 ) >> 16 ;
-				int G= (rgb & 0xff00 ) >> 8 ;
-				int B= (rgb & 0xff );
+				int R = (rgb & 0xff0000 ) >> 16 ;
+				int G = (rgb & 0xff00 ) >> 8 ;
+				int B = (rgb & 0xff );
 				data[i][j] = (R + G + B) / 3;
 			}
 		}
@@ -123,5 +113,89 @@ public class Image2Data {
 			}
 		}
 		ImageIO.write(image, "PNG", new File(fileName));
+	}
+
+	public static Integer[] grayCalculas(Integer[][] gray, int direction) {
+		return grayCalculas(gray, direction, null, null, null, null);
+	}
+
+	public static Integer[] grayCalculas(Integer[][] gray, int direction, Integer x1, Integer y1, Integer x2, Integer y2) {
+
+		if (gray == null || gray.length == 0) return null;
+		if (x1 == null) x1 = 0;
+		if (y1 == null) y1 = 0;
+		if (x2 == null) x2 = gray.length;
+		if (y2 == null) y2 = gray[0].length;
+		Double[][] newValue = normalize(gray);
+
+		Integer[] calculas;
+		if (direction == 0) {
+			calculas = new Integer[y2 - y1];
+			for (int i = 0; i < calculas.length; i++) {
+				calculas[i] = 0;
+				for (int j = x1; j < x2; j++) {
+					if (newValue[j][y1 + i] < 0.5) calculas[i]++;
+				}
+			}
+		} else {
+			calculas = new Integer[x2 - x1];
+			for (int i = 0; i < calculas.length; i++) {
+				calculas[i] = 0;
+				for (int j = y1; j < y2; j++) {
+					if (newValue[x1 + i][j] < 0.5) calculas[i]++;
+				}
+			}
+		}
+
+		return calculas;
+	}
+
+	public static void drawCalculas(String fileName, Integer[] calculas, int direction) throws IOException {
+
+		if (calculas == null || calculas.length == 0) return;
+		Integer[][] pixels;
+
+		if (direction == 0) {
+			pixels = new Integer[Statistic.max(calculas)][calculas.length];
+			for (int i = 0; i < pixels.length; i++) {
+				for (int j = 0; j < pixels[i].length; j++) {
+					if (calculas[j] > i) {
+						pixels[i][j] = 0;
+					} else {
+						pixels[i][j] = 255;
+					}
+				}
+			}
+		} else {
+			pixels = new Integer[calculas.length][Statistic.max(calculas)];
+			for (int i = 0; i < pixels.length; i++) {
+				for (int j = 0; j < pixels[i].length; j++) {
+					if (calculas[i] > j) {
+						pixels[i][j] = 0;
+					} else {
+						pixels[i][j] = 255;
+					}
+				}
+			}
+		}
+
+		drawGray(fileName, pixels);
+	}
+
+	private static Double[][] normalize(Integer[][] value) {
+
+		if (value == null || value.length == 0) return null;
+		int max = Statistic.max(value);
+		int min = Statistic.min(value);
+		int differ = max - min;
+
+		Double[][] newValue = new Double[value.length][value[0].length];
+		for (int i = 0; i < value.length; i++) {
+			for (int j = 0; j < value[i].length; j++) {
+				newValue[i][j] = (0.0 + value[i][j] - min) / differ;
+			}
+		}
+
+		return newValue;
 	}
 }

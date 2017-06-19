@@ -436,7 +436,7 @@ public class MatrixUtil {
 		return result;
 	}
 
-	public static void print(Double[] v) {
+	public static void print(Object[] v) {
 		System.out.print("[ ");
 		for (int i = 0; i < v.length; i++) {
 			System.out.print(v[i]);
@@ -447,7 +447,7 @@ public class MatrixUtil {
 		System.out.println(" ]");
 	}
 
-	public static void print(Double[][] m) {
+	public static void print(Object[][] m) {
 		System.out.print("[ ");
 		for (int i = 0; i < m.length; i++) {
 			System.out.print("[ ");
