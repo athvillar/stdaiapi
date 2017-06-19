@@ -1,18 +1,8 @@
 package cn.standardai.api.ml.filter;
 
 import cn.standardai.api.ml.exception.FilterException;
-import cn.standardai.lib.base.matrix.MatrixUtil;
 
 public class ResizeFilter extends DimensionFilter<Integer[][], Integer[][]> {
-
-	public static void main(String[] args) throws FilterException {
-		Integer[][] a = new Integer[][] {{1,2,3,4,5},{3,4,5,6,7},{5,6,7,8,9},{3,4,5,6,7},{5,6,7,8,9}};
-		ResizeFilter r = new ResizeFilter();
-		r.setParam(0, "2");
-		r.setParam(1, "2");
-		Integer[][] b = r.encode(a);
-		MatrixUtil.print(b);
-	}
 
 	@Override
 	public Integer[][] encode(Integer[][] src) throws FilterException {
