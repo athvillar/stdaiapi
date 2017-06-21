@@ -57,7 +57,7 @@ public class LiteralUtil {
 		return words;
 	}
 
-	private static void drawWords(List<List<Word>> words, String fileName, Integer width, Integer height) throws IOException {
+	public static void drawWords(List<List<Word>> words, String fileName, Integer width, Integer height) throws IOException {
 		int index = 1;
 		for (int i = 0; i < words.size(); i++) {
 			for (int j = 0; j < words.get(i).size(); j++) {

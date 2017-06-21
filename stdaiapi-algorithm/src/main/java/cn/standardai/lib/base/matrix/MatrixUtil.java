@@ -436,34 +436,45 @@ public class MatrixUtil {
 		return result;
 	}
 
-	public static void print(Object[] v) {
-		System.out.print("[ ");
+	public static String parseString(Object[] v) {
+		String s = "";
+		s += "[ ";
 		for (int i = 0; i < v.length; i++) {
-			System.out.print(v[i]);
+			s += v[i];
 			if (i != v.length - 1) {
-				System.out.print(", ");
+				s += ", ";
 			}
 		}
-		System.out.println(" ]");
+		s += " ]";
+		return s;
 	}
 
-	public static void print(Object[][] m) {
-		System.out.print("[ ");
+	public static String parseString(Object[][] m) {
+		String s = "[ ";
 		for (int i = 0; i < m.length; i++) {
-			System.out.print("[ ");
+			s += "[ ";
 			for (int j = 0; j < m[i].length; j++) {
-				System.out.print(m[i][j]);
+				s += m[i][j];
 				if (j != m[i].length - 1) {
-					System.out.print(", ");
+					s += ", ";
 				}
 			}
-			System.out.print(" ]");
+			s += " ]";
 			if (i != m.length - 1) {
-				System.out.println(", ");
+				s += ", ";
 			} else {
 			}
 		}
-		System.out.println(" ]");
+		s += " ]";
+		return s;
+	}
+
+	public static void print(Object[] v) {
+		System.out.print(parseString(v));
+	}
+
+	public static void print(Object[][] m) {
+		System.out.print(parseString(m));
 	}
 
 	public static Double[][] subMatrix(Double[][] src, int m, int n, int direction) {

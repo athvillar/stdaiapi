@@ -54,6 +54,19 @@ public class Image2Data {
 		return data;
 	}
 
+	public static Integer[][] binaryValue(Integer[][] src) {
+		int avg = Statistic.avg(src);
+		Integer[][] dst = new Integer[src.length][];
+		for (int i = 0; i < dst.length; i++) {
+			dst[i] = new Integer[src[i].length];
+			for (int j = 0; j < dst[i].length; j++) {
+				dst[i][j] = src[i][j] > 127 ? 255 : 0;
+				//dst[i][j] = src[i][j] > avg ? 255 : 0;
+			}
+		}
+		return dst;
+	}
+
 	public static Integer[][][] getGray(String filepath) throws IOException{
 
 		File file = new File(filepath);

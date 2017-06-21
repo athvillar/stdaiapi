@@ -168,6 +168,19 @@ public class Statistic {
 		return sum / args.length;
 	}
 
+	public static int avg(Integer[][] args) {
+		if (args == null || args.length == 0) {
+			return 0;
+		}
+		int sum = 0;
+		for (int i = 0; i < args.length; i++) {
+			for (int j = 0; j < args[i].length; j++) {
+				sum += args[i][j];
+			}
+		}
+		return sum / args.length / args[0].length;
+	}
+
 	public static double avg(Double...args) {
 		if (args == null || args.length == 0) {
 			return 0;
