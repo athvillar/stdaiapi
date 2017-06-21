@@ -25,7 +25,7 @@ import javax.imageio.ImageIO;
  * @author 韩晴
  *
  */
-public class CsvParser {
+public class CsvUtil {
 
 	private static final int width = 28;
 

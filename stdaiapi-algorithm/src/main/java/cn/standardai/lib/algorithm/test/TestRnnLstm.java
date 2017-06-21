@@ -12,7 +12,7 @@ import cn.standardai.lib.algorithm.rnn.lstm.LstmData;
 import cn.standardai.lib.base.function.Roulette;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
-import cn.standardai.tool.Image2Data;
+import cn.standardai.tool.ImageUtil;
 
 public class TestRnnLstm {
 
@@ -38,7 +38,7 @@ public class TestRnnLstm {
 		DeepLstm deepLstm = new DeepLstm(new int[] {30}, 100, 100);
 		LstmData[] lstmData = new LstmData[epochSize];
 		for (int i = 1; i <= epochSize; i++) {
-			Integer[][] image1 = Image2Data.getGray2("/Users/athvillar/Documents/work/yale/s" + i + ".bmp");
+			Integer[][] image1 = ImageUtil.getGray("/Users/athvillar/Documents/work/yale/s" + i + ".bmp");
 			Double[][] xs = MatrixUtil.subMatrix(MatrixUtil.devide(image1, 123 * fix), 50, 100, 1);
 			Double[][] ys = MatrixUtil.subMatrix(MatrixUtil.devide(image1, 123 * fix), 50, 100, 2);
 			lstmData[i - 1] = new LstmData(xs, ys);
@@ -58,7 +58,7 @@ public class TestRnnLstm {
 		System.out.println("Training finished!");
 
 		for (int rIndex = 1; rIndex <= epochSize; rIndex++) {
-			Integer[][] image1 = Image2Data.getGray2("/Users/athvillar/Documents/work/yale/s" + rIndex + ".bmp");
+			Integer[][] image1 = ImageUtil.getGray("/Users/athvillar/Documents/work/yale/s" + rIndex + ".bmp");
 			Double[][] xs = MatrixUtil.subMatrix(MatrixUtil.devide(image1, 123 * fix), 50, 100, 1);
 			Double[][] ys = deepLstm.predictYs(xs, 50);
 			Integer[][] pixels = new Integer[100][100];
@@ -76,7 +76,7 @@ public class TestRnnLstm {
 					}
 				}
 			}
-			Image2Data.drawGray("/Users/athvillar/Documents/" + rIndex + ".png", pixels);
+			ImageUtil.drawGray("/Users/athvillar/Documents/" + rIndex + ".png", pixels);
 		}
 
 	}

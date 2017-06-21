@@ -7,7 +7,7 @@ import cn.standardai.lib.algorithm.cnn.CnnData;
 import cn.standardai.lib.algorithm.cnn.FCLayer;
 import cn.standardai.lib.algorithm.cnn.Filter;
 import cn.standardai.lib.base.function.Statistic;
-import cn.standardai.tool.Image2Data;
+import cn.standardai.tool.ImageUtil;
 
 public class TestCnn {
 
@@ -54,7 +54,7 @@ public class TestCnn {
 		int[] trainingsetNums = new int[] {1, 2, 7, 12, 18, 9, 20, 21};
 		CnnData[] cnnDatas = new CnnData[trainingsetNums.length];
 		for (int i = 0; i < trainingsetNums.length; i++) {
-			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[i] + ".bmp");
+			Integer[][][] data = ImageUtil.getR("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[i] + ".bmp");
 			Integer[] target = new Integer[trainingsetNums.length];
 			for (int j = 0; j < target.length; j++) {
 				if (j == (trainingsetNums[i] - 1) / 11) {
@@ -81,7 +81,7 @@ public class TestCnn {
 			// 预测
 			Double[] trainingCorrectRates = new Double[trainingsetNums.length];
 			for (int index = 0; index < trainingsetNums.length; index++) {
-				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[index] + ".bmp"));
+				Double[][][] predict = cnn.predict(ImageUtil.getR("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[index] + ".bmp"));
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Double sum = 0.0;
@@ -97,7 +97,7 @@ public class TestCnn {
 			Integer[] testsetNums = new Integer[] {3, 14, 4, 15};
 			Double[] testCorrectRates = new Double[testsetNums.length];
 			for (int index = 0; index < testsetNums.length; index++) {
-				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + testsetNums[index] + ".bmp"));
+				Double[][][] predict = cnn.predict(ImageUtil.getR("/Users/athvillar/Documents/work/yale/s" + testsetNums[index] + ".bmp"));
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Double sum = 0.0;
@@ -167,7 +167,7 @@ public class TestCnn {
 		}
 		CnnData[] cnnDatas = new CnnData[trainingsetNums.length];
 		for (int i = 0; i < trainingsetNums.length; i++) {
-			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[i] + ".bmp");
+			Integer[][][] data = ImageUtil.getR("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[i] + ".bmp");
 			Integer[] target = new Integer[trainingsetNums.length];
 			for (int j = 0; j < target.length; j++) {
 				if (j == (trainingsetNums[i] - 1) / 11) {
@@ -195,7 +195,7 @@ public class TestCnn {
 			// 预测
 			Double[] trainingCorrectRates = new Double[trainingsetNums.length];
 			for (int index = 0; index < trainingsetNums.length; index++) {
-				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[index] + ".bmp"));
+				Double[][][] predict = cnn.predict(ImageUtil.getR("/Users/athvillar/Documents/work/yale/s" + trainingsetNums[index] + ".bmp"));
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Integer maxIndex = -1;
@@ -212,7 +212,7 @@ public class TestCnn {
 			}
 			Double[] testCorrectRates = new Double[testsetNums.length];
 			for (int index = 0; index < testsetNums.length; index++) {
-				Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/work/yale/s" + testsetNums[index] + ".bmp"));
+				Double[][][] predict = cnn.predict(ImageUtil.getR("/Users/athvillar/Documents/work/yale/s" + testsetNums[index] + ".bmp"));
 				// 输出预测
 				Double max = Double.NEGATIVE_INFINITY;
 				Integer maxIndex = -1;
@@ -261,23 +261,23 @@ public class TestCnn {
 
 		// 创建网络
 		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
-		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q1.jpg"), new Integer[] {0, 1});
-		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q2.png"), new Integer[] {0, 1});
-		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s1.jpg"), new Integer[] {1, 0});
-		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s2.jpg"), new Integer[] {1, 0});
+		cnn.loadData(ImageUtil.getRGB("/Users/athvillar/Downloads/q1.jpg"), new Integer[] {0, 1});
+		cnn.loadData(ImageUtil.getRGB("/Users/athvillar/Downloads/q2.png"), new Integer[] {0, 1});
+		cnn.loadData(ImageUtil.getRGB("/Users/athvillar/Downloads/s1.jpg"), new Integer[] {1, 0});
+		cnn.loadData(ImageUtil.getRGB("/Users/athvillar/Downloads/s2.jpg"), new Integer[] {1, 0});
 
 		// 训练
 		//cnn.train(10, 100);
 
 		// 预测
-		Double[][][] predict = cnn.predict(Image2Data.getRGB("/Users/athvillar/Downloads/q1.jpg"));
+		Double[][][] predict = cnn.predict(ImageUtil.getRGB("/Users/athvillar/Downloads/q1.jpg"));
 		// 输出预测
 		for (int i = 0; i < predict[0][0].length; i++) {
 			System.out.print("|" + i + ":" + predict[0][0][i]);
 		}
 		System.out.println("--" + (predict[0][0][0] > predict[0][0][1] ? "shoe" : "ball"));
 		// 预测
-		predict = cnn.predict(Image2Data.getRGB("/Users/athvillar/Downloads/s1.jpg"));
+		predict = cnn.predict(ImageUtil.getRGB("/Users/athvillar/Downloads/s1.jpg"));
 		// 输出预测
 		for (int i = 0; i < predict[0][0].length; i++) {
 			System.out.print("|" + i + ":" + predict[0][0][i]);
@@ -309,7 +309,7 @@ public class TestCnn {
 
 		// 创建网络
 		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
-		cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q1.jpg"), new Integer[] {0, 1, 0, 0});
+		cnn.loadData(ImageUtil.getRGB("/Users/athvillar/Downloads/q1.jpg"), new Integer[] {0, 1, 0, 0});
 		//cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/q2.png"), new Integer[] {0, 1});
 		//cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s1.jpg"), new Integer[] {1, 0, 0, 0});
 		//cnn.loadData(Image2Data.getRGB("/Users/athvillar/Downloads/s2.jpg"), new Integer[] {0, 1, 0, 0});
@@ -343,7 +343,7 @@ public class TestCnn {
 		}
 
 		// 预测
-		Double[][][] predict = cnn.predict(Image2Data.getRGB("/Users/athvillar/Downloads/s1.jpg"));
+		Double[][][] predict = cnn.predict(ImageUtil.getRGB("/Users/athvillar/Downloads/s1.jpg"));
 		// 输出预测
 		for (int i = 0; i < predict[0][0].length; i++) {
 			System.out.print("|" + i + ":" + predict[0][0][i]);
@@ -375,7 +375,7 @@ public class TestCnn {
 		// 创建网络
 		Cnn cnn = Cnn.getInstance(JSONObject.parseObject(param));
 		for (int i = 1; i <= 165; i++) {
-			Integer[][][] data = Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + i + ".bmp");
+			Integer[][][] data = ImageUtil.getR("/Users/athvillar/Documents/book/yale/s" + i + ".bmp");
 			Integer[] target = new Integer[15];
 			for (int j = 0; j < target.length; j++) {
 				if (j == (i - 1)/ 11) {
@@ -393,7 +393,7 @@ public class TestCnn {
 		// 预测
 		Integer[] nums = new Integer[] {3, 88, 54, 102, 44, 91, 123};
 		for (int index = 0; index < nums.length; index++) {
-			Double[][][] predict = cnn.predict(Image2Data.getGray("/Users/athvillar/Documents/book/yale/s" + nums[index] + ".bmp"));
+			Double[][][] predict = cnn.predict(ImageUtil.getR("/Users/athvillar/Documents/book/yale/s" + nums[index] + ".bmp"));
 			// 输出预测
 			System.out.println("The " + (index + 1) + "th result(s" + nums[index] + ".bmp) details:");
 			Double max = Double.NEGATIVE_INFINITY;

@@ -14,7 +14,7 @@ import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.lib.algorithm.rnn.lstm.Lstm;
 import cn.standardai.lib.base.matrix.MatrixException;
 import cn.standardai.lib.base.matrix.MatrixUtil;
-import cn.standardai.tool.CsvParser;
+import cn.standardai.tool.CsvUtil;
 
 /**
  * TestJData
@@ -86,10 +86,10 @@ public class TestJData {
 				String[] values = { user + ".0" };
 				int[] includeIndice = {1,4};
 				String outFile = basePath + "user_" + user + ".csv";
-				rawData = CsvParser.parse(inFiles, outFile, keyIndice, values, includeIndice, false, false);
+				rawData = CsvUtil.parse(inFiles, outFile, keyIndice, values, includeIndice, false, false);
 			} else {
 				String inFile = basePath + "user_" + user + ".csv";
-				rawData = CsvParser.parse(new String[] { inFile }, null, null, null, new int[] {0, 1}, true, false);
+				rawData = CsvUtil.parse(new String[] { inFile }, null, null, null, new int[] {0, 1}, true, false);
 			}
 
 			// 按商品归类

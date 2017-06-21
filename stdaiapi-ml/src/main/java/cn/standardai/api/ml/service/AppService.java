@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +22,7 @@ import cn.standardai.api.ml.agent.FormulaAgent;
 @RestController
 @EnableAutoConfiguration
 @RequestMapping("/app")
-public class AppService extends BaseService {
+public class AppService extends BaseService<FormulaAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(AppService.class);
 
@@ -33,25 +32,7 @@ public class AppService extends BaseService {
 		JSONObject result = null;
 		FormulaAgent agent = new FormulaAgent();
 		try {
-			result = agent.process(agent.parse(uploadfiles));
-			result = successResponse(result);
-		} catch (Exception e) {
-			e.printStackTrace();
-			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
-		} finally {
-			if (agent != null) agent.done();
-		}
-		logger.info("stdaiapi-ml /app/formula POST finish (response:" + result.toJSONString() + ")");
-		return result.toString();
-	}
-
-	@RequestMapping(value = "/formula/test", method = RequestMethod.POST)
-	public String test(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadFiles) {
-		logger.info("stdaiapi-ml /formula/test POST 收到图片检查请求");
-		JSONObject result = null;
-		FormulaAgent agent = new FormulaAgent();
-		try {
-			result = agent.process(uploadFiles);
+			result = agent.process(uploadfiles);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
@@ -61,7 +42,7 @@ public class AppService extends BaseService {
 		} finally {
 			if (agent != null) agent.done();
 		}
-		logger.info("stdaiapi-ml /formula/test POST 结束图片检查 (" + result.toJSONString() + ")");
+		logger.info("stdaiapi-ml /app/formula POST finish (" + result.toJSONString() + ")");
 		return result.toString();
 	}
 }

@@ -32,11 +32,15 @@ public class PropertyConfig {
 		
 		private String uploadTemp;
 		
+		private String debugTemp;
+		
 		private String imagePath;
 		
 		private Integer imageWidth;
 		
 		private Integer imageHeight;
+
+		private Boolean debug;
 
 		public String getParkId() {
 			return parkId;
@@ -84,6 +88,22 @@ public class PropertyConfig {
 
 		public void setImageHeight(Integer imageHeight) {
 			this.imageHeight = imageHeight;
+		}
+
+		public String getDebugTemp() {
+			return debugTemp;
+		}
+
+		public void setDebugTemp(String debugTemp) {
+			this.debugTemp = debugTemp;
+		}
+
+		public Boolean getDebug() {
+			return debug;
+		}
+
+		public void setDebug(Boolean debug) {
+			this.debug = debug;
 		}
 	}
 

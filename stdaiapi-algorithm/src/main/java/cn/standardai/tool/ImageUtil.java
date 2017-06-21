@@ -1,27 +1,30 @@
 /**
-* ImageConverter.java
+* ImageUtil.java
 * Copyright 2014 standardai Co.ltd.
 */
 package cn.standardai.tool;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import cn.standardai.lib.base.function.Statistic;
 
-public class Image2Data {
+public class ImageUtil {
 
 	public static void main(String[] args) {
 		String file1 = "/Users/athvillar/Documents/test/test1.jpg";
 		String file2 = "/Users/athvillar/Documents/test/test2.jpg";
 		String file3 = "/Users/athvillar/Documents/test/test3.jpg";
 		try {
-			Integer[] c1 = grayCalculas(getGray2(file1), 0);
+			Integer[] c1 = grayCalculas(getGray(file1), 0);
 			drawCalculas(file2, c1, 0);
-			Integer[] c2 = grayCalculas(getGray2(file1), 1);
+			Integer[] c2 = grayCalculas(getGray(file1), 1);
 			drawCalculas(file3, c2, 1);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -67,7 +70,7 @@ public class Image2Data {
 		return dst;
 	}
 
-	public static Integer[][][] getGray(String filepath) throws IOException{
+	public static Integer[][][] getR(String filepath) throws IOException{
 
 		File file = new File(filepath);
 		File file2 = new File(file.getAbsolutePath());
@@ -81,9 +84,9 @@ public class Image2Data {
 		for (int i= 0 ; i < width ; i++) {
 			for (int j = 0 ; j < height; j++) {
 				int rgb = image.getRGB(i, j);
-				int R = (rgb & 0xff0000 ) >> 16 ;
-				int G = (rgb & 0xff00 ) >> 8 ;
-				int B = (rgb & 0xff );
+				int R = (rgb & 0xff0000 ) >> 16;
+				//int G = (rgb & 0xff00 ) >> 8;
+				//int B = (rgb & 0xff );
 				data[i][j][0] = R;
 			}
 		}
@@ -91,28 +94,48 @@ public class Image2Data {
 		return data;
 	}
 
-	public static Integer[][] getGray2(String filepath) throws IOException{
+	public static Integer[][] getGray(BufferedImage imageBuffer) throws IOException{
 
-		File file = new File(filepath);
-		File file2 = new File(file.getAbsolutePath());
-		BufferedImage image = ImageIO.read(file2);
-
-		int width = image.getWidth();
-		int height = image.getHeight();
+		int width = imageBuffer.getWidth();
+		int height = imageBuffer.getHeight();
 		Integer[][] data = new Integer[width][height];
-
-		//FileOutputStream fos = new FileOutputStream(new File(newFilepath));
 		for (int i= 0 ; i < width ; i++) {
 			for (int j = 0 ; j < height; j++) {
-				int rgb = image.getRGB(i, j);
-				int R = (rgb & 0xff0000 ) >> 16 ;
-				int G = (rgb & 0xff00 ) >> 8 ;
-				int B = (rgb & 0xff );
+				int rgb = imageBuffer.getRGB(i, j);
+				int R = (rgb & 0xff0000) >> 16;
+				int G = (rgb & 0xff00) >> 8;
+				int B = (rgb & 0xff);
 				data[i][j] = (R + G + B) / 3;
 			}
 		}
-
 		return data;
+	}
+
+	public static Integer[][] getGray(String filepath) throws IOException{
+		File file = new File(filepath);
+		File file2 = new File(file.getAbsolutePath());
+		BufferedImage imageBuffer = ImageIO.read(file2);
+		return getGray(imageBuffer);
+	}
+
+	public static Integer[][] getGray(MultipartFile imageFile) throws IOException {
+
+		Integer[][] imagePixel = null;
+		ByteArrayInputStream byteInputStream = null;
+		BufferedImage imageBuffer = null;
+		try {
+			byteInputStream = new ByteArrayInputStream(imageFile.getBytes());
+			imageBuffer = ImageIO.read(byteInputStream);
+			imagePixel = getGray(imageBuffer);
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			if (byteInputStream != null) {
+				byteInputStream.close();
+			}
+		}
+
+		return imagePixel;
 	}
 
 	public static void drawGray(String fileName, Integer[][] pixels) throws IOException{

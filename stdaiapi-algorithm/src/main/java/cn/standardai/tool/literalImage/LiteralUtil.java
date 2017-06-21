@@ -14,7 +14,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import cn.standardai.lib.base.function.Statistic;
-import cn.standardai.tool.Image2Data;
+import cn.standardai.tool.ImageUtil;
 
 public class LiteralUtil {
 
@@ -22,49 +22,49 @@ public class LiteralUtil {
 		String file1 = "/Users/athvillar/Documents/test/test1.jpg";
 		String file2 = "/Users/athvillar/Documents/test/";
 		try {
-			Integer[][] gray = Image2Data.getGray2(file1);
-			List<List<Word>> words = cut(gray, 0.0, 0.0);
+			Integer[][] pixels = ImageUtil.getGray(file1);
+			List<List<Slice>> slices = cut(pixels, 0.0, 0.0);
 			//drawWords(words, file2, null, 25);
-			drawWords(words, file2, 30, 30);
+			int i = drawWords(pixels, slices, file2, 1, 30, 30);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static List<List<Word>> cut(Integer[][] image, double th1, double th2) {
+	public static List<List<Slice>> cut(Integer[][] pixels, double th1, double th2) {
 
-		if (image == null) return null;
-		List<List<Word>> words = new ArrayList<List<Word>>();
+		if (pixels == null) return null;
+		List<List<Slice>> slices = new ArrayList<List<Slice>>();
 
 		// Separate lines
-		Integer[] c1 = Image2Data.grayCalculas(image, 0);
+		Integer[] c1 = ImageUtil.grayCalculas(pixels, 0);
 		List<Integer[]> yList = split(c1, th1);
 
 		for (int i = 0; i < yList.size(); i++) {
-			Integer[] c2 = Image2Data.grayCalculas(image, 1, 0, yList.get(i)[0], image.length, yList.get(i)[1]);
+			Integer[] c2 = ImageUtil.grayCalculas(pixels, 1, 0, yList.get(i)[0], pixels.length, yList.get(i)[1]);
 			List<Integer[]> xList = split(c2, th2);
-			List<Word> words1Line = new ArrayList<Word>();
+			List<Slice> words1Line = new ArrayList<Slice>();
 			for (int j = 0; j < xList.size(); j++) {
-				Integer[] c3 = Image2Data.grayCalculas(image, 0, xList.get(j)[0], yList.get(i)[0], xList.get(j)[1], yList.get(i)[1]);
+				Integer[] c3 = ImageUtil.grayCalculas(pixels, 0, xList.get(j)[0], yList.get(i)[0], xList.get(j)[1], yList.get(i)[1]);
 				List<Integer[]> y2List = split(c3, 0.0);
 				if (y2List == null || y2List.size() == 0) continue;
-				Word word1 = new Word(image, xList.get(j)[0], yList.get(i)[0] + y2List.get(0)[0], xList.get(j)[1], yList.get(i)[0] + y2List.get(y2List.size() - 1)[1]);
+				Slice word1 = new Slice(xList.get(j)[0], yList.get(i)[0] + y2List.get(0)[0], xList.get(j)[1], yList.get(i)[0] + y2List.get(y2List.size() - 1)[1]);
 				words1Line.add(word1);
 			}
-			words.add(words1Line);
+			slices.add(words1Line);
 		}
 
-		return words;
+		return slices;
 	}
 
-	public static void drawWords(List<List<Word>> words, String fileName, Integer width, Integer height) throws IOException {
-		int index = 1;
-		for (int i = 0; i < words.size(); i++) {
-			for (int j = 0; j < words.get(i).size(); j++) {
-				Integer[][] scope = words.get(i).get(j).getScope();
-				Image2Data.drawGray(fileName + "split_" + index, scope);
+	public static int drawWords(Integer[][] pixels, List<List<Slice>> slices, String path, int index, Integer width, Integer height) throws IOException {
+		int idx = 0;
+		for (int i = 0; i < slices.size(); i++) {
+			for (int j = 0; j < slices.get(i).size(); j++) {
+				Integer[][] scope = slices.get(i).get(j).getScope(pixels);
+				ImageUtil.drawGray(path + "split_" + index, scope);
+				/*
 				if (width == null && height == null) return;
-
 				int newWidth = 0;
 				int newHeight = 0;
 				if (width == null) {
@@ -77,10 +77,13 @@ public class LiteralUtil {
 					newWidth = width;
 					newHeight = height;
 				}
-				//resize(fileName + "split_" + index, newWidth, newHeight);
+				resize(path + "split_" + index, newWidth, newHeight);
+				*/
 				index++;
+				idx++;
 			}
 		}
+		return idx;
 	}
 
 	private static List<Integer[]> split(Integer[] c, double th) {

@@ -4,9 +4,7 @@
 */
 package cn.standardai.tool.literalImage;
 
-public class Word {
-
-	private Integer[][] image;
+public class Slice {
 
 	private Integer x1;
 
@@ -18,20 +16,11 @@ public class Word {
 
 	private Integer[][] scope;
 
-	public Word(Integer[][] image, Integer x1, Integer y1, Integer x2, Integer y2) {
-		this.image = image;
+	public Slice(Integer x1, Integer y1, Integer x2, Integer y2) {
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
-	}
-
-	public Integer[][] getImage() {
-		return image;
-	}
-
-	public void setImage(Integer[][] image) {
-		this.image = image;
 	}
 
 	public Integer getX1() {
@@ -66,15 +55,14 @@ public class Word {
 		this.y2 = y2;
 	}
 
-	public Integer[][] getScope() {
+	public Integer[][] getScope(Integer[][] pixels) {
 		if (scope != null) return scope;
 		if (x1 == null || y1 == null || x2 == null || y2 == null) return null;
-		if (image == null) return null;
 
 		Integer[][] scope = new Integer[x2 - x1][y2 - y1];
 		for (int i = 0; i < x2 - x1; i++) {
 			for (int j = 0; j < y2 - y1; j++) {
-				scope[i][j] = image[x1 + i][y1 + j];
+				scope[i][j] = pixels[x1 + i][y1 + j];
 			}
 		}
 		setScope(scope);

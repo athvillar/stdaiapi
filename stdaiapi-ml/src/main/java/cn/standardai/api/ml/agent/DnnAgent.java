@@ -144,11 +144,9 @@ public class DnnAgent extends AuthAgent {
 		JSONObject result = new JSONObject();
 		switch (ms.getAlgorithm()) {
 		case cnn:
-			Integer[][] ys1 = new Integer[rawData.size()][];
 			String[] ys = new String[rawData.size()];
 			for (int i = 0; i < rawData.size(); i++) {
 				Integer[][][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
-				//ys1[i] = ((Cnn)dnn).predictY(x);
 				ys[i] = DataFilter.decode(((Cnn)dnn).predictY(x), yFilters);
 			}
 			result.put("value", ys);
@@ -183,18 +181,6 @@ public class DnnAgent extends AuthAgent {
 			arrJ.add(ys[i]);
 		}
 		return arrJ;
-	}
-
-	private JSONArray I22J(Integer[][] ys) {
-		JSONArray arrJ2 = new JSONArray();
-		for (int i = 0; i < ys.length; i++) {
-			JSONArray arrJ1 = new JSONArray();
-			for (int j = 0; j < ys[i].length; j++) {
-				arrJ1.add(ys[i][j]);
-			}
-			arrJ2.add(arrJ1);
-		}
-		return arrJ2;
 	}
 
 	private void setDataSetting(DnnDataSetting dataSetting, Dataset dataset, DnnAlgorithm algorithm, Cnn cnn, DeepLstm lstm) throws FilterException {
@@ -272,7 +258,7 @@ public class DnnAgent extends AuthAgent {
 		}
 	}
 
-	private DnnDicSetting createDic(DicFilter f, Dataset dataset, String column) throws FilterException {
+	private DnnDicSetting createDic(DicFilter<String, ?, Integer> f, Dataset dataset, String column) throws FilterException {
 		List<Data> data = dh.getData(dataset);
 		f.init(this.userId, this.daoHandler);
 		for (int i = 0; i < data.size(); i++) {
