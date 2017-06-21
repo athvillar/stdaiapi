@@ -28,15 +28,13 @@ public class AppService extends BaseService {
 	private Logger logger = LoggerFactory.getLogger(AppService.class);
 
 	@RequestMapping(value = "/formula", method = RequestMethod.POST)
-	public String formula(@RequestHeader HttpHeaders headers, @RequestBody JSONObject request) {
+	public String formula(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
 		logger.info("stdaiapi-ml /app/formula POST start ...");
 		JSONObject result = null;
 		FormulaAgent agent = new FormulaAgent();
 		try {
-			result = agent.process(agent.parse(request));
+			result = agent.process(agent.parse(uploadfiles));
 			result = successResponse(result);
-		} catch (StdaiException e) {
-			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
