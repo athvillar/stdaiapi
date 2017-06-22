@@ -18,6 +18,7 @@ import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.tool.ImageUtil;
+import cn.standardai.tool.ImageUtil.BVMethod;
 import cn.standardai.tool.literalImage.LiteralUtil;
 import cn.standardai.tool.literalImage.Slice;
 
@@ -92,17 +93,19 @@ public class FormulaAgent extends AuthAgent {
 			// 获得灰度值
 			Integer[][] gray = ImageUtil.getGray(uploadFiles[0]);
 			// 二值化
-			Integer[][] bv = ImageUtil.binaryValue(gray);
+			Integer[][] bv = ImageUtil.binaryValue(gray, BVMethod.localAvg);
+			// 去除噪点
+			bv = ImageUtil.clearNoise(bv, 1);
 			// 输出二值化图片，测试用
 			if (Context.getProp().getLocal().getDebug())
 				ImageUtil.drawGray(Context.getProp().getLocal().getDebugTemp() + "bv.jpg", bv);
 			// 分割出文字
-			List<List<Slice>> slices = LiteralUtil.cut(gray, 0.03, 0.03);
+			List<List<Slice>> slices = LiteralUtil.cut(bv, 0.03, 0.0);
 			// 输出文字图片，测试用
 			if (Context.getProp().getLocal().getDebug())
-				LiteralUtil.drawWords(gray, slices, Context.getProp().getLocal().getDebugTemp(), 1, null, null);
+				LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getDebugTemp(), 1, null, null);
 			// 识别文字图片
-			String[][] wordString = recognize(gray, slices);
+			String[][] wordString = recognize(bv, slices);
 			// 检查正误
 			return check(slices, wordString);
 		} catch (IOException | DnnException e) {
@@ -114,6 +117,7 @@ public class FormulaAgent extends AuthAgent {
 
 		JSONArray details = new JSONArray();
 		for (int i = 0; i < words.length; i++) {
+			if (slices.get(i).size() == 0) continue;
 			JSONObject detail1 = new JSONObject();
 			detail1.put("x", slices.get(i).get(slices.get(i).size() - 1).getX2());
 			detail1.put("y", slices.get(i).get(slices.get(i).size() - 1).getY1());
@@ -143,7 +147,14 @@ public class FormulaAgent extends AuthAgent {
 				j.put("content", concatString(symbols));
 				return j;
 			}
-			Integer value = "".equals(valueString) ? null : Integer.parseInt(valueString);
+			Integer value = null;
+			try {
+				value = "".equals(valueString) ? null : Integer.parseInt(valueString);
+			} catch (NumberFormatException e) {
+				j.put("message", "表达式错误:");
+				j.put("content", concatString(symbols));
+				return j;
+			}
 			TreeNode node = parseFormula(symbols, 0, i - 1);
 			if (value == null || node == null) {
 				j.put("message", "表达式错误:");

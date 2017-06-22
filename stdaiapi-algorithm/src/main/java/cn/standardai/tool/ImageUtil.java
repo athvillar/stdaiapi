@@ -17,6 +17,8 @@ import cn.standardai.lib.base.function.Statistic;
 
 public class ImageUtil {
 
+	public enum BVMethod { middle, avg, localAvg, mean };
+
 	public static void main(String[] args) {
 		String file1 = "/Users/athvillar/Documents/test/test1.jpg";
 		String file2 = "/Users/athvillar/Documents/test/test2.jpg";
@@ -57,14 +59,101 @@ public class ImageUtil {
 		return data;
 	}
 
-	public static Integer[][] binaryValue(Integer[][] src) {
-		int avg = Statistic.avg(src);
+	public static Integer[][] binaryValue(Integer[][] src, BVMethod method) {
+		switch (method) {
+		case middle:
+			return binaryValue(src, 90);
+		case avg:
+			int avg = Statistic.avg(src);
+			return binaryValue(src, avg);
+		case localAvg:
+			return localBinaryValue(src, 7, 2);
+		case mean:
+			int oldMean, mean = 127;
+			while (true) {
+				oldMean = mean;
+				int oSum = 0;
+				int oNum = 0;
+				int bSum = 0;
+				int bNum = 0;
+				for (int i = 0; i < src.length; i++) {
+					for (int j = 0; j < src[i].length; j++) {
+						if (src[i][j] > mean) {
+							bSum += src[i][j];
+							bNum++;
+						} else {
+							oSum += src[i][j];
+							oNum++;
+						}
+					}
+				}
+				mean = (bSum / bNum + oSum / oNum) / 2;
+				if (mean == oldMean) break;
+			}
+			return binaryValue(src, mean);
+		default:
+			return null;
+		}
+	}
+
+	public static Integer[][] binaryValue(Integer[][] src, int th) {
 		Integer[][] dst = new Integer[src.length][];
 		for (int i = 0; i < dst.length; i++) {
 			dst[i] = new Integer[src[i].length];
 			for (int j = 0; j < dst[i].length; j++) {
-				dst[i][j] = src[i][j] > 127 ? 255 : 0;
-				//dst[i][j] = src[i][j] > avg ? 255 : 0;
+				dst[i][j] = src[i][j] > th ? 255 : 0;
+			}
+		}
+		return dst;
+	}
+
+	public static Integer[][] localBinaryValue(Integer[][] src, int spat, int dens) {
+
+		Integer[][] avg = new Integer[src.length][];
+		for (int i = 0; i < avg.length; i++) {
+			avg[i] = new Integer[src[i].length];
+			for (int j = 0; j < avg[i].length; j++) {
+				int num = 0;
+				int sum = 0;
+				for (int i2 = i - spat; i2 <= i + spat; i2++) {
+					for (int j2 = j - spat; j2 <= j + spat; j2++) {
+						if (i2 < 0 || i2 >= src.length || j2 < 0 || j2 >= src[0].length) continue;
+						num++;
+						sum += src[i2][j2];
+					}
+				}
+				avg[i][j] = sum / num;
+			}
+		}
+		Integer[][] dst = new Integer[src.length][];
+		for (int i = 0; i < dst.length; i++) {
+			dst[i] = new Integer[src[i].length];
+			for (int j = 0; j < dst[i].length; j++) {
+				dst[i][j] = src[i][j] >= avg[i][j] - spat * dens ? 255 : 0;
+			}
+		}
+		return dst;
+	}
+
+	public static Integer[][] clearNoise(Integer[][] src, int size) {
+
+		Integer[][] dst = new Integer[src.length][];
+		for (int i = 0; i < src.length; i++) {
+			dst[i] = new Integer[src[i].length];
+			for (int j = 0; j < src[i].length; j++) {
+				int sum1 = 0;
+				int sum2 = 0;
+				for (int i2 = i - size; i2 <= i + size; i2++) {
+					for (int j2 = j - size; j2 <= j + size; j2++) {
+						if (i2 < 0 || i2 >= src.length || j2 < 0 || j2 >= src[0].length) continue;
+						if (src[i2][j2] == 0) {
+							sum1++;
+						} else if (src[i2][j2] == 255) {
+							sum2++;
+						}
+					}
+				}
+				dst[i][j] = sum1 > sum2 ? 0 : 255;
 			}
 		}
 		return dst;
