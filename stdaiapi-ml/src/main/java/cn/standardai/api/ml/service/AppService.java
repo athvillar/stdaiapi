@@ -33,6 +33,7 @@ public class AppService extends BaseService<FormulaAgent> {
 		FormulaAgent agent = new FormulaAgent();
 		try {
 			result = agent.process(uploadfiles);
+			result = agent.exportImg(uploadfiles, result);
 			result = successResponse(result);
 		} catch (StdaiException e) {
 			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
