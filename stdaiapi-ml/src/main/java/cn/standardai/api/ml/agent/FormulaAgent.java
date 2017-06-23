@@ -1,7 +1,16 @@
 package cn.standardai.api.ml.agent;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -399,4 +408,55 @@ public class FormulaAgent extends AuthAgent {
 		}
 		return str;
 	}
+	
+	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws MLException {
+		if (uploadFiles == null || uploadFiles.length == 0)
+			return details;
+		ByteArrayInputStream byteInputStream = null;
+		BufferedImage imageBuffer = null;
+		try {
+			byteInputStream = new ByteArrayInputStream(uploadFiles[0].getBytes());
+			imageBuffer = ImageIO.read(byteInputStream);
+			int imageWidth = imageBuffer.getWidth();
+
+			Graphics graphics = imageBuffer.getGraphics();
+			Font f = new Font("宋体", Font.PLAIN, 25);
+			graphics.setFont(f);
+			Color mycolor = Color.black;
+			graphics.setColor(mycolor);
+
+			JSONArray detaArray = details.getJSONArray("details");
+			for (int i = 0; i < detaArray.size(); i++) {
+				JSONObject data = detaArray.getJSONObject(i);
+				int x = data.getIntValue("x");
+				int y = data.getIntValue("y");
+				String message = data.getString("message");
+				FontMetrics fontMetrics = graphics.getFontMetrics(f);
+				int fontWidth = fontMetrics.stringWidth(message);
+				int fontHeight = fontMetrics.getHeight();
+				if (x + fontWidth > imageWidth) x = imageWidth - fontWidth;
+				if (y - fontHeight < 0) y = fontHeight;
+				graphics.drawString(message, x, y);
+			}
+			graphics.dispose();
+
+			// output file path
+			String outputFilePath = Context.getProp().getLocal().getUploadTemp() + uploadFiles[0].getOriginalFilename();
+			File outputImage = new File(outputFilePath);
+			ImageIO.write(imageBuffer, "jpg", outputImage);
+
+			details.put("imagePath", outputFilePath);
+			return details;
+		} catch (IOException e) {
+			throw new MLException("文件解析失败", e);
+		} finally {
+			if (byteInputStream != null) {
+				try {
+					byteInputStream.close();
+				} catch (IOException e) {
+					throw new MLException("文件解析失败", e);
+				}
+			}
+		}
+	}  
 }
