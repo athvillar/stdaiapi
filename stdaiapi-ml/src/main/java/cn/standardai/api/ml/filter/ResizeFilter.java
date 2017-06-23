@@ -31,7 +31,7 @@ public class ResizeFilter extends DimensionFilter<Integer[][], Integer[][]> {
 					srcY = j + (src[0].length - height) / 2;
 				}
 				if (srcX == null || srcY == null) {
-					dst[i][j] = 0;
+					dst[i][j] = 255;
 				} else {
 					dst[i][j] = src[srcX][srcY];
 				}

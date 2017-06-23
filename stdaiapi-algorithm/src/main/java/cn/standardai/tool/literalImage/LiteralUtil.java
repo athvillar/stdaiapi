@@ -23,7 +23,7 @@ public class LiteralUtil {
 		String file2 = "/Users/athvillar/Documents/test/";
 		try {
 			Integer[][] pixels = ImageUtil.getGray(file1);
-			List<List<Slice>> slices = cut(pixels, 0.0, 0.0);
+			List<List<Slice>> slices = cut(pixels, 0.0, 0.0, 5);
 			//drawWords(words, file2, null, 25);
 			int i = drawWords(pixels, slices, file2, 1, 30, 30);
 		} catch (IOException e) {
@@ -31,22 +31,22 @@ public class LiteralUtil {
 		}
 	}
 
-	public static List<List<Slice>> cut(Integer[][] pixels, double th1, double th2) {
+	public static List<List<Slice>> cut(Integer[][] pixels, double th1, double th2, int min) {
 
 		if (pixels == null) return null;
 		List<List<Slice>> slices = new ArrayList<List<Slice>>();
 
 		// Separate lines
 		Integer[] c1 = ImageUtil.grayCalculas(pixels, 0);
-		List<Integer[]> yList = split(c1, th1);
+		List<Integer[]> yList = split(c1, th1, min);
 
 		for (int i = 0; i < yList.size(); i++) {
 			Integer[] c2 = ImageUtil.grayCalculas(pixels, 1, 0, yList.get(i)[0], pixels.length, yList.get(i)[1]);
-			List<Integer[]> xList = split(c2, th2);
+			List<Integer[]> xList = split(c2, th2, min);
 			List<Slice> words1Line = new ArrayList<Slice>();
 			for (int j = 0; j < xList.size(); j++) {
 				Integer[] c3 = ImageUtil.grayCalculas(pixels, 0, xList.get(j)[0], yList.get(i)[0], xList.get(j)[1], yList.get(i)[1]);
-				List<Integer[]> y2List = split(c3, 0.0);
+				List<Integer[]> y2List = split(c3, 0.0, min);
 				if (y2List == null || y2List.size() == 0) continue;
 				Slice word1 = new Slice(xList.get(j)[0], yList.get(i)[0] + y2List.get(0)[0], xList.get(j)[1], yList.get(i)[0] + y2List.get(y2List.size() - 1)[1]);
 				words1Line.add(word1);
@@ -86,7 +86,7 @@ public class LiteralUtil {
 		return idx;
 	}
 
-	private static List<Integer[]> split(Integer[] c, double th) {
+	private static List<Integer[]> split(Integer[] c, double th, int min) {
 		int maxC = Statistic.max(c);
 		List<Integer[]> xList = new ArrayList<Integer[]>();
 		boolean open = false;
@@ -102,7 +102,10 @@ public class LiteralUtil {
 				}
 			} else {
 				if (open) {
-					if (x1[0] == i) continue;
+					if (i - x1[0] < min) {
+						open = false;
+						continue;
+					};
 					x1[1] = i;
 					xList.add(x1);
 					open = false;
