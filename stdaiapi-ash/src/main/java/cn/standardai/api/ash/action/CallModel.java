@@ -17,12 +17,13 @@ public class CallModel extends Action {
 	private static String[][][] dialog = new String[][][] { 
 		new String[][] {
 			new String[] {"md", "请输入模型名:"},
+			new String[] {"dn", "请输入测试数据名(userId/dataName):"},
 			new String[] {"lr", "请输入学习率(0.1, 建议范围0.01 ~ 1.0):"},
 			new String[] {"th", "请输入梯度矩阵秩的阈值(1, 建议范围1 ~ 15):"},
 			new String[] {"ep", "请输入epoch数:"},
 			new String[] {"we", "请输入中间结果输出间隔(epoch):"},
 			new String[] {"bs", "请输入batch size:"},
-			new String[] {"dv", "请输入训练集，测试集，验证集的比例，用逗号分割(8,1,1):"},
+			new String[] {"dv", "请输入训练集，测试集，验证集的比例，用逗号分割(10,0,0):"},
 			new String[] {"ts", "请输入训练时间(秒):"},
 			new String[] {"tt", "请输入测试集Loss增大次数(null):"},
 			new String[] {"ko", "是否保留旧模型(N):"},
@@ -47,6 +48,8 @@ public class CallModel extends Action {
 	}
 
 	private String modelName;
+
+	private String testDatasetName;
 
 	private Double learningRate;
 
@@ -97,6 +100,7 @@ public class CallModel extends Action {
 		JSONObject body = new JSONObject();
 		JSONObject train = new JSONObject();
 
+		if (testDatasetName != null) train.put("testDatasetName", testDatasetName);
 		train.put("learningRate", learningRate == null ? 0.1 : learningRate);
 		train.put("dth", dth == null ? 1.0 : dth);
 		if (diverseDataRate != null && diverseDataRate.length == 3) {
@@ -164,6 +168,7 @@ public class CallModel extends Action {
 	public void readParam() throws AshException {
 
 		if (this.param.has('t')) {
+			testDatasetName = param.getString("dn");
 			modelName = param.getString("md");
 			learningRate = param.getDouble("lr");
 			dth = param.getDouble("th");

@@ -9,6 +9,8 @@ public class DnnTrainSetting {
 
 	private int[] diverseDataRate;
 
+	private String testDatasetName;
+
 	private Double dth;
 
 	private Double learningRate;
@@ -115,6 +117,7 @@ public class DnnTrainSetting {
 			}
 			ts.diverseDataRate = rates;
 		}
+		ts.testDatasetName = json.getString("testDatasetName");
 		ts.dth = json.getDouble("dth");
 		ts.learningRate = json.getDouble("learningRate");
 		ts.epoch = json.getInteger("epoch");
@@ -123,5 +126,13 @@ public class DnnTrainSetting {
 		ts.watchEpoch = json.getInteger("watchEpoch");
 		ts.testLossIncreaseTolerance = json.getInteger("testLossIncreaseTolerance");
 		return ts;
+	}
+
+	public String getTestDatasetName() {
+		return testDatasetName;
+	}
+
+	public void setTestDatasetName(String testDatasetName) {
+		this.testDatasetName = testDatasetName;
 	}
 }

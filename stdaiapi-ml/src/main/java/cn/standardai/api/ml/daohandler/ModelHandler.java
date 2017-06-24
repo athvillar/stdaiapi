@@ -81,7 +81,7 @@ public class ModelHandler {
 		ds.setxFilter(modelTemplate.getxFilter());
 		ds.setyColumn(modelTemplate.getyColumn());
 		ds.setyFilter(modelTemplate.getyFilter());
-		ms.setDataSetting(ds);
+		ms.setTrainDataSetting(ds);
 
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		Model model = modelDao.selectByIdModelTemplateId(modelId, ms.getModelTemplateId());
@@ -114,7 +114,7 @@ public class ModelHandler {
 		ds.setxFilter(modelTemplate.getxFilter());
 		ds.setyColumn(modelTemplate.getyColumn());
 		ds.setyFilter(modelTemplate.getyFilter());
-		ms.setDataSetting(ds);
+		ms.setTrainDataSetting(ds);
 
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		Model model = modelDao.selectLatestByModelTemplateId(ms.getModelTemplateId());
@@ -238,7 +238,7 @@ public class ModelHandler {
 		ds.setxFilter(modelTemplate.getxFilter());
 		ds.setyColumn(modelTemplate.getyColumn());
 		ds.setyFilter(modelTemplate.getyFilter());
-		ms.setDataSetting(ds);
+		ms.setTrainDataSetting(ds);
 
 		ModelDao modelDao = daoHandler.getMySQLMapper(ModelDao.class);
 		Model model = modelDao.selectLatestByModelTemplateId(ms.getModelTemplateId());

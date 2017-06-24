@@ -124,32 +124,16 @@ public class Cnn extends Dnn<CnnData> {
 			if (needBreak) break;
 
 			if (watchEpoch != null && epochCount % watchEpoch == 0) {
-				forward();
-
-				Double[] trainLoss = MatrixUtil.create(this.data.length, 0.0);
-				// Loss for train, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
-				for (int j = 0; j < this.data.length; j++) {
-					Double[][][] a = this.predict(this.data[j].x);
-					// 对每一个输出y
-					if (a[0][0] != null) {
-						for (int k = 0; k < a.length; k++) {
-							if (this.data[j].y[k] == 1) {
-								trainLoss[j] += Math.log(a[0][0][k]);
-							} else {
-								trainLoss[j] += Math.log(1 - a[0][0][k]);
-							}
-						}
-					}
-					trainLoss[j] *= -1;
-				}
-
-				double totalTrainLoss = MatrixUtil.sum(trainLoss) / this.data.length;
+				// TODO useless?
+				//forward();
+				Double trainLoss = getLoss(this.data);
+				Double testLoss = getLoss(this.testData);
 				synchronized (this.indicator) {
-					if (this.containCatalog("trainLoss")) {
-						record("trainLoss", epochCount, totalTrainLoss);
+					if (this.containCatalog("trainLoss") && trainLoss != null) {
+						record("trainLoss", epochCount, trainLoss);
 					}
-					if (this.containCatalog("testLoss")) {
-						//record("testLoss", epochCount, 0.0);
+					if (this.containCatalog("testLoss") && testLoss != null) {
+						record("testLoss", epochCount, testLoss);
 					}
 					this.indicator.notify();
 					//System.out.println("epoch:" + epochCount + " trainLoss" + MatrixUtil.sumAbs(this.layers.get(this.layers.size() - 1).error));
@@ -163,6 +147,27 @@ public class Cnn extends Dnn<CnnData> {
 			finish(epochCount);
 			this.indicator.notify();
 		}
+	}
+
+	private Double getLoss(CnnData[] data) throws MatrixException {
+		if (data == null) return null;
+		Double[] loss = MatrixUtil.create(data.length, 0.0);
+		// Loss for train, cost = - ∑x ∑j (yj * ln(aj) + (1 - yj) * ln(1 - aj)) / n
+		for (int j = 0; j < data.length; j++) {
+			Double[][][] a = this.predict(data[j].x);
+			// 对每一个输出y
+			if (a[0][0] != null) {
+				for (int k = 0; k < a.length; k++) {
+					if (data[j].y[k] == 1) {
+						loss[j] += Math.log(a[0][0][k]);
+					} else {
+						loss[j] += Math.log(1 - a[0][0][k]);
+					}
+				}
+			}
+			loss[j] *= -1;
+		}
+		return MatrixUtil.sum(loss) / data.length;
 	}
 
 	public void forward() {

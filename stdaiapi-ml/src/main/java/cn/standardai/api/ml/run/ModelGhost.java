@@ -66,7 +66,6 @@ public class ModelGhost implements Runnable {
 		ModelHandler mh = new ModelHandler(daoHandler);
 		String modelId = null;
 		try {
-
 			DnnTrainSetting ts = (DnnTrainSetting) modelContext.get("trainSetting");
 			Integer watchEpoch = ts.getWatchEpoch();
 			this.model.setDth(ts.getDth());
@@ -81,11 +80,12 @@ public class ModelGhost implements Runnable {
 			DnnModelSetting ms = (DnnModelSetting) modelContext.get("modelSetting");
 			this.userId = ms.getUserId();
 			modelId = ms.getModelId();
-			DnnDataSetting ds = ms.getDataSetting();
+			DnnDataSetting dsTrain = ms.getTrainDataSetting();
 			DataHandler dh = new DataHandler(this.daoHandler);
-			List<Data> rawData = dh.getData(dh.getDataset(ms.getUserId(), ds.getDatasetId(), ds.getDatasetName()));
-			DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(ds.getxFilter());
-			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
+
+			List<Data> rawData1 = dh.getData(dh.getDataset(ms.getUserId(), dsTrain.getDatasetId(), dsTrain.getDatasetName()));
+			DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(dsTrain.getxFilter());
+			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(dsTrain.getyFilter());
 			for (DataFilter<?, ?> f : xFilters) {
 				if (f != null && f.needInit()) {
 					f.init(this.userId, this.daoHandler);
@@ -97,24 +97,56 @@ public class ModelGhost implements Runnable {
 				}
 			}
 
+			String testDatasetUser = null;
+			String testDatasetName = ts.getTestDatasetName();
+			List<Data> rawData2 = null;
+			if (testDatasetName != null) {
+				int idx = testDatasetName.indexOf('/');
+				if (idx != -1 && idx != testDatasetName.length() - 1) {
+					testDatasetUser = testDatasetName.substring(0, idx);
+					testDatasetName = testDatasetName.substring(idx + 1);
+				} else {
+					testDatasetUser = ms.getUserId();
+				}
+				rawData2 = dh.getData(dh.getDataset(testDatasetUser, null, testDatasetUser));
+			}
+
 			switch (ms.getAlgorithm()) {
 			case cnn:
-				CnnData[] data1 = new CnnData[rawData.size()];
-				for (int i = 0; i < rawData.size(); i++) {
-					Integer[][][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
-					Integer[] y = DataFilter.encode(ds.getData(rawData.get(i), ds.getyColumn()), yFilters);
-					data1[i] = new CnnData(x, y);
+				CnnData[] cnnData1 = new CnnData[rawData1.size()];
+				for (int i = 0; i < rawData1.size(); i++) {
+					Integer[][][] x = DataFilter.encode(DnnDataSetting.getData(rawData1.get(i), dsTrain.getxColumn()), xFilters);
+					Integer[] y = DataFilter.encode(DnnDataSetting.getData(rawData1.get(i), dsTrain.getyColumn()), yFilters);
+					cnnData1[i] = new CnnData(x, y);
 				}
-				((Dnn<CnnData>)this.model).mountData(data1);
+				((Dnn<CnnData>)this.model).mountData(cnnData1);
+				if (rawData2 != null) {
+					CnnData[] cnnData2 = new CnnData[rawData2.size()];
+					for (int i = 0; i < rawData2.size(); i++) {
+						Integer[][][] x = DataFilter.encode(DnnDataSetting.getData(rawData2.get(i), dsTrain.getxColumn()), xFilters);
+						Integer[] y = DataFilter.encode(DnnDataSetting.getData(rawData2.get(i), dsTrain.getyColumn()), yFilters);
+						cnnData2[i] = new CnnData(x, y);
+					}
+					((Dnn<CnnData>)this.model).mountData(cnnData2);
+				}
 				break;
 			case lstm:
-				LstmData[] data2 = new LstmData[rawData.size()];
-				for (int i = 0; i < rawData.size(); i++) {
-					Double[][] x = DataFilter.encode(ds.getData(rawData.get(i), ds.getxColumn()), xFilters);
-					Integer[] y = DataFilter.encode(ds.getData(rawData.get(i), ds.getyColumn()), yFilters);
-					data2[i] = new LstmData(x, y);
+				LstmData[] lstmData1 = new LstmData[rawData1.size()];
+				for (int i = 0; i < rawData1.size(); i++) {
+					Double[][] x = DataFilter.encode(DnnDataSetting.getData(rawData1.get(i), dsTrain.getxColumn()), xFilters);
+					Integer[] y = DataFilter.encode(DnnDataSetting.getData(rawData1.get(i), dsTrain.getyColumn()), yFilters);
+					lstmData1[i] = new LstmData(x, y);
 				}
-				((Dnn<LstmData>)this.model).mountData(data2);
+				((Dnn<LstmData>)this.model).mountData(lstmData1);
+				if (rawData2 != null) {
+					LstmData[] lstmData2 = new LstmData[rawData2.size()];
+					for (int i = 0; i < rawData2.size(); i++) {
+						Double[][] x = DataFilter.encode(DnnDataSetting.getData(rawData2.get(i), dsTrain.getxColumn()), xFilters);
+						Integer[] y = DataFilter.encode(DnnDataSetting.getData(rawData2.get(i), dsTrain.getyColumn()), yFilters);
+						lstmData2[i] = new LstmData(x, y);
+					}
+					((Dnn<LstmData>)this.model).mountData(lstmData2);
+				}
 				break;
 			}
 
@@ -122,7 +154,7 @@ public class ModelGhost implements Runnable {
 			train.setTrainId(MathUtil.random(32));
 			train.setStartTime(new Date());
 			train.setModelId(modelId);
-			train.setEpochDataCnt(rawData.size());
+			train.setEpochDataCnt(rawData1.size());
 			mh.insertTrain(train);
 
 			ModelRunner mr = new ModelRunner(this.model);

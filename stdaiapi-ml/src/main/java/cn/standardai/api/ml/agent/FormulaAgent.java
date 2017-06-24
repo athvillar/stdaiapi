@@ -339,8 +339,8 @@ public class FormulaAgent extends AuthAgent {
 		if (ms == null) throw new MLException("找不到模型(hanqing/number5)");
 
 		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(
-				ms.getDataSetting().getxFilter().substring(ms.getDataSetting().getxFilter().indexOf("|") + 1));
-		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ms.getDataSetting().getyFilter());
+				ms.getTrainDataSetting().getxFilter().substring(ms.getTrainDataSetting().getxFilter().indexOf("|") + 1));
+		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ms.getTrainDataSetting().getyFilter());
 		for (DataFilter<?, ?> f : xFilters) {
 			if (f != null && f.needInit()) {
 				f.init("hanqing", this.daoHandler);

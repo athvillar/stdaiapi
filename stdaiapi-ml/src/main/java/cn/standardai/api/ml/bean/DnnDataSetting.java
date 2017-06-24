@@ -109,7 +109,7 @@ public class DnnDataSetting {
 		return ds;
 	}
 
-	public String getData(Data data, String dataColumn) {
+	public static String getData(Data data, String dataColumn) {
 		switch (dataColumn.substring(dataColumn.lastIndexOf(".") + 1)) {
 		case "x":
 			return data.getX();

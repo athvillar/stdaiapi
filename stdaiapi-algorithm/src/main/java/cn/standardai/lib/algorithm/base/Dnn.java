@@ -17,6 +17,8 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	protected T[] data;
 
+	protected T[] testData;
+
 	public ValueType dataResultType;
 
 	private int trainDataCnt;
@@ -35,7 +37,7 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 
 	protected Integer testLossIncreaseTolerance = null;
 
-	private int[] diverseDataRate = { 8, 1, 1 };
+	private int[] diverseDataRate = { 10, 0, 0 };
 
 	public Map<String, Map<Integer, Double>> indicator = new HashMap<String, Map<Integer, Double>>();
 
@@ -73,6 +75,10 @@ public abstract class Dnn<T extends DnnData> implements Monitorable, Trainable {
 	public void mountData(T[] data) {
 		this.data = data;
 		diverseData();
+	}
+
+	public void mountTestData(T[] testData) {
+		this.testData = testData;
 	}
 
 	public void setDiverseDataRate(int[] diverseDataRate) {

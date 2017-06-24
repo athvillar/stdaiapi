@@ -45,7 +45,7 @@ public class DnnModelSetting {
 
 	private Date createTime;
 
-	private DnnDataSetting dataSetting;
+	private DnnDataSetting trainDataSetting;
 
 	public String getModelId() {
 		return modelId;
@@ -111,11 +111,11 @@ public class DnnModelSetting {
 		this.algorithm = algorithm;
 	}
 
-	public DnnDataSetting getDataSetting() {
-		return dataSetting;
+	public DnnDataSetting getTrainDataSetting() {
+		return trainDataSetting;
 	}
 
-	public void setDataSetting(DnnDataSetting dataSetting) {
-		this.dataSetting = dataSetting;
+	public void setTrainDataSetting(DnnDataSetting trainDataSetting) {
+		this.trainDataSetting = trainDataSetting;
 	}
 }

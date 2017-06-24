@@ -114,16 +114,16 @@ public class DnnAgent extends AuthAgent {
 		if (dataset == null) throw new JSONFormatException("找不到指定的数据集(datasetId=" + ds.getDatasetId() + ", datasetName=" + ds.getDatasetName() + ")");
 
 		if (ds.getDatasetId() == null || "".equals(ds.getDatasetId())) {
-			ds.setDatasetId(ms.getDataSetting().getDatasetId());
+			ds.setDatasetId(ms.getTrainDataSetting().getDatasetId());
 		}
 		if (ds.getxColumn() == null || "".equals(ds.getxColumn())) {
-			ds.setxColumn(ms.getDataSetting().getxColumn());
+			ds.setxColumn(ms.getTrainDataSetting().getxColumn());
 		}
 		if (ds.getxFilter() == null || "".equals(ds.getxFilter())) {
-			ds.setxFilter(ms.getDataSetting().getxFilter());
+			ds.setxFilter(ms.getTrainDataSetting().getxFilter());
 		}
 		if (ds.getyFilter() == null || "".equals(ds.getyFilter())) {
-			ds.setyFilter(ms.getDataSetting().getyFilter());
+			ds.setyFilter(ms.getTrainDataSetting().getyFilter());
 		}
 
 		DataHandler dh = new DataHandler(this.daoHandler);
@@ -368,13 +368,13 @@ public class DnnAgent extends AuthAgent {
 		modelJ.put("createTime", model.getCreateTime());
 		modelJ.put("structure", model.getScript());
 
-		if (model.getDataSetting() != null) {
+		if (model.getTrainDataSetting() != null) {
 			JSONObject dataJ = new JSONObject();
-			dataJ.put("dataName", model.getDataSetting().getDatasetName());
-			dataJ.put("xColumn", model.getDataSetting().getxColumn());
-			dataJ.put("xFilter", model.getDataSetting().getxFilter());
-			dataJ.put("yColumn", model.getDataSetting().getyColumn());
-			dataJ.put("yFilter", model.getDataSetting().getyFilter());
+			dataJ.put("dataName", model.getTrainDataSetting().getDatasetName());
+			dataJ.put("xColumn", model.getTrainDataSetting().getxColumn());
+			dataJ.put("xFilter", model.getTrainDataSetting().getxFilter());
+			dataJ.put("yColumn", model.getTrainDataSetting().getyColumn());
+			dataJ.put("yFilter", model.getTrainDataSetting().getyFilter());
 			modelJ.put("data", dataJ);
 		}
 
