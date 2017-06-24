@@ -15,17 +15,40 @@ import javax.imageio.ImageIO;
 
 import cn.standardai.lib.base.function.Statistic;
 import cn.standardai.tool.ImageUtil;
+import cn.standardai.tool.ImageUtil.BVMethod;
 
 public class LiteralUtil {
 
 	public static void main(String[] args) {
 		String file1 = "/Users/athvillar/Documents/test/test1.jpg";
-		String file2 = "/Users/athvillar/Documents/test/";
+		String file2 = "/Users/athvillar/Documents/test/test2.jpg";
+		String path = "/Users/athvillar/Documents/test/";
 		try {
+			// 获得灰度值
 			Integer[][] pixels = ImageUtil.getGray(file1);
-			List<List<Slice>> slices = cut(pixels, 0.0, 0.0, 5);
-			//drawWords(words, file2, null, 25);
-			int i = drawWords(pixels, slices, file2, 1, 30, 30);
+			// 二值化
+			Integer[][] bv = ImageUtil.binaryValue(pixels, BVMethod.localAvg);
+			// 去除噪点
+			bv = ImageUtil.clearNoise(bv, 1);
+			// 输出二值化图片，测试用
+			ImageUtil.drawGray(path + "bv1.jpg", bv);
+			// 分割出文字
+			List<List<Slice>> slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
+			// 输出文字图片，测试用
+			LiteralUtil.drawWords(bv, slices, path, 1, 38, 38);
+
+			// 获得灰度值
+			pixels = ImageUtil.getGray(file2);
+			// 二值化
+			bv = ImageUtil.binaryValue(pixels, BVMethod.localAvg);
+			// 去除噪点
+			bv = ImageUtil.clearNoise(bv, 1);
+			// 输出二值化图片，测试用
+			ImageUtil.drawGray(path + "bv2.jpg", bv);
+			// 分割出文字
+			slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
+			// 输出文字图片，测试用
+			LiteralUtil.drawWords(bv, slices, path, 101, 38, 38);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -58,13 +81,16 @@ public class LiteralUtil {
 	}
 
 	public static int drawWords(Integer[][] pixels, List<List<Slice>> slices, String path, int index, Integer width, Integer height) throws IOException {
+
 		int idx = 0;
+		index--;
 		for (int i = 0; i < slices.size(); i++) {
 			for (int j = 0; j < slices.get(i).size(); j++) {
 				Integer[][] scope = slices.get(i).get(j).getScope(pixels);
-				ImageUtil.drawGray(path + "split_" + index, scope);
-				/*
-				if (width == null && height == null) return;
+				ImageUtil.drawGray(path + "split_" + ++index, scope);
+				idx++;
+
+				if (width == null && height == null) continue;
 				int newWidth = 0;
 				int newHeight = 0;
 				if (width == null) {
@@ -74,13 +100,20 @@ public class LiteralUtil {
 					newWidth = width;
 					newHeight = scope[0].length * width / scope.length;
 				} else {
-					newWidth = width;
-					newHeight = height;
+					if ((0.0 + height) / scope[0].length >= (0.0 + width) / scope.length) {
+						newWidth = width;
+						newHeight = scope[0].length * width / scope.length;
+					} else {
+						newWidth = scope.length * height / scope[0].length;
+						newHeight = height;
+					}
 				}
 				resize(path + "split_" + index, newWidth, newHeight);
-				*/
-				index++;
-				idx++;
+				// 获得灰度值
+				Integer[][] pixels2 = ImageUtil.getGray(path + "split_" + index);
+				// 二值化
+				Integer[][] bv = ImageUtil.binaryValue(pixels2, BVMethod.localAvg);
+				ImageUtil.drawGray(path + "split_" + index, bv);
 			}
 		}
 		return idx;
@@ -130,7 +163,7 @@ public class LiteralUtil {
 		BufferedImage buffImg = null;
 		buffImg = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
 		buffImg.getGraphics().drawImage(
-				srcImg.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH), 0,
+				srcImg.getScaledInstance(newWidth, newHeight, Image.SCALE_DEFAULT), 0,
 				0, null);
 
 		ImageIO.write(buffImg, "JPEG", new File(fileName));

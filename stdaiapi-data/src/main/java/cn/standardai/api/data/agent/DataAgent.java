@@ -221,7 +221,8 @@ public class DataAgent extends AuthAgent {
 			Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
 			for (int i = 0; i < uploadfiles.length; i++) {
 				JSONObject subResult = new JSONObject();
-				String newName = uploadfiles[i].getOriginalFilename() + "_" + MathUtil.random(64);
+				//String newName = uploadfiles[i].getOriginalFilename() + "_" + MathUtil.random(64);
+				String newName = datasetId + "-" + baseIdx;
 				subResult = saveUploadFile(uploadfiles[i], newName);
 				if (!"success".equals(subResult.getString("result"))) {
 					hasFailure = true;
