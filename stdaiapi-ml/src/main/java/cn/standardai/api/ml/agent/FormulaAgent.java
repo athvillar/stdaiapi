@@ -6,7 +6,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -30,7 +30,9 @@ import cn.standardai.tool.ImageUtil;
 import cn.standardai.tool.ImageUtil.BVMethod;
 import cn.standardai.tool.literalImage.LiteralUtil;
 import cn.standardai.tool.literalImage.Slice;
+import sun.misc.BASE64Encoder;
 
+@SuppressWarnings("restriction")
 public class FormulaAgent extends AuthAgent {
 
 	/*
@@ -408,12 +410,12 @@ public class FormulaAgent extends AuthAgent {
 		}
 		return str;
 	}
-	
+
 	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws MLException {
-		if (uploadFiles == null || uploadFiles.length == 0)
-			return details;
+		if (uploadFiles == null || uploadFiles.length == 0) return details;
 		ByteArrayInputStream byteInputStream = null;
 		BufferedImage imageBuffer = null;
+		ByteArrayOutputStream byteOutputStream = null;
 		try {
 			byteInputStream = new ByteArrayInputStream(uploadFiles[0].getBytes());
 			imageBuffer = ImageIO.read(byteInputStream);
@@ -440,12 +442,12 @@ public class FormulaAgent extends AuthAgent {
 			}
 			graphics.dispose();
 
-			// output file path
-			String outputFilePath = Context.getProp().getLocal().getUploadTemp() + uploadFiles[0].getOriginalFilename();
-			File outputImage = new File(outputFilePath);
-			ImageIO.write(imageBuffer, "jpg", outputImage);
-
-			details.put("imagePath", outputFilePath);
+			byteOutputStream = new ByteArrayOutputStream();
+			ImageIO.write(imageBuffer, "jpg", byteOutputStream);
+			BASE64Encoder encoder = new BASE64Encoder();  
+			String imageString = encoder.encodeBuffer(byteOutputStream.toByteArray()).trim();
+			imageString = imageString.replaceAll("\r\n", "");
+			details.put("image", imageString);
 			return details;
 		} catch (IOException e) {
 			throw new MLException("文件解析失败", e);
@@ -455,6 +457,13 @@ public class FormulaAgent extends AuthAgent {
 					byteInputStream.close();
 				} catch (IOException e) {
 					throw new MLException("文件解析失败", e);
+				}
+			}
+			if (byteOutputStream != null) {
+				try {
+					byteOutputStream.close();
+				} catch (IOException e) {
+					throw new MLException("文件生成失败", e);
 				}
 			}
 		}
