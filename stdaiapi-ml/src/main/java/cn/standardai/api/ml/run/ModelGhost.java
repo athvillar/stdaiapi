@@ -108,7 +108,7 @@ public class ModelGhost implements Runnable {
 				} else {
 					testDatasetUser = ms.getUserId();
 				}
-				rawData2 = dh.getData(dh.getDataset(testDatasetUser, null, testDatasetUser));
+				rawData2 = dh.getData(dh.getDataset(testDatasetUser, null, testDatasetName));
 			}
 
 			switch (ms.getAlgorithm()) {
@@ -127,7 +127,7 @@ public class ModelGhost implements Runnable {
 						Integer[] y = DataFilter.encode(DnnDataSetting.getData(rawData2.get(i), dsTrain.getyColumn()), yFilters);
 						cnnData2[i] = new CnnData(x, y);
 					}
-					((Dnn<CnnData>)this.model).mountData(cnnData2);
+					((Dnn<CnnData>)this.model).mountTestData(cnnData2);
 				}
 				break;
 			case lstm:
@@ -145,7 +145,7 @@ public class ModelGhost implements Runnable {
 						Integer[] y = DataFilter.encode(DnnDataSetting.getData(rawData2.get(i), dsTrain.getyColumn()), yFilters);
 						lstmData2[i] = new LstmData(x, y);
 					}
-					((Dnn<LstmData>)this.model).mountData(lstmData2);
+					((Dnn<LstmData>)this.model).mountTestData(lstmData2);
 				}
 				break;
 			}
