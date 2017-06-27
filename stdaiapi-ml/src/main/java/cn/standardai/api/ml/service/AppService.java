@@ -26,8 +26,28 @@ public class AppService extends BaseService<FormulaAgent> {
 
 	private Logger logger = LoggerFactory.getLogger(AppService.class);
 
-	@RequestMapping(value = "/formula", method = RequestMethod.POST)
-	public String formula(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
+	@RequestMapping(value = "/formula/data", method = RequestMethod.POST)
+	public String makeData(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
+		logger.info("stdaiapi-ml /app/formula POST start ...");
+		JSONObject result = null;
+		FormulaAgent agent = new FormulaAgent();
+		try {
+			result = agent.process(uploadfiles);
+			result = successResponse(result);
+		} catch (StdaiException e) {
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = makeResponse(ReturnType.FAILURE, null, e.getMessage());
+		} finally {
+			if (agent != null) agent.done();
+		}
+		logger.info("stdaiapi-ml /app/formula POST finish (" + result.toJSONString() + ")");
+		return result.toString();
+	}
+
+	@RequestMapping(value = "/formula/check", method = RequestMethod.POST)
+	public String checkFormula(@RequestHeader HttpHeaders headers, @RequestParam("files") MultipartFile[] uploadfiles) {
 		logger.info("stdaiapi-ml /app/formula POST start ...");
 		JSONObject result = null;
 		FormulaAgent agent = new FormulaAgent();

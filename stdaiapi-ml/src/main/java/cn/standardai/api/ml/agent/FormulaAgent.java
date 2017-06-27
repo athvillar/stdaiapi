@@ -115,7 +115,7 @@ public class FormulaAgent extends AuthAgent {
 			List<List<Slice>> slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
 			// 输出文字图片，测试用
 			//if (Context.getProp().getLocal().getDebug()) {
-			Integer[][][][] words = LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getDebugTemp(), 1, 38, 38, true);
+			Integer[][][][] words = LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getDebugTemp(), 1, 78, 78, true);
 			//}
 			// 识别文字图片
 			//String[][] wordString = recognize(bv, slices);

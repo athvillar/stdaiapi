@@ -100,11 +100,9 @@ public class Cnn extends Dnn<CnnData> {
 
 		while (true) {
 			epochCount++;
-
 			List<Integer> indiceCopy = new LinkedList<Integer>();
 			indiceCopy.addAll(indice);
 			while (indiceCopy.size() != 0) {
-
 				Integer[] batchIndice = getNextBatchIndex(indiceCopy, batchSize);
 				clearError();
 				for (int i = 0; i < batchIndice.length; i++) {
@@ -157,7 +155,7 @@ public class Cnn extends Dnn<CnnData> {
 			Double[][][] a = this.predict(data[j].x);
 			// 对每一个输出y
 			if (a[0][0] != null) {
-				for (int k = 0; k < a.length; k++) {
+				for (int k = 0; k < a[0][0].length; k++) {
 					if (data[j].y[k] == 1) {
 						loss[j] += Math.log(a[0][0][k]);
 					} else {
