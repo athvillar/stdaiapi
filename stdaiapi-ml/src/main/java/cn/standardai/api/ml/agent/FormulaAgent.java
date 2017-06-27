@@ -22,6 +22,7 @@ import cn.standardai.api.core.bean.Context;
 import cn.standardai.api.ml.bean.DnnModelSetting;
 import cn.standardai.api.ml.bean.TreeNode;
 import cn.standardai.api.ml.daohandler.ModelHandler;
+import cn.standardai.api.ml.exception.FilterException;
 import cn.standardai.api.ml.exception.MLException;
 import cn.standardai.api.ml.filter.DataFilter;
 import cn.standardai.lib.algorithm.cnn.Cnn;
@@ -113,15 +114,48 @@ public class FormulaAgent extends AuthAgent {
 			// 分割出文字
 			List<List<Slice>> slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
 			// 输出文字图片，测试用
-			if (Context.getProp().getLocal().getDebug())
-				LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getDebugTemp(), 1, null, null);
+			//if (Context.getProp().getLocal().getDebug()) {
+			Integer[][][][] words = LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getDebugTemp(), 1, 38, 38, true);
+			//}
 			// 识别文字图片
-			String[][] wordString = recognize(bv, slices);
+			//String[][] wordString = recognize(bv, slices);
+			String[][] wordString = recognize(bv, words);
 			// 检查正误
 			return check(slices, wordString);
 		} catch (IOException | DnnException e) {
 			throw new MLException("文件解析失败", e);
 		}
+	}
+
+	private String[][] recognize(Integer[][] bv, Integer[][][][] words) throws MLException, DnnException {
+		DnnModelSetting ms = mh.findLastestModel("hanqing", "fn5");
+		if (ms == null) throw new MLException("找不到模型(hanqing/fn5)");
+
+		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(
+				ms.getTrainDataSetting().getxFilter().substring(ms.getTrainDataSetting().getxFilter().indexOf("|") + 1));
+		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ms.getTrainDataSetting().getyFilter());
+		for (DataFilter<?, ?> f : xFilters) {
+			if (f != null && f.needInit()) {
+				f.init("hanqing", this.daoHandler);
+			}
+		}
+		for (DataFilter<?, ?> f : yFilters) {
+			if (f != null && f.needInit()) {
+				f.init("hanqing", this.daoHandler);
+			}
+		}
+
+		Cnn cnn = createModel(ms);
+		String[][] ys = new String[words.length][];
+		for (int i = 0; i < words.length; i++) {
+			ys[i] = new String[words[i].length];
+			for (int j = 0; j < words[i].length; j++) {
+				Integer[][][] x = DataFilter.encode(words[i][j], xFilters);
+				ys[i][j] = DataFilter.decode(cnn.predictY(x), yFilters);
+			}
+		}
+
+		return ys;
 	}
 
 	private JSONObject check(List<List<Slice>> slices, String[][] words) {
@@ -335,8 +369,8 @@ public class FormulaAgent extends AuthAgent {
 
 	private String[][] recognize(Integer[][] pixels, List<List<Slice>> slices) throws MLException, DnnException {
 
-		DnnModelSetting ms = mh.findLastestModel("hanqing", "number5");
-		if (ms == null) throw new MLException("找不到模型(hanqing/number5)");
+		DnnModelSetting ms = mh.findLastestModel("hanqing", "fn5");
+		if (ms == null) throw new MLException("找不到模型(hanqing/fn5)");
 
 		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(
 				ms.getTrainDataSetting().getxFilter().substring(ms.getTrainDataSetting().getxFilter().indexOf("|") + 1));
