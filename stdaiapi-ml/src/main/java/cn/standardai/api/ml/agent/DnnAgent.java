@@ -1,5 +1,6 @@
 package cn.standardai.api.ml.agent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
@@ -173,6 +174,35 @@ public class DnnAgent extends AuthAgent {
 		}
 
 		return result;
+	}
+
+	public String[] predict(String userId, String modelTemplateName, List<Integer[][]> data) throws DnnException, MLException {
+
+		DnnModelSetting ms = mh.findLastestModel(userId, modelTemplateName);
+		if (ms == null) throw new MLException("找不到模型(" + this.userId + "/" + modelTemplateName + ")");
+
+		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(
+				ms.getTrainDataSetting().getxFilter().substring(ms.getTrainDataSetting().getxFilter().indexOf("|") + 1));
+		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ms.getTrainDataSetting().getyFilter());
+		for (DataFilter<?, ?> f : xFilters) {
+			if (f != null && f.needInit()) {
+				f.init("hanqing", this.daoHandler);
+			}
+		}
+		for (DataFilter<?, ?> f : yFilters) {
+			if (f != null && f.needInit()) {
+				f.init("hanqing", this.daoHandler);
+			}
+		}
+
+		Dnn<?> dnn = createModel(ms);
+		String[] ys = new String[data.size()];
+		for (int i = 0; i < data.size(); i++) {
+			Integer[][][] x = DataFilter.encode(data.get(i), xFilters);
+			ys[i] = DataFilter.decode(((Cnn)dnn).predictY(x), yFilters);
+		}
+
+		return ys;
 	}
 
 	private JSONArray S2J(String[] ys) {

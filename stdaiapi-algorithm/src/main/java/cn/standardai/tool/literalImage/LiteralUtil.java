@@ -35,7 +35,7 @@ public class LiteralUtil {
 			// 分割出文字
 			List<List<Slice>> slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
 			// 输出文字图片，测试用
-			LiteralUtil.drawWords(bv, slices, path, 1, 38, 38, true);
+			LiteralUtil.drawWords(bv, slices, path, "split_", 1, 48, 48, false);
 
 			// 获得灰度值
 			pixels = ImageUtil.getGray(file2);
@@ -48,7 +48,7 @@ public class LiteralUtil {
 			// 分割出文字
 			slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
 			// 输出文字图片，测试用
-			LiteralUtil.drawWords(bv, slices, path, 101, 38, 38, true);
+			LiteralUtil.drawWords(bv, slices, path, "split_", 101, 48, 48, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -80,48 +80,57 @@ public class LiteralUtil {
 		return slices;
 	}
 
-	public static Integer[][][][] drawWords(Integer[][] pixels, List<List<Slice>> slices, String path, int index, Integer width, Integer height, boolean strech) throws IOException {
+	public static ImageBean[][] drawWords(Integer[][] pixels, List<List<Slice>> slices, String path, String prefix, int index,
+			Integer width, Integer height, boolean strech) throws IOException {
 
-		index--;
-		Integer[][][][] words = new Integer[slices.size()][][][];
+		ImageBean[][] images = new ImageBean[slices.size()][];
 		for (int i = 0; i < slices.size(); i++) {
-			words[i] = new Integer[slices.get(i).size()][][];
+			images[i] = new ImageBean[slices.get(i).size()];
 			for (int j = 0; j < slices.get(i).size(); j++) {
+				// 获得原图像素
 				Integer[][] scope = slices.get(i).get(j).getScope(pixels);
-				ImageUtil.drawGray(path + "split_" + ++index, scope);
+				// 图像处理
+				String fileName = path + prefix + index++;
+				images[i][j] = new ImageBean(resize(scope, fileName, width, height, strech));
+				// 画图
+				images[i][j].draw(fileName);
+			}
+		}
+		return images;
+	}
 
-				if (width == null && height == null) continue;
-				int newWidth = 0;
-				int newHeight = 0;
-				if (width == null) {
-					newWidth = scope.length * height / scope[0].length;
-					newHeight = height;
-				} else if (height == null) {
+	public static Integer[][] resize(Integer[][] scope, String fileName, Integer width, Integer height, boolean strech) throws IOException {
+
+		ImageUtil.drawGray(fileName, scope);
+
+		if (width == null && height == null) return null;
+		int newWidth = 0;
+		int newHeight = 0;
+		if (width == null) {
+			newWidth = scope.length * height / scope[0].length;
+			newHeight = height;
+		} else if (height == null) {
+			newWidth = width;
+			newHeight = scope[0].length * width / scope.length;
+		} else {
+			if (strech) {
+				newWidth = width;
+				newHeight = height;
+			} else {
+				if ((0.0 + height) / scope[0].length >= (0.0 + width) / scope.length) {
 					newWidth = width;
 					newHeight = scope[0].length * width / scope.length;
 				} else {
-					if (strech) {
-						newWidth = width;
-						newHeight = height;
-					} else {
-						if ((0.0 + height) / scope[0].length >= (0.0 + width) / scope.length) {
-							newWidth = width;
-							newHeight = scope[0].length * width / scope.length;
-						} else {
-							newWidth = scope.length * height / scope[0].length;
-							newHeight = height;
-						}
-					}
+					newWidth = scope.length * height / scope[0].length;
+					newHeight = height;
 				}
-				resize(path + "split_" + index, newWidth, newHeight);
-				// 获得灰度值
-				Integer[][] pixels2 = ImageUtil.getGray(path + "split_" + index);
-				// 二值化
-				words[i][j] = ImageUtil.binaryValue(pixels2, BVMethod.localAvg);
-				//ImageUtil.drawGray(path + "split_" + index, bv);
 			}
 		}
-		return words;
+		resize(fileName, newWidth, newHeight);
+		// 获得灰度值
+		Integer[][] pixels2 = ImageUtil.getGray(fileName);
+		// 二值化
+		return ImageUtil.binaryValue(pixels2, BVMethod.middle);
 	}
 
 	private static List<Integer[]> split(Integer[] c, double th, int min) {
@@ -166,7 +175,7 @@ public class LiteralUtil {
 		File srcFile = new File(fileName);
 		Image srcImg = ImageIO.read(srcFile);
 		BufferedImage buffImg = null;
-		buffImg = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+		buffImg = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_BYTE_GRAY);
 		buffImg.getGraphics().drawImage(
 				srcImg.getScaledInstance(newWidth, newHeight, Image.SCALE_DEFAULT), 0,
 				0, null);

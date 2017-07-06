@@ -1,4 +1,4 @@
-package cn.standardai.api.ml.agent;
+package cn.standardai.api.app.agent;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -17,24 +18,50 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.standardai.api.app.agent.HttpHandler.HttpMethod;
+import cn.standardai.api.app.bean.TreeNode;
+import cn.standardai.api.app.exception.AppException;
 import cn.standardai.api.core.base.AuthAgent;
 import cn.standardai.api.core.bean.Context;
-import cn.standardai.api.ml.bean.DnnModelSetting;
-import cn.standardai.api.ml.bean.TreeNode;
-import cn.standardai.api.ml.daohandler.ModelHandler;
-import cn.standardai.api.ml.exception.FilterException;
+import cn.standardai.api.core.util.MathUtil;
+import cn.standardai.api.dao.DataDao;
+import cn.standardai.api.dao.DatasetDao;
+import cn.standardai.api.dao.bean.Data;
+import cn.standardai.api.dao.bean.Dataset;
+import cn.standardai.api.ml.agent.DnnAgent;
 import cn.standardai.api.ml.exception.MLException;
-import cn.standardai.api.ml.filter.DataFilter;
-import cn.standardai.lib.algorithm.cnn.Cnn;
 import cn.standardai.lib.algorithm.exception.DnnException;
 import cn.standardai.tool.ImageUtil;
 import cn.standardai.tool.ImageUtil.BVMethod;
+import cn.standardai.tool.literalImage.ImageBean;
 import cn.standardai.tool.literalImage.LiteralUtil;
 import cn.standardai.tool.literalImage.Slice;
 import sun.misc.BASE64Encoder;
 
 @SuppressWarnings("restriction")
 public class FormulaAgent extends AuthAgent {
+
+	private static final String TYPE_FILE = "FILE";
+
+	private final String userId = "hanqing";
+
+	private final String datasetName = "formula";
+
+	private final String modelName = "n5";
+
+	private final int k = 1;
+
+	private final double yTh = 0.03;
+
+	private final double xTh = 0.0;
+
+	private final int minPixel = 5;
+
+	private final int width = 48;
+
+	private final int height = 48;
+
+	private final Integer trainSeconds = 20;
 
 	/*
 	public static void main(String[] args) {
@@ -97,65 +124,126 @@ public class FormulaAgent extends AuthAgent {
 	}
 	*/
 
-	private ModelHandler mh = new ModelHandler(daoHandler);
+	public JSONObject splitImage(MultipartFile[] uploadFiles) throws AppException {
 
-	public JSONObject process(MultipartFile[] uploadFiles) throws MLException {
-		if (uploadFiles == null || uploadFiles.length == 0) return new JSONObject();
+		int startIdx = 1;
+		JSONObject jResult = new JSONObject();
+		if (uploadFiles == null || uploadFiles.length == 0) return jResult;
+
 		try {
-			// 获得灰度值
-			Integer[][] gray = ImageUtil.getGray(uploadFiles[0]);
-			// 二值化
-			Integer[][] bv = ImageUtil.binaryValue(gray, BVMethod.localAvg);
-			// 去除噪点
-			bv = ImageUtil.clearNoise(bv, 1);
-			// 输出二值化图片，测试用
-			if (Context.getProp().getLocal().getDebug())
-				ImageUtil.drawGray(Context.getProp().getLocal().getDebugTemp() + "bv.jpg", bv);
-			// 分割出文字
-			List<List<Slice>> slices = LiteralUtil.cut(bv, 0.03, 0.0, 5);
-			// 输出文字图片，测试用
-			//if (Context.getProp().getLocal().getDebug()) {
-			Integer[][][][] words = LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getDebugTemp(), 1, 78, 78, true);
-			//}
-			// 识别文字图片
-			//String[][] wordString = recognize(bv, slices);
-			String[][] wordString = recognize(bv, words);
-			// 检查正误
-			return check(slices, wordString);
+			JSONArray jImages = new JSONArray();
+			for (MultipartFile file1 : uploadFiles) {
+				JSONObject jImage1 = new JSONObject();
+				String imageId = MathUtil.random(8);
+				// 获得灰度值
+				Integer[][] gray = ImageUtil.getGray(file1);
+				// 二值化
+				Integer[][] bv = ImageUtil.binaryValue(gray, BVMethod.localAvg);
+				// 去除噪点
+				bv = ImageUtil.clearNoise(bv, k);
+				// 输出二值化图片
+				//ImageUtil.drawGray(Context.getProp().getLocal().getUploadTemp() + imageId + "_bv", bv);
+				// 分割出文字
+				List<List<Slice>> slices = LiteralUtil.cut(bv, yTh, xTh, minPixel);
+				// 输出文字图片
+				ImageBean[][] wordImages = LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getUploadTemp(), imageId + "_", startIdx, width, height, true);
+				// 识别文字图片
+				String[][] wordString;
+				try {
+					wordString = recognize(wordImages);
+				} catch (MLException e) {
+					jImage1.put("message", e.getMessage());
+					continue;
+				}
+				JSONArray jImage1SubImages = new JSONArray();
+				for (int i = 0; i < wordImages.length; i++) {
+					for (int j = 0; j < wordImages[i].length; j++) {
+						JSONObject jImage1SubImage1 = new JSONObject();
+						jImage1SubImage1.put("id", imageId + "_" + startIdx++);
+						jImage1SubImage1.put("base64", wordImages[i][j].getBase64());
+						jImage1SubImage1.put("word", wordString[i][j]);
+						jImage1SubImages.add(jImage1SubImage1);
+					}
+				}
+				jImage1.put("cnt", jImage1SubImages.size());
+				jImage1.put("subImages", jImage1SubImages);
+				jImages.add(jImage1);
+			}
+			jResult.put("images", jImages);
+			return jResult;
 		} catch (IOException | DnnException e) {
-			throw new MLException("文件解析失败", e);
+			throw new AppException("文件解析失败", e);
 		}
 	}
 
-	private String[][] recognize(Integer[][] bv, Integer[][][][] words) throws MLException, DnnException {
-		DnnModelSetting ms = mh.findLastestModel("hanqing", "fn5");
-		if (ms == null) throw new MLException("找不到模型(hanqing/fn5)");
+	public JSONObject commitImages(JSONObject request) throws AppException {
 
-		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(
-				ms.getTrainDataSetting().getxFilter().substring(ms.getTrainDataSetting().getxFilter().indexOf("|") + 1));
-		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ms.getTrainDataSetting().getyFilter());
-		for (DataFilter<?, ?> f : xFilters) {
-			if (f != null && f.needInit()) {
-				f.init("hanqing", this.daoHandler);
+		JSONArray jImages = request.getJSONArray("images");
+		if (jImages == null || jImages.size() == 0) return new JSONObject();
+
+		DatasetDao datasetDao = daoHandler.getMySQLMapper(DatasetDao.class);
+
+		Dataset dataset = datasetDao.selectByKey(this.datasetName, this.userId);
+		if (dataset == null) throw new AppException("找不到该数据集");
+		if (!TYPE_FILE.equalsIgnoreCase(dataset.getType())) {
+			throw new AppException("该数据非文件类型，不支持上传文件(dataName=" + datasetName + ")");
+		}
+		String datasetId = dataset.getDatasetId();
+		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+		Integer baseIdx = dataDao.selectCountByDatasetId(datasetId);
+
+		int idx = 0;
+		for (int i = 0; i < jImages.size(); i++) {
+			JSONArray jSubImages = jImages.getJSONObject(i).getJSONArray("subImages");
+			for (int j = 0; j < jSubImages.size(); j++) {
+				JSONObject jSubImage1 = jSubImages.getJSONObject(j);
+				String path = Context.getProp().getLocal().getUploadTemp() + jSubImage1.getString("id");
+				insertData(MathUtil.random(32), datasetId, baseIdx + idx, path, "", jSubImage1.getString("word"));
+				idx++;
 			}
 		}
-		for (DataFilter<?, ?> f : yFilters) {
-			if (f != null && f.needInit()) {
-				f.init("hanqing", this.daoHandler);
-			}
-		}
 
-		Cnn cnn = createModel(ms);
-		String[][] ys = new String[words.length][];
-		for (int i = 0; i < words.length; i++) {
-			ys[i] = new String[words[i].length];
-			for (int j = 0; j < words[i].length; j++) {
-				Integer[][][] x = DataFilter.encode(words[i][j], xFilters);
-				ys[i][j] = DataFilter.decode(cnn.predictY(x), yFilters);
-			}
-		}
+		return new JSONObject();
+	}
 
-		return ys;
+	public JSONObject check(MultipartFile[] uploadFiles) throws AppException {
+
+		JSONObject jResult = new JSONObject();
+		if (uploadFiles == null || uploadFiles.length == 0) return jResult;
+
+		try {
+			JSONArray jImages = new JSONArray();
+			for (MultipartFile file1 : uploadFiles) {
+				JSONObject jImage1 = new JSONObject();
+				String imageId = MathUtil.random(8);
+				// 获得灰度值
+				Integer[][] gray = ImageUtil.getGray(file1);
+				// 二值化
+				Integer[][] bv = ImageUtil.binaryValue(gray, BVMethod.localAvg);
+				// 去除噪点
+				bv = ImageUtil.clearNoise(bv, k);
+				// 输出二值化图片
+				//ImageUtil.drawGray(Context.getProp().getLocal().getUploadTemp() + imageId + "_bv", bv);
+				// 分割出文字
+				List<List<Slice>> slices = LiteralUtil.cut(bv, yTh, xTh, minPixel);
+				// 输出文字图片
+				ImageBean[][] wordImages = LiteralUtil.drawWords(bv, slices, Context.getProp().getLocal().getUploadTemp(), imageId + "_", 1, width, height, true);
+				// 识别文字图片
+				String[][] wordString;
+				try {
+					wordString = recognize(wordImages);
+				} catch (MLException e) {
+					jImage1.put("message", e.getMessage());
+					continue;
+				}
+				// 检查正误
+				jImages.add(check(slices, wordString));
+			}
+			jResult.put("images", jImages);
+			return jResult;
+		} catch (IOException | DnnException e) {
+			throw new AppException("文件解析失败", e);
+		}
 	}
 
 	private JSONObject check(List<List<Slice>> slices, String[][] words) {
@@ -165,7 +253,8 @@ public class FormulaAgent extends AuthAgent {
 			if (slices.get(i).size() == 0) continue;
 			JSONObject detail1 = new JSONObject();
 			detail1.put("x", slices.get(i).get(slices.get(i).size() - 1).getX2());
-			detail1.put("y", slices.get(i).get(slices.get(i).size() - 1).getY1());
+			detail1.put("y", 
+					(slices.get(i).get(slices.get(i).size() - 1).getY1() + slices.get(i).get(slices.get(i).size() - 1).getY2()) / 2);
 			JSONObject j = check(words[i]);
 			detail1.put("content", j.getString("content"));
 			detail1.put("message", j.getString("message"));
@@ -215,21 +304,71 @@ public class FormulaAgent extends AuthAgent {
 				j.put("content", concatString(symbols));
 				return j;
 			}
-		} catch (MLException e) {
+		} catch (AppException e) {
 			j.put("message", "表达式错误");
 			j.put("content", concatString(symbols));
 			return j;
 		}
 	}
 
-	private TreeNode parseFormula(String[] symbols, int start, int end) throws MLException {
+	public void train() throws AppException {
+
+		while (true) {
+			train1();
+			try {
+				Thread.sleep(1000 * (trainSeconds + 10));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void train1() throws AppException {
+
+		String testDatasetName = null;
+		Double learningRate = null;
+		Double dth = null;
+		Integer[] diverseDataRate = new Integer[] {10, 0, 0};
+		Integer batchSize = 30;
+		Integer watchEpoch = 20;
+		Integer epoch = null;
+		Integer testLossIncreaseTolerance = null;
+		Boolean keepOld = false;
+
+		JSONObject body = new JSONObject();
+		JSONObject train = new JSONObject();
+
+		if (testDatasetName != null) train.put("testDatasetName", testDatasetName);
+		train.put("learningRate", learningRate == null ? 0.1 : learningRate);
+		train.put("dth", dth == null ? 1.0 : dth);
+		if (diverseDataRate != null && diverseDataRate.length == 3) {
+			JSONArray rateJ = new JSONArray();
+			for (int i = 0; i < 3; i++) {
+				rateJ.add(diverseDataRate[i]);
+			}
+			train.put("diverseDataRate", rateJ);
+		}
+		if (batchSize != null) train.put("batchSize", batchSize);
+		if (watchEpoch != null) train.put("watchEpoch", watchEpoch);
+		if (epoch != null) train.put("epoch", epoch);
+		if (trainSeconds != null) train.put("trainSecond", trainSeconds);
+		if (testLossIncreaseTolerance != null) train.put("testLossIncreaseTolerance", testLossIncreaseTolerance);
+
+		body.put("new", !keepOld);
+		body.put("train", train);
+
+		HttpHandler.http(HttpMethod.POST, Context.getProp().getUrl().getMl() + "/dnn/" + this.userId + "/" + modelName, null, body, token);
+	}
+
+	private TreeNode parseFormula(String[] symbols, int start, int end) throws AppException {
 
 		if (start < 0 || start >= symbols.length || end < 0 || end >= symbols.length || start > end)
-			throw new MLException("表达式错误" + concatString(symbols));
+			throw new AppException("表达式错误" + concatString(symbols));
 
 		// a- -> wrong
 		if (isOp(symbols[end]))
-			throw new MLException("表达式错误" + concatString(symbols));
+			throw new AppException("表达式错误" + concatString(symbols));
 
 		// (a+b) -> a+b
 		if ("(".equals(symbols[start]) && ")".equals(symbols[end])) return parseFormula(symbols, start + 1, end - 1);
@@ -262,14 +401,14 @@ public class FormulaAgent extends AuthAgent {
 			switch (symbols[i]) {
 			case "(":
 				// a+(b+c -> wrong
-				throw new MLException("表达式错误" + concatString(symbols));
+				throw new AppException("表达式错误" + concatString(symbols));
 			case ")":
 				if (i == end) {
 					// ) -> wrong
-					if (i == start) throw new MLException("表达式错误" + concatString(symbols));
+					if (i == start) throw new AppException("表达式错误" + concatString(symbols));
 					int index = findFirst("(", symbols, start, i - 1);
 					// a+b) -> wrong
-					if (index == -1) throw new MLException("表达式错误" + concatString(symbols));
+					if (index == -1) throw new AppException("表达式错误" + concatString(symbols));
 					// (a+b) -> a+b
 					if (index == start) return parseFormula(symbols, start + 1, end - 1);
 					if (isOp(symbols[index - 1])) {
@@ -289,7 +428,7 @@ public class FormulaAgent extends AuthAgent {
 					}
 				} else {
 					// )5 -> wrong
-					throw new MLException("表达式错误" + concatString(symbols));
+					throw new AppException("表达式错误" + concatString(symbols));
 				}
 			case "+":
 				// a+b
@@ -357,7 +496,7 @@ public class FormulaAgent extends AuthAgent {
 					return node;
 				}
 			case "=":
-				throw new MLException("表达式错误" + concatString(symbols));
+				throw new AppException("表达式错误" + concatString(symbols));
 			default:
 				item = symbols[i] + item;
 				continue;
@@ -365,51 +504,6 @@ public class FormulaAgent extends AuthAgent {
 		}
 
 		return new TreeNode(Integer.parseInt(item));
-	}
-
-	private String[][] recognize(Integer[][] pixels, List<List<Slice>> slices) throws MLException, DnnException {
-
-		DnnModelSetting ms = mh.findLastestModel("hanqing", "fn5");
-		if (ms == null) throw new MLException("找不到模型(hanqing/fn5)");
-
-		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(
-				ms.getTrainDataSetting().getxFilter().substring(ms.getTrainDataSetting().getxFilter().indexOf("|") + 1));
-		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ms.getTrainDataSetting().getyFilter());
-		for (DataFilter<?, ?> f : xFilters) {
-			if (f != null && f.needInit()) {
-				f.init("hanqing", this.daoHandler);
-			}
-		}
-		for (DataFilter<?, ?> f : yFilters) {
-			if (f != null && f.needInit()) {
-				f.init("hanqing", this.daoHandler);
-			}
-		}
-
-		Cnn cnn = createModel(ms);
-		String[][] ys = new String[slices.size()][];
-		for (int i = 0; i < slices.size(); i++) {
-			ys[i] = new String[slices.get(i).size()];
-			for (int j = 0; j < slices.get(i).size(); j++) {
-				Integer[][][] x = DataFilter.encode(slices.get(i).get(j).getScope(pixels), xFilters);
-				ys[i][j] = DataFilter.decode(cnn.predictY(x), yFilters);
-			}
-		}
-
-		return ys;
-	}
-
-	private Cnn createModel(DnnModelSetting model) throws DnnException {
-		Cnn cnn;
-		if (model.getStructure() == null) {
-			// 无模型，新建模型
-			JSONObject structure = JSONObject.parseObject(model.getScript());
-			cnn = Cnn.getInstance(structure);
-		} else {
-			// 有模型，使用最新模型继续训练
-			cnn = Cnn.getInstance(model.getStructure());
-		}
-		return cnn;
 	}
 
 	private int findLastOp(String[] symbols, int start, int end) {
@@ -445,7 +539,7 @@ public class FormulaAgent extends AuthAgent {
 		return str;
 	}
 
-	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws MLException {
+	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws AppException {
 		if (uploadFiles == null || uploadFiles.length == 0) return details;
 		ByteArrayInputStream byteInputStream = null;
 		BufferedImage imageBuffer = null;
@@ -484,22 +578,64 @@ public class FormulaAgent extends AuthAgent {
 			details.put("image", imageString);
 			return details;
 		} catch (IOException e) {
-			throw new MLException("文件解析失败", e);
+			throw new AppException("文件解析失败", e);
 		} finally {
 			if (byteInputStream != null) {
 				try {
 					byteInputStream.close();
 				} catch (IOException e) {
-					throw new MLException("文件解析失败", e);
+					throw new AppException("文件解析失败", e);
 				}
 			}
 			if (byteOutputStream != null) {
 				try {
 					byteOutputStream.close();
 				} catch (IOException e) {
-					throw new MLException("文件生成失败", e);
+					throw new AppException("文件生成失败", e);
 				}
 			}
 		}
-	}  
+	}
+
+	private String[] recognize41Line(ImageBean[][] wordImages) throws DnnException, MLException {
+
+		List<Integer[][]> data = new ArrayList<Integer[][]>();
+
+		DnnAgent agent = new DnnAgent();
+		for (int i = 0; i < wordImages.length; i++) {
+			for (int j = 0; j < wordImages[i].length; j++) {
+				data.add(wordImages[i][j].getPixels());
+			}
+		}
+		return agent.predict(this.userId, this.modelName, data);
+	}
+
+	private String[][] recognize(ImageBean[][] wordImages) throws DnnException, MLException {
+
+		String[] wordString1Line = recognize41Line(wordImages);
+
+		int idx = 0;
+		String[][] wordString = new String[wordImages.length][];
+		for (int i = 0; i < wordImages.length; i++) {
+			wordString[i] = new String[wordImages[i].length];
+			for (int j = 0; j < wordImages[i].length; j++) {
+				wordString[i][j] = wordString1Line[idx];
+				idx++;
+			}
+		}
+
+		return wordString;
+	}
+
+	private long insertData(String dataId, String datasetId, int idx, String ref, String x, String y) {
+		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
+		Data param = new Data();
+		param.setDataId(dataId);
+		param.setDatasetId(datasetId);
+		param.setIdx(idx);
+		param.setRef(ref);
+		param.setX(x);
+		param.setY(y);
+		return dataDao.insert(param);
+	}
 }

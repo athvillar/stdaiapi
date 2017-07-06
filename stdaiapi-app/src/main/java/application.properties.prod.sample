@@ -1,0 +1,8 @@
+app.name=stdaiapi-app
+app.description=${app.name} provide a service layer of app
+
+server.port=10107
+server.context-path=/app
+
+# dev, qa, prod, home
+spring.profiles.active=prod
