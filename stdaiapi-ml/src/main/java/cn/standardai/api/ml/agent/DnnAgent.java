@@ -128,7 +128,7 @@ public class DnnAgent extends AuthAgent {
 		}
 
 		DataHandler dh = new DataHandler(this.daoHandler);
-		List<Data> rawData = dh.getData(dataset);
+		List<Data> rawData = dh.getData(dataset, null);
 		DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(ds.getxFilter());
 		DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(ds.getyFilter());
 		for (DataFilter<?, ?> f : xFilters) {
@@ -289,7 +289,7 @@ public class DnnAgent extends AuthAgent {
 	}
 
 	private DnnDicSetting createDic(DicFilter<String, ?, Integer> f, Dataset dataset, String column) throws FilterException {
-		List<Data> data = dh.getData(dataset);
+		List<Data> data = dh.getData(dataset, null);
 		f.init(this.userId, this.daoHandler);
 		for (int i = 0; i < data.size(); i++) {
 			if (column.endsWith("x")) {

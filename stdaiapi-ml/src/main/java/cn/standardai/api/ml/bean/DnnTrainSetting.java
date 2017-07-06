@@ -25,6 +25,8 @@ public class DnnTrainSetting {
 
 	private Integer testLossIncreaseTolerance;
 
+	private Integer dataLimit;
+
 	public Double getDth() {
 		return dth;
 	}
@@ -125,6 +127,7 @@ public class DnnTrainSetting {
 		ts.batchSize = json.getInteger("batchSize");
 		ts.watchEpoch = json.getInteger("watchEpoch");
 		ts.testLossIncreaseTolerance = json.getInteger("testLossIncreaseTolerance");
+		ts.dataLimit = json.getInteger("dataLimit");
 		return ts;
 	}
 
@@ -134,5 +137,13 @@ public class DnnTrainSetting {
 
 	public void setTestDatasetName(String testDatasetName) {
 		this.testDatasetName = testDatasetName;
+	}
+
+	public Integer getDataLimit() {
+		return dataLimit;
+	}
+
+	public void setDataLimit(Integer dataLimit) {
+		this.dataLimit = dataLimit;
 	}
 }

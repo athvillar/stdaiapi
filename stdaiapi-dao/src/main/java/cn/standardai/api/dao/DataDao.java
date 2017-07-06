@@ -20,6 +20,9 @@ public interface DataDao {
 	@Select({"SELECT * FROM DATA WHERE DATASETID = #{datasetId} ORDER BY IDX"})
 	List<Data> selectByDatasetIdOrder(@Param("datasetId") String datasetId);
 
+	@Select({"SELECT * FROM (SELECT * FROM DATA WHERE DATASETID = #{datasetId} ORDER BY IDX DESC) LIMIT #{limit}"})
+	List<Data> selectByDatasetIdOrderLimit(@Param("datasetId") String datasetId, @Param("limit") Integer limit);
+
 	@Select({"SELECT * FROM DATA WHERE DATASETID = #{datasetId} LIMIT 1"})
 	Data select1ByDatasetId(@Param("datasetId") String datasetId);
 

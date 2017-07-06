@@ -33,10 +33,13 @@ public class DataHandler {
 		}
 	}
 
-	public List<Data> getData(Dataset dataset) {
+	public List<Data> getData(Dataset dataset, Integer limit) {
 		if (dataset == null) return null;
 		DataDao dataDao = daoHandler.getMySQLMapper(DataDao.class);
-		List<Data> data = dataDao.selectByDatasetIdOrder(dataset.getDatasetId());
-		return data;
+		if (limit == null) {
+			return dataDao.selectByDatasetIdOrder(dataset.getDatasetId());
+		} else {
+			return dataDao.selectByDatasetIdOrderLimit(dataset.getDatasetId(), limit);
+		}
 	}
 }

@@ -316,7 +316,7 @@ public class FormulaAgent extends AuthAgent {
 		while (true) {
 			train1();
 			try {
-				Thread.sleep(1000 * (trainSeconds + 10));
+				Thread.sleep(1000 * (trainSeconds + trainSeconds));
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -335,6 +335,7 @@ public class FormulaAgent extends AuthAgent {
 		Integer epoch = null;
 		Integer testLossIncreaseTolerance = null;
 		Boolean keepOld = false;
+		Integer dataLimit = 1000;
 
 		JSONObject body = new JSONObject();
 		JSONObject train = new JSONObject();
@@ -354,6 +355,7 @@ public class FormulaAgent extends AuthAgent {
 		if (epoch != null) train.put("epoch", epoch);
 		if (trainSeconds != null) train.put("trainSecond", trainSeconds);
 		if (testLossIncreaseTolerance != null) train.put("testLossIncreaseTolerance", testLossIncreaseTolerance);
+		if (dataLimit != null) train.put("dataLimit", dataLimit);
 
 		body.put("new", !keepOld);
 		body.put("train", train);

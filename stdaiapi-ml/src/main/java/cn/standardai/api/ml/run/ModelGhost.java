@@ -83,7 +83,7 @@ public class ModelGhost implements Runnable {
 			DnnDataSetting dsTrain = ms.getTrainDataSetting();
 			DataHandler dh = new DataHandler(this.daoHandler);
 
-			List<Data> rawData1 = dh.getData(dh.getDataset(ms.getUserId(), dsTrain.getDatasetId(), dsTrain.getDatasetName()));
+			List<Data> rawData1 = dh.getData(dh.getDataset(ms.getUserId(), dsTrain.getDatasetId(), dsTrain.getDatasetName()), ts.getDataLimit());
 			DataFilter<?, ?>[] xFilters = DataFilter.parseFilters(dsTrain.getxFilter());
 			DataFilter<?, ?>[] yFilters = DataFilter.parseFilters(dsTrain.getyFilter());
 			for (DataFilter<?, ?> f : xFilters) {
@@ -108,7 +108,7 @@ public class ModelGhost implements Runnable {
 				} else {
 					testDatasetUser = ms.getUserId();
 				}
-				rawData2 = dh.getData(dh.getDataset(testDatasetUser, null, testDatasetName));
+				rawData2 = dh.getData(dh.getDataset(testDatasetUser, null, testDatasetName), ts.getDataLimit());
 			}
 
 			switch (ms.getAlgorithm()) {
