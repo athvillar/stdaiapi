@@ -31,8 +31,8 @@ public class FormulaService extends BaseService<FormulaAgent> {
 	public String uploadImage(@RequestHeader HttpHeaders headers) {
 		logger.info("stdaiapi-app /model/train POST start ...");
 		JSONObject result = null;
-		FormulaAgent agent = new FormulaAgent();
 		try {
+			initAgent(headers, FormulaAgent.class);
 			agent.train();
 			result = successResponse(result);
 		} catch (StdaiException e) {

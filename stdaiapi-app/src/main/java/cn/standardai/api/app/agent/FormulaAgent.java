@@ -47,7 +47,7 @@ public class FormulaAgent extends AuthAgent {
 
 	private final String datasetName = "formula";
 
-	private final String modelName = "n5";
+	private final String modelName = "formula";
 
 	private final int k = 1;
 
@@ -539,7 +539,7 @@ public class FormulaAgent extends AuthAgent {
 		return str;
 	}
 
-	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws AppException {
+	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws MLException {
 		if (uploadFiles == null || uploadFiles.length == 0) return details;
 		ByteArrayInputStream byteInputStream = null;
 		BufferedImage imageBuffer = null;
@@ -550,22 +550,26 @@ public class FormulaAgent extends AuthAgent {
 			int imageWidth = imageBuffer.getWidth();
 
 			Graphics graphics = imageBuffer.getGraphics();
-			Font f = new Font("宋体", Font.PLAIN, 25);
-			graphics.setFont(f);
-			Color mycolor = Color.black;
-			graphics.setColor(mycolor);
 
 			JSONArray detaArray = details.getJSONArray("details");
 			for (int i = 0; i < detaArray.size(); i++) {
 				JSONObject data = detaArray.getJSONObject(i);
+				// 文字位置
 				int x = data.getIntValue("x");
 				int y = data.getIntValue("y");
+				// 提示信息
 				String message = data.getString("message");
-				FontMetrics fontMetrics = graphics.getFontMetrics(f);
+				Font textType = new Font("宋体", Font.PLAIN, 25);
+				graphics.setFont(textType);
+				FontMetrics fontMetrics = graphics.getFontMetrics(textType);
 				int fontWidth = fontMetrics.stringWidth(message);
 				int fontHeight = fontMetrics.getHeight();
+				// 修正文字位置
 				if (x + fontWidth > imageWidth) x = imageWidth - fontWidth;
 				if (y - fontHeight < 0) y = fontHeight;
+				// 文字颜色
+				Color textColor = getTextColor(data.getString("color"));
+				graphics.setColor(textColor);
 				graphics.drawString(message, x, y);
 			}
 			graphics.dispose();
@@ -578,24 +582,56 @@ public class FormulaAgent extends AuthAgent {
 			details.put("image", imageString);
 			return details;
 		} catch (IOException e) {
-			throw new AppException("文件解析失败", e);
+			throw new MLException("文件解析失败", e);
 		} finally {
 			if (byteInputStream != null) {
 				try {
 					byteInputStream.close();
 				} catch (IOException e) {
-					throw new AppException("文件解析失败", e);
+					throw new MLException("文件解析失败", e);
 				}
 			}
 			if (byteOutputStream != null) {
 				try {
 					byteOutputStream.close();
 				} catch (IOException e) {
-					throw new AppException("文件生成失败", e);
+					throw new MLException("文件生成失败", e);
 				}
 			}
 		}
 	}
+
+	private Color getTextColor(String colorStr) {
+		if(colorStr == null) return Color.black;
+		switch (colorStr) {
+		case "white":
+			return Color.white;
+		case "lightGray":
+			return Color.lightGray;
+		case "gray":
+			return Color.gray;
+		case "darkGray":
+			return Color.darkGray;
+		case "red":
+			return Color.red;
+		case "pink":
+			return Color.pink;
+		case "orange":
+			return Color.orange;
+		case "yellow":
+			return Color.yellow;
+		case "green":
+			return Color.green;
+		case "magenta":
+			return Color.magenta;
+		case "cyan":
+			return Color.cyan;
+		case "blue":
+			return Color.blue;
+		default:
+			return Color.black;
+		}
+	}  
 
 	private String[] recognize41Line(ImageBean[][] wordImages) throws DnnException, MLException {
 
