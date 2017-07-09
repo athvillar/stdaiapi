@@ -541,8 +541,8 @@ public class FormulaAgent extends AuthAgent {
 		return str;
 	}
 
-	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject details) throws MLException {
-		if (uploadFiles == null || uploadFiles.length == 0) return details;
+	public JSONObject exportImg(MultipartFile[] uploadFiles, JSONObject images) throws MLException {
+		if (uploadFiles == null || uploadFiles.length == 0) return images;
 		ByteArrayInputStream byteInputStream = null;
 		BufferedImage imageBuffer = null;
 		ByteArrayOutputStream byteOutputStream = null;
@@ -552,37 +552,41 @@ public class FormulaAgent extends AuthAgent {
 			int imageWidth = imageBuffer.getWidth();
 
 			Graphics graphics = imageBuffer.getGraphics();
+			
+			JSONArray imageArray = images.getJSONArray("images");
+			for (int i = 0; i < imageArray.size(); i++) {
+				JSONObject imageObject = imageArray.getJSONObject(i);
+				JSONArray  detailArray = imageObject.getJSONArray("details");
+				for (int j = 0; j < detailArray.size(); j++) {
+					JSONObject data = detailArray.getJSONObject(j);
+					// 文字位置
+					int x = data.getIntValue("x");
+					int y = data.getIntValue("y");
+					// 提示信息
+					String message = data.getString("message");
+					Font textType = new Font("宋体", Font.PLAIN, 25);
+					graphics.setFont(textType);
+					FontMetrics fontMetrics = graphics.getFontMetrics(textType);
+					int fontWidth = fontMetrics.stringWidth(message);
+					int fontHeight = fontMetrics.getHeight();
+					// 修正文字位置
+					if (x + fontWidth > imageWidth) x = imageWidth - fontWidth;
+					if (y - fontHeight < 0) y = fontHeight;
+					// 文字颜色
+					Color textColor = getTextColor(data.getString("color"));
+					graphics.setColor(textColor);
+					graphics.drawString(message, x, y);
+				}
+				graphics.dispose();
 
-			JSONArray detaArray = details.getJSONArray("details");
-			for (int i = 0; i < detaArray.size(); i++) {
-				JSONObject data = detaArray.getJSONObject(i);
-				// 文字位置
-				int x = data.getIntValue("x");
-				int y = data.getIntValue("y");
-				// 提示信息
-				String message = data.getString("message");
-				Font textType = new Font("宋体", Font.PLAIN, 25);
-				graphics.setFont(textType);
-				FontMetrics fontMetrics = graphics.getFontMetrics(textType);
-				int fontWidth = fontMetrics.stringWidth(message);
-				int fontHeight = fontMetrics.getHeight();
-				// 修正文字位置
-				if (x + fontWidth > imageWidth) x = imageWidth - fontWidth;
-				if (y - fontHeight < 0) y = fontHeight;
-				// 文字颜色
-				Color textColor = getTextColor(data.getString("color"));
-				graphics.setColor(textColor);
-				graphics.drawString(message, x, y);
+				byteOutputStream = new ByteArrayOutputStream();
+				ImageIO.write(imageBuffer, "jpg", byteOutputStream);
+				BASE64Encoder encoder = new BASE64Encoder();  
+				String imageString = encoder.encodeBuffer(byteOutputStream.toByteArray()).trim();
+				imageString = imageString.replaceAll("\r\n", "");
+				imageObject.put("base64", imageString);
 			}
-			graphics.dispose();
-
-			byteOutputStream = new ByteArrayOutputStream();
-			ImageIO.write(imageBuffer, "jpg", byteOutputStream);
-			BASE64Encoder encoder = new BASE64Encoder();  
-			String imageString = encoder.encodeBuffer(byteOutputStream.toByteArray()).trim();
-			imageString = imageString.replaceAll("\r\n", "");
-			details.put("image", imageString);
-			return details;
+			return images;
 		} catch (IOException e) {
 			throw new MLException("文件解析失败", e);
 		} finally {
