@@ -63,6 +63,7 @@
 		<module>./stdaiapi-node</module>
 		<module>./stdaiapi-redis</module>
 		<module>./stdaiapi-statistic</module>
+		<module>./stdaiapi-signal</module>
 	</modules> 
 	<build>
         <plugins>

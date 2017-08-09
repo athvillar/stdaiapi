@@ -40,6 +40,7 @@ public class DataMiningAgent extends AuthAgent {
 
 	public JSONObject classify(JSONObject request) {
 
+		requestJSONObject = request;
 		String algorithm = request.getString("algorithm");
 		if (algorithm == null || "".equals(algorithm) || "KNN".equalsIgnoreCase(algorithm)) {
 
@@ -77,6 +78,7 @@ public class DataMiningAgent extends AuthAgent {
 
 	public JSONObject cluster(JSONObject request) {
 
+		requestJSONObject = request;
 		String algorithm = request.getString("algorithm");
 		if (algorithm == null || "".equals(algorithm) || "KMEANS".equalsIgnoreCase(algorithm)) {
 
@@ -119,6 +121,7 @@ public class DataMiningAgent extends AuthAgent {
 
 	public JSONObject makeDecisionTree(JSONObject request) {
 
+		requestJSONObject = request;
 		String algorithm = request.getString("algorithm");
 		if (algorithm == null || "".equals(algorithm) || "C45".equalsIgnoreCase(algorithm)) {
 

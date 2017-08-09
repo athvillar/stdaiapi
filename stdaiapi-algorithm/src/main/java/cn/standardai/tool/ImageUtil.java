@@ -227,6 +227,19 @@ public class ImageUtil {
 		return imagePixel;
 	}
 
+	public static void drawRGB(String fileName, Integer[][][] pixels) throws IOException{
+
+		int imageWidth = pixels.length;
+		int imageHeight = pixels[0].length;
+		BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+		for (int i = 0; i < imageWidth; i++) {
+			for (int j = 0; j < imageHeight; j++) {
+				image.setRGB(i, j, pixels[i][j][0] * 256 * 256 + pixels[i][j][1] * 256 + pixels[i][j][2]);
+			}
+		}
+		ImageIO.write(image, "PNG", new File(fileName));
+	}
+
 	public static void drawGray(String fileName, Integer[][] pixels) throws IOException{
 
 		int imageWidth = pixels.length;

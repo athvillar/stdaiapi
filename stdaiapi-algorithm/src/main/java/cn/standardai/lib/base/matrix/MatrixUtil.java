@@ -420,6 +420,18 @@ public class MatrixUtil {
 		return result;
 	}
 
+	public static Integer[][][] create(int m, int n, int o, int value) {
+		Integer[][][] result = new Integer[m][n][o];
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				for (int k = 0; k < o; k++) {
+					result[i][j][k] = value;
+				}
+			}
+		}
+		return result;
+	}
+
 	public static Double[] random(int m, double min, double max) {
 		Double[] result = new Double[m];
 		for (int i = 0; i < m; i++) result[i] = Math.random() * (max - min) + min;
