@@ -43,12 +43,15 @@ public class BaiduTraffic {
 
 	private static String path = "/Users/athvillar/Documents/baidutraffic/hezetrafficimage2/";
 
+	private static String testPath = "/Users/athvillar/Documents/baidutraffic/test/";
+
 	private static String outputFile = "/Users/athvillar/Documents/baidutraffic/output";
 
 	private static String suffix = ".png";
 
-	private static String[] dateString = {"2017-08-04","2017-08-05","2017-08-06","2017-08-07","2017-08-08"};
-	//private static String[] dateString = {"2017-08-06","2017-08-07","2017-08-08"};
+	//private static String[] dateString = {"2017-08-04","2017-08-05","2017-08-06","2017-08-07","2017-08-08"};
+	private static String[] dateString = {"2017-08-06","2017-08-07","2017-08-08"};
+	//private static String[] dateString = {"2017-08-07"};
 
 	private static int fileCount = 2;
 
@@ -86,6 +89,16 @@ public class BaiduTraffic {
 			new AnkorPair(new Ankor("3", 63, 402), new Ankor("2", 81, 312), 0),
 			new AnkorPair(new Ankor("2", 81, 312), new Ankor("1", 104, 206), 0),
 	};
+
+	private static String fixTime = "2017-08-07 08:56";
+
+	private static int fixPixel0X = 0;
+
+	private static int fixPixel0Y = -3;
+
+	private static int fixPixel1X = 1;
+
+	private static int fixPixel1Y = -3;
 
 	private static BufferedWriter bufWrite;
 
@@ -167,14 +180,19 @@ public class BaiduTraffic {
 
 		for (int i = 0; i < dateString.length; i++) {
 			for (int j = 0; j <= 23; j++) {
+				//for (int j = 8; j <= 8; j++) {
+				//for (int k = 57; k < 58; k++) {
 				for (int k = 0; k < 60; k++) {
-					readTraffic1(path, dateString[i], j, k);
+					boolean needFix = false;
+					String timeString = dateString[i] + " " + j + ":" + k;
+					if (timeString.compareTo(fixTime) >= 0) needFix = true;
+					readTraffic1(path, dateString[i], j, k, needFix);
 				}
 			}
 		}
 	}
 
-	private static void readTraffic1(String path, String date, int hour, int minute) {
+	private static void readTraffic1(String path, String date, int hour, int minute, boolean needFix) {
 
 		String hString = (hour < 10 ? "0" + hour : "" + hour);
 		String mString = (minute < 10 ? "0" + minute : "" + minute);
@@ -183,7 +201,8 @@ public class BaiduTraffic {
 			for (int i = 0; i < fileCount; i++) {
 				for (int j = 0; j < 60; j++) {
 					String sString = (j < 10 ? "0" + j : "" + j);
-					String fileName = path + date + " " + hString + ":" + mString + ":" + sString + "_" + i + suffix;
+					String timeString = date + " " + hString + ":" + mString + ":" + sString;
+					String fileName = path + timeString + "_" + i + suffix;
 					//print(fileName);
 					File file = new File(fileName);
 					if (!file.exists()) {
@@ -200,7 +219,7 @@ public class BaiduTraffic {
 			// print contents
 			String roadStatus = date + " " + hString + ":" + mString + ",";
 			for (int i = 0; i < roads.length; i++) {
-				Status status = getStatus(rgb[roads[i].index], roads[i].from, roads[i].to, i);
+				Status status = getStatus(rgb[roads[i].index], roads[i].from, roads[i].to, i, needFix, roads[i].index);
 				if (status == null) {
 					roadStatus += 0;
 				} else {
@@ -217,9 +236,9 @@ public class BaiduTraffic {
 		}
 	}
 
-	private static Status getStatus(Integer[][][] rgb, Ankor from, Ankor to, int index) {
+	private static Status getStatus(Integer[][][] rgb, Ankor from, Ankor to, int index, boolean needFix, int imageIdx) {
 
-		Integer[][] points = getPoints(from, to);
+		Integer[][] points = getPoints(from, to, needFix, imageIdx);
 		Map<Status, Integer> pointStatus = new HashMap<Status, Integer>();
 
 		//if (index == 16) {
@@ -242,7 +261,7 @@ public class BaiduTraffic {
 			}
 		}
 		//try {
-		//	ImageUtil.drawRGB(path + "road" + index + ".png", newRGB);
+		//	ImageUtil.drawRGB(testPath + "road" + index + ".png", newRGB);
 		//} catch (IOException e) {
 		//	// TODO Auto-generated catch block
 		//	e.printStackTrace();
@@ -263,17 +282,36 @@ public class BaiduTraffic {
 		return maxStatus;
 	}
 
-	private static Integer[][] getPoints(Ankor from, Ankor to) {
-		int distance = Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
+	private static Integer[][] getPoints(Ankor from, Ankor to, boolean needFix, int imageIdx) {
+		int fx, fy, tx, ty;
+		if (needFix) {
+			if (imageIdx == 0) {
+				fx = from.x + fixPixel0X;
+				fy = from.y + fixPixel0Y;
+				tx = to.x + fixPixel0X;
+				ty = to.y + fixPixel0Y;
+			} else {
+				fx = from.x + fixPixel1X;
+				fy = from.y + fixPixel1Y;
+				tx = to.x + fixPixel1X;
+				ty = to.y + fixPixel1Y;
+			}
+		} else {
+			fx = from.x;
+			fy = from.y;
+			tx = to.x;
+			ty = to.y;
+		}
+		int distance = Math.abs(fx - tx) + Math.abs(fy - ty);
 		int count = (int)Math.round(Math.log(distance));
 		//int count = distance / 2;
 		Integer[][] points = new Integer[count * 9][];
-		float unitX = (0.0F + to.x - from.x) / (count + 1);
-		float unitY = (0.0F + to.y - from.y) / (count + 1);
+		float unitX = (0.0F + tx - fx) / (count + 1);
+		float unitY = (0.0F + ty - fy) / (count + 1);
 		for (int i = 0; i < count; i++) {
 			points[i * 9] = new Integer[2];
-			points[i * 9][0] = from.x + Math.round(unitX * (i + 1));
-			points[i * 9][1] = from.y + Math.round(unitY * (i + 1));
+			points[i * 9][0] = fx + Math.round(unitX * (i + 1));
+			points[i * 9][1] = fy + Math.round(unitY * (i + 1));
 			points[i * 9 + 1] = new Integer[2];
 			points[i * 9 + 1][0] = points[i * 9][0] + 2;
 			points[i * 9 + 1][1] = points[i * 9][1];
@@ -338,6 +376,7 @@ public class BaiduTraffic {
 	private static void print(String s) {
 		try {
 			bufWrite.write(s);
+			bufWrite.newLine();
 			System.out.println(s);
 			bufWrite.flush();
 		} catch (Exception e) {

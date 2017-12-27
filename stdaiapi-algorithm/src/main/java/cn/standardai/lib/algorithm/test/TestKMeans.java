@@ -10,6 +10,7 @@ import java.util.List;
 import cn.standardai.lib.algorithm.kmeans.KMeans;
 import cn.standardai.lib.algorithm.kmeans.KMeansNode;
 import cn.standardai.lib.algorithm.kmeans.NumberNode;
+import cn.standardai.tool.CsvUtil;
 
 public class TestKMeans {
 
@@ -17,9 +18,9 @@ public class TestKMeans {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		sortDotsArea();
+		//sortDotsArea();
 	}
-	
+
 	public static void sortDotsArea() {
 
 		List<Double> feature = null;
@@ -146,7 +147,6 @@ public class TestKMeans {
 			System.out.println();
 		}
 	}
-
 	
 	public static void sort() {
 

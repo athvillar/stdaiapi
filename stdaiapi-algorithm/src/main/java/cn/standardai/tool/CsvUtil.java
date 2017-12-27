@@ -73,7 +73,12 @@ public class CsvUtil {
 				String line;
 				while ((line = br.readLine()) != null) {
 					String[] items = line.split(",");
-					String[] result1 = new String[includeIndice.length];
+					String[] result1;
+					if (includeIndice != null && includeIndice.length != 0) {
+						result1 = new String[includeIndice.length];
+					} else {
+						result1 = new String[items.length];
+					}
 					
 					boolean drop = false;
 					if (keyIndice != null) {
@@ -86,8 +91,14 @@ public class CsvUtil {
 					}
 					if (drop) continue;
 
-					for (int i = 0; i < includeIndice.length; i++) {
-						result1[i] = items[includeIndice[i]];
+					if (includeIndice != null && includeIndice.length != 0) {
+						for (int i = 0; i < includeIndice.length; i++) {
+							result1[i] = items[includeIndice[i]];
+						}
+					} else {
+						for (int i = 0; i < items.length; i++) {
+							result1[i] = items[i];
+						}
 					}
 
 					if (distinct) {

@@ -19,7 +19,7 @@ public class InputLayer extends Layer {
 
 	@Override
 	public void format(Layer prevLayer) throws CnnException {
-		if (this.width != this.height) throw new CnnException("数据格式异常");
+		//if (this.width != this.height) throw new CnnException("数据格式异常");
 		this.data = new Double[width][height][depth];
 	}
 

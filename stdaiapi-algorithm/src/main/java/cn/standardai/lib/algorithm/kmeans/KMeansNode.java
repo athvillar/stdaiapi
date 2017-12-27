@@ -17,6 +17,8 @@ public abstract class KMeansNode<F, C> {
 	// 距离度量方法
 	public static enum DistanceMeasureMethod {CITYBLOCK, EUCLIDEAN, MINKOWSKI, COSINE, CHEBYCHEV};
 
+	private int index;
+
 	// 特征值
 	private List<F> feature;
 
@@ -130,5 +132,13 @@ public abstract class KMeansNode<F, C> {
 			}
 		}
 		return false;
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
 	}
 }
