@@ -556,6 +556,9 @@ maven build
         server xxx.xxx.xxx.xxx:10105 weight=1;
     }
 
+#### 数据库
+使用mysql数据库，执行stdaiapi/ddl.sql
+
 #### 启动
 分别启动各模块的main函数，包括
 
