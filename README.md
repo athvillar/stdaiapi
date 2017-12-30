@@ -1,6 +1,6 @@
 # STDAIAPI
 ## For English version, please see below
-数据集与深度学习模型全生命周期管理平台
+深度学习模型全生命周期管理平台
 
 ## 系统概述
 ### 概述
@@ -1032,7 +1032,7 @@ For programming call, SDK are used. A RESTful API is our standard SDK, includes
 
 ## Code Structure
 ### Layer Structure
-AI tech grows so fast that we cannot know how far it will get. In order to keep maintain extendible, a multi-layer structure is used. Even some functions, modules become obsolete, other parts can still work well without effected.
+AI tech grows so fast that we do not know where it will lead us. In order to keep maintain extendible, a multi-layer structure is used. Even some functions, modules become obsolete, other parts can still work well without effected.
 
 |Layer|Responsibility|Modules|Work To Do|
 |---|---|---|---|
