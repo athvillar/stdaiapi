@@ -1,5 +1,5 @@
-# STDAIAPI
-数据集与深度学习模型全生命周期管理平台 For English version, please see below
+# STDAIAPI (For English version, please see below)
+数据集与深度学习模型全生命周期管理平台
 
 ## 系统概述
 ### 概述
@@ -577,6 +577,9 @@ maven build
 现有的API、ASH入口不能满足初级用户需求，可以考虑开发一个图形化网页界面帮助用户了解系统功能。
 
 对深度学习技术来说，最新的技术永远在实验室，论文会落后于实验室，深度学习框架会落后于论文，深度学习平台又会落后于深度学习框架，如此，系统将在算法的先进性上距离最新技术很远，应尽可能多实现一些最近的技术。
+
+-------------------------
+
 # STDAIAPI
 A Lifecycle Management Platform for Deep Learning Model
 
@@ -1030,7 +1033,7 @@ For programming call, SDK are used. A RESTful API is our standard SDK, includes
 ### Layer Structure
 AI tech grows so fast that we cannot know how far it will get. In order to keep maintain extendible, a multi-layer structure is used. Even some functions, modules become obsolete, other parts can still work well without effected.
 
-|Layer|Responsibility|Modules|Improvement|
+|Layer|Responsibility|Modules|Work To Do|
 |---|---|---|---|
 |Application Layer|Provide solutions to a specific industry, e.g. face recognition|stdaiapi-app|
 |Model Layer|Common module to resolve one kind of problems, e.g. pattern recognition|stdaiapi-ml|
