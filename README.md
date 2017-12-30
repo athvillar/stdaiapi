@@ -1,5 +1,5 @@
-# stdaiapi
-数据集与深度学习模型全生命周期管理平台
+# STDAIAPI
+数据集与深度学习模型全生命周期管理平台 For English version, please see below
 
 ## 系统概述
 ### 概述
@@ -577,3 +577,583 @@ maven build
 现有的API、ASH入口不能满足初级用户需求，可以考虑开发一个图形化网页界面帮助用户了解系统功能。
 
 对深度学习技术来说，最新的技术永远在实验室，论文会落后于实验室，深度学习框架会落后于论文，深度学习平台又会落后于深度学习框架，如此，系统将在算法的先进性上距离最新技术很远，应尽可能多实现一些最近的技术。
+# STDAIAPI
+A Lifecycle Management Platform for Deep Learning Model
+
+## System Summary
+### About System
+Stdaiapi is a platform for managing deep learning model, including building, mining, sharing dataset, and for deep learning model, building, training, deploying and serving.
+
+A RESTful API is provided, upon which a command system (ASH) is used for a more direct interacting.
+
+### Architect
+A micro-service architect is used. Every single functional module make a minimal unit for running, deploying and horizontal expansion. So it makes a more flexible and extendable service.
+
+### Modules
+|Module|Function|Status|
+|---|---|---|
+|stdaiapi-algorithm|Module for algorithm|
+|stdaiapi-app|Module for application|unfinished|
+|stdaiapi-ash|Module for athvillar shell, a command line OS for the platform|
+|stdaiapi-biz|Module for platform business|
+|stdaiapi-core|Common functions|
+|stdaiapi-dao|Dao module for interface to DB|
+|stdaiapi-data|Module for dataset functions|
+|stdaiapi-distribute|Module to provide distribution capability|unfinished|
+|stdaiapi-es|Elastic search DB access interface|
+|stdaiapi-math|Math functions|
+|stdaiapi-ml|Module providing machine learning services|
+|stdaiapi-node|Distributed nodes module|unfinished|
+|stdaiapi-redis|Redis DB access interface|unfinished|
+|stdaiapi-statistic|Module providing statistic functions|
+
+## Functions
+### Data processing
+Data uploading, tagging, mining interfaces are provided.
+
+|Category|Algorithm|API|
+|---|---|---|
+|Classify|KNN|/ml/classify|
+|Cluster|KMeans|/ml/cluster|
+|Decision Tree|C4.5|/ml/decision|
+
+For details please refer to API documents. Besides, there are also some algorithm not wrapped yet in stdaiapi-algorithm module.
+
+### Deep Learning
+Platform provide a lifecycle management for deep learning model. The followings are available algorithms.
+
+|Category|Algorithm|API|
+|---|---|---|
+|CNN|CNN|/ml/cnn|
+|RNN|LSTM|/ml/lstm|
+
+For details please refer to API documents.
+
+### Business functions
+For business functions, user management, token management, dictionary functions are provided, for details please refer to API documents.
+
+### Entrance
+A RESTful API are provided for service, there is also a command line system called ASH. Graphic interface is under planning.
+
+## Usage
+### ASH
+ASH is a shell-like command line system, user can use it to manipulate dataset, models and other types of resources. ASH uses RESTful API co access server, so it just like a shell, that is how the name Athvillar Shell(ASH) comes from. ASH also use a style like shell, "ls" for list, "cat" for check, "man" for manual, etc. ASH includes a whole help system and documents, user can use "help", "man" and "cat doc [document]" to obtain instructions in details.
+
+There are 2 types of command in ASH, global command and resource command. Global command is not for resource, its format is "Command [Params]". Global command includes
+
+|Command|Instruction|Status|
+|---|---|---|
+|ash|Resolve ASH scripts, run batch|unfinished|
+|cd|Switch between resources|
+|curl|Like curl in shell, send http request|unfinished|
+|help|Show help information|
+|man|Show manual of commnad|
+|msg|Send & receive messages|
+|login|Login to platform|
+|logout|Logout|
+|version|View version|
+
+Resource command must be followed by a resource, its format is "Command [Resource Type] [Params]". If resource type is not specified, current resource is used as default. Resource command includes
+
+|Command|Instruction|Status|
+|---|---|---|
+|call|Call resources, like training model|
+|cat|View details of a resource, like inspect a model structure|
+|cp|Copy resource|unfinished|
+|find|Find resource|unfinished|
+|ls|List resource, like list all models|
+|mk|Create resource, like create a CNN model|
+|rm|Delete resource|
+|set|Set resource, like tagging a dataset|
+
+Resource includes
+
+|Resource|Instruction|Status|
+|---|---|---|
+|data|Data resource, upload by user, for training or predicting
+|dic|Dictionary resource, for data pre-precessing
+|doc|Document resource, including instructions for platform and SDK
+|file|File resource like user scripts|unfinished|
+|filter|Filter resource, for data pre-processing
+|model|Model resource, created by user, mostly deep learning models
+|node|Node resource, calculation unit|unfinished|
+|user|User resource|
+
+"cd" command is used for switch between resources.
+
+    $model>
+
+means model is current resource.
+
+### RESTful API
+For programming call, SDK are used. A RESTful API is our standard SDK, includes
+
+#### Business Module Interface
+##### User Related Interface
+###### Add User
+    curl -XPOST -H 'Content-Type: application/json' http://123.56.253.228/biz/user/xxx -d '{
+        "password":"xxxxxx","email":"xxx@abc.com"
+    }'
+
+###### View User (you should get a token first, the same below)
+    curl -XGET -H 'token: GHS1LOZWQK3Q25TTW' http://123.56.253.228/biz/user/xxx
+
+###### Modify User
+    curl -XPOST -H 'token: 1WUJ1Q4IC7GRZEQT8' -H 'Content-Type: application/json' http://123.56.253.228/biz/user/xxx -d '{
+      "password":"xxxxxx","email":"yyy@abc.com"
+    }'
+
+###### Modify Password
+    curl -XPOST -H 'token: 1WUJ1Q4IC7GRZEQT8' -H 'Content-Type: application/json' http://123.56.253.228/biz/user/xxx -d '{
+      "oldPassword":"xxxxxx","newPassword":"yyyyyy","email":"yyy@abc.com"
+    }'
+
+###### Remove User
+    curl -XDELETE -H 'token: ZEQT85A5UY3WLGPG8' http://123.56.253.228/biz/user/xxx
+
+##### Token Related Interface
+###### Get Token for Login
+    curl -XPOST -H 'Content-Type: application/json' http://123.56.253.228/biz/token -d '{
+        "userId": "xxx",
+        "password":"xxxxxx"
+    }'
+
+###### Delete Token for Logout
+    curl -XDELETE -H 'token: F5ECV3IHRIZQDGSV4' http://123.56.253.228/biz/token/F5ECV3IHRIZQDGSV4
+
+##### Message Related Interface
+###### Send Message
+    curl -XPOST -H 'token: M56LGK18E7VN4Y6CF' -H 'Content-Type: application/json' http://123.56.253.228/biz/messages -d '{
+        "toUserId": "xxx",
+        "content": "hello"
+    }'
+
+###### Find Message
+    curl -XGET -H 'token: M56LGK18E7VN4Y6CF' 'http://123.56.253.228/biz/messages?type=receive&userId=xxx&all=1'
+
+###### Delete message
+    curl -XDELETE -H 'token: M56LGK18E7VN4Y6CF' http://123.56.253.228/biz/messages
+
+##### Dataset Related Interface
+###### Delete Dataset
+    curl -XDELETE http://123.56.253.228/biz/dataset/XLBER5WKJ3O97UKXKCAYONCV
+
+#### Data Module Interface
+##### Data Related Interface
+###### Data Upload Interface
+    curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI' -H 'Content-Type: application/json' http://123.56.253.228/data/data -d '
+    {
+        "dataName": "gender",
+        "description": "gender dic",
+        "sharePolicy": "protected",
+        "format": "csv",
+        "keywords": "k1,k2",
+        "titles": "t1,t2",
+        "data": [
+            ["x1","y1"],
+            ["x2","y2"]
+        ]
+    }'
+
+###### Data Upload Interface, create dataset only
+    curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI' -H 'Content-Type: application/json' http://123.56.253.228/data/data -d '
+    {
+        "dataName": "yale",
+        "description": "yale face",
+        "sharePolicy": "protected",
+        "type": "file",
+        "format": "bmp",
+        "keywords": "k1,k2",
+        "titles": "t1,t2"
+    }'
+
+###### Upload Local Files to Dataset
+    curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI'  -F files=@'/Path-To-File/s1.bmp' -F files=@'/Path-To-File/s2.bmp' http://123.56.253.228/data/data/xxxUser/yale
+
+###### Tagging Dataset
+    curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI' -H 'Content-Type: application/json' http://123.56.253.228/data/data/xxxUser/yale -d '
+    {
+      "updateBaseIdx": 1,
+      "batchSet": {
+        "label1": { "start": 1, "end": 11},
+        "label2": { "start": 12, "end": 22}
+      }
+    }'
+
+###### Upload Data & Tagging
+    curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI' -H 'Content-Type: application/json' http://123.56.253.228/data/data/xxxUser/yaletest -d '
+    {
+      "updateBaseIdx": 1,
+      "data": [
+        ["x1","y1"],
+        ["x2","y2"]
+      ],
+      "batchSet": {
+        "label1": { "start": 1, "end": 11},
+        "label2": { "start": 12, "end": 22}
+      }
+    }'
+
+###### List Dataset
+    curl -XGET -H 'token: RSTR0X2BV3FH9BFSI' http://123.56.253.228/data/data
+
+###### View Dataset
+    curl -XGET -H 'token: RSTR0X2BV3FH9BFSI' http://123.56.253.228/data/data/xxxUser/gender
+
+###### Remove Dataset
+    curl -XDELETE -H 'token: RSTR0X2BV3FH9BFSI' http://123.56.253.228/data/data/xxxUser/gender
+
+##### Dictionary Related Interface
+###### Create Dictionary
+    curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI' -H 'Content-Type: application/json' http://123.56.253.228/data/dic -d '
+    {
+      "dicName": "gender",
+      "description": "gender dic",
+      "sharePolicy": "protected",
+      "data": [
+        {"key": 1, "value": "男"},
+        {"key": 2, "value": "女"}
+      ]
+    }'
+
+###### List Dictionary
+    curl -XGET -H 'token: NCZYJNUFN7NMTTTZC' http://123.56.253.228/data/dic
+
+###### View Dictionary
+    curl -XGET -H 'token: RSTR0X2BV3FH9BFSI' http://123.56.253.228/data/dic/xxxUser/gender
+
+###### Remove Dictionary
+    curl -XDELETE -H 'token: RSTR0X2BV3FH9BFSI' http://123.56.253.228/data/dic/xxxUser/gender
+
+#### Math Module Interface
+###### Random String
+    curl -XGET -H 'token: GHS1LOZWQK3Q25TTW' http://123.56.253.228/math/rand?num=1&len=3&letters=12345ABC
+
+#### Machine Learning Module Interface
+##### Classify Interface
+###### By Dtaset ID
+    curl -XPOST -H 'token: F5ECV3IHRIZQDGSV4' -H 'Content-Type: application/json' http://123.56.253.228/ml/dm/classify -d '
+    {
+      "trainingSet":{
+        "id": "V4Q1F7IWPI2GTZ9OK7GLQYQD"
+      },
+      "targetSet":{
+        "data": [
+          {"features":[90,92,22,73]},
+          {"features":[58,33,33,44]}
+        ]
+      }
+    }'
+
+###### By Dataset Name
+    curl -XPOST -H 'token: F5ECV3IHRIZQDGSV4' -H 'Content-Type: application/json' http://123.56.253.228/ml/dm/classify -d '
+    {
+      "trainingSet":{
+        "name": "testknn"
+      },
+      "targetSet":{
+        "data": [
+          {"features":[68,39,98,73]},
+          {"features":[58,33,89,71]}
+        ]
+      }
+    }'
+
+###### By Data
+    curl -XPOST -H 'token: F5ECV3IHRIZQDGSV4' -H 'Content-Type: application/json' http://123.56.253.228/ml/dm/classify -d '
+    {
+      "trainingSet":{
+        "data": [
+          {"features":[99,98,20,35], "category":"A"},
+          {"features":[49,36,97,87], "category":"B"},
+          {"features":[68,36,38,41], "category":"C"}
+        ]
+      },
+      "targetSet":{
+        "data": [
+          {"features":[90,82,62,73]},
+          {"features":[58,33,33,44]}
+        ]
+      }
+    }'
+
+##### Cluster Interface
+###### Cluster Interface
+    curl -XPOST -H 'token: F5ECV3IHRIZQDGSV4' -H 'Content-Type: application/json' http://123.56.253.228/ml/dm/cluster -d '
+    {
+      "clusterNumber": 2,
+      "trainingSet":{
+        "data": [
+          {"features":[99,98,20,35]},
+          {"features":[49,36,97,87]},
+          {"features":[68,36,38,41]},
+          {"features":[58,42,74,39]},
+          {"features":[99,99,17,10]},
+          {"features":[91,89,37,52]},
+          {"features":[97,96,26,39]},
+          {"features":[70,87,98,96]},
+          {"features":[71,62,99,95]},
+          {"features":[70,62,47,38]},
+          {"features":[68,39,98,73]},
+          {"features":[76,55,47,63]}
+        ]
+      }
+    }'
+
+##### Decision Tree Interface
+###### Make Decision Tree
+    curl -XPOST -H 'Content-Type: application/json' http://123.56.253.228/ml/dm/decision -d '
+    {
+      "trainingSet":{
+        "data": [
+          "NAME,GENDER,WORDS NUMBER IN NAME,80/90,MARRIED,SINGLE",
+          "X,D,D,D,D,D",
+          "A,1,2,80,1,0",
+          "B,0,2,80,1,0",
+          "C,1,3,80,0,1",
+          "D,0,3,90,0,0",
+          "E,1,2,90,0,1",
+          "F,0,2,80,0,1",
+          "G,0,3,90,0,1",
+          "H,1,3,90,0,0"
+        ]
+      }
+    }'
+
+##### Convolution Neural Network
+###### Create CNN
+    curl -XPOST -H 'Content-Type: application/json' -H 'token: M56LGK18E7VN4Y6CF' http://123.56.253.228/ml/dnn -d '
+    {
+      "name": "testcnn",
+      "algorithm": "cnn",
+      "data": {
+        "datasetId": "xxx",
+        "datasetName": "xxx",
+        "x": {
+          "column": "table.data.ref",
+          "filter": ["jpg2RGB2Double2"]
+        },
+        "y": {
+            "colume": "table.data.y",
+            "filter": "subString(1)|lookupDic2Integer(xxxx)" 
+        }
+      },
+      "structure": {
+        "layers" : [ 
+            {"type": "INPUT", "width": 100, "height": 100, "depth": 1 },
+            {"type": "POOL", "method": "max", "spatial": 2, "stride": 2},
+            {"type": "CONV", "depth": 8, "stride": 1, "padding":1, "learningRate": 1, "aF": "sigmoid",
+              "filter": {"width":3, "height":3} 
+            },
+            {"type": "POOL", "method": "max", "spatial": 2, "stride": 2},
+            {"type": "CONV", "depth": 6, "stride": 1, "padding":1, "learningRate": 1, "aF": "sigmoid",
+              "filter": {"width":3, "height":3} 
+            },
+            {"type": "FC", "depth": 15, "learningRate": 1, "aF": "sigmoid" } 
+        ]
+      }
+    }'
+
+##### Long Short Term Memory
+###### Create LSTM
+    curl -XPOST -H 'Content-Type: application/json' -H 'token: WLJ5M83S6RJBYDUAS' http://123.56.253.228/ml/dnn -d '
+    {
+      "name": "testlstm",
+      "algorithm": "lstm",
+      "data": {
+        "datasetId": "xxx",
+        "datasetName": "xxx",
+        "x": {
+          "column": "table.data.x",
+          "filter": ""
+        },
+        "y": {
+            "colume": "table.data.y",
+            "filter": "IntegerDicFilter(xxxUser/xxxDic)" 
+        }
+      },
+      "structure": {
+        "layerSize":[3,4],
+        "inputSize":80,
+        "outputSize":80,
+        "delay": true
+      }
+    }'
+
+###### Train Model
+    curl -XPOST -H 'Content-Type: application/json' -H 'token: WLJ5M83S6RJBYDUAS' http://123.56.253.228/ml/dnn/xxxUser/xxxModel -d '
+    {
+      "new": true,
+      "train":{
+        "diverseDataRate": [8,1,1],
+        "dth":1,
+        "learningRate":0.07,
+        "epoch":8000,
+        "trainSecond": 3600,
+        "batchSize": 100,
+        "watchEpoch":1,
+        "testLossIncreaseTolerance":3
+      }
+    }'
+
+###### Use Model to Predict
+    curl -XPOST -H 'Content-Type: application/json' -H 'token: WLJ5M83S6RJBYDUAS' http://123.56.253.228/ml/dnn/xxxUser/xxxModel/predict -d '
+    {
+        "lstm": {
+          "terminator": ",",
+          "steps":12
+        }
+        "data": {
+          "datasetId": "xxx",
+          "datasetName": "xxxUser/yale",
+          "idx":[1,3,5],
+          "x": {
+            "column": "table.data.x",
+            "filter": ""
+          },
+          "y": {
+            "filter": "IntegerDicFilter(xxxUser/xxxDic)" 
+          }
+        },
+      }
+    }'
+
+#### ASH Module Interface
+###### Execute Command
+    curl -XPOST -H 'Content-Type: application/json' -H 'token: M56LGK18E7VN4Y6CF' http://123.56.253.228/ash/ash -d '
+    {
+      "ash": "ls -l",
+      "resource": "model"
+    }'
+
+## Code Structure
+### Layer Structure
+AI tech grows so fast that we cannot know how far it will get. In order to keep maintain extendible, a multi-layer structure is used. Even some functions, modules become obsolete, other parts can still work well without effected.
+
+|Layer|Responsibility|Modules|Improvement|
+|---|---|---|---|
+|Application Layer|Provide solutions to a specific industry, e.g. face recognition|stdaiapi-app|
+|Model Layer|Common module to resolve one kind of problems, e.g. pattern recognition|stdaiapi-ml|
+|Algorithm Layer|Data mining, deep learning algorithm|stdaiapi-algorithm|Algorithm innovation|
+|Framework Layer|Distributed calculation framework, deep learning framework|stdaiapi-algorithm|GPU, Tensorflow, MapReduce|
+|Data Layer|Data access interface|stdaiapi-dao, stdaiapi-es, stdaiapi-redis|
+
+### Layer inside module
+Some of the modules, like stdaiapi-ml、stdaiapi-biz, use SpringBoot development framework. There is a service layer and an agent layer. Service layer receives request from frontend, dispatch it to agent layer, wraps the results from agent layer and send to frontend as response. Agent layer process logic part, sometimes calls other layers.
+
+## Deployment
+### By Code
+#### Download Code
+git clone https://github.com/athvillar/stdaiapi
+
+#### Complie
+cd stdaiapi
+
+maven build
+
+#### Config Nginx
+Config server & upstream blocks in nginx.conf, note that the ports need to meet wich the server.port in application.properties.
+
+    server {
+        listen 80;
+        server_name localhost,123.56.253.228;
+
+        location / {
+            root    /etc/nginx/html/;
+            index   index.html;
+        }
+
+        location /math/v1/ {
+            proxy_pass http://math-v1/math/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /ml/v1/ {
+            proxy_pass http://ml-v1/ml/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /data/v1/ {
+            proxy_pass http://data-v1/data/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /biz/v1/ {
+            proxy_pass http://biz-v1/biz/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /ash/v1/ {
+            proxy_pass http://ash-v1/ash/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /app/v1/ {
+            proxy_pass http://app-v1/app/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /statistic/v1/ {
+            proxy_pass http://statistic-v1/statistic/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+
+    upstream math-v1 {
+        server xxx.xxx.xxx.xxx:10101 weight=1;
+    }
+    upstream ml-v1 {
+        server xxx.xxx.xxx.xxx:10102 weight=1;
+    }
+    upstream data-v1 {
+        server xxx.xxx.xxx.xxx:10103 weight=1;
+    }
+    upstream biz-v1 {
+        server xxx.xxx.xxx.xxx:10104 weight=1;
+    }
+    upstream ash-v1 {
+        server xxx.xxx.xxx.xxx:10106 weight=1;
+    }
+    upstream app-v1 {
+        server xxx.xxx.xxx.xxx:10107 weight=1;
+    }
+    upstream statistic-v1 {
+        server xxx.xxx.xxx.xxx:10105 weight=1;
+    }
+
+#### Database
+Mysql is used, to create tables, run stdaiapi/ddl.sql
+
+#### Startup
+Run main method in modules, includes
+
+    cn.standardai.api.ash.Application
+    cn.standardai.api.biz.Application
+    cn.standardai.api.data.Application
+    cn.standardai.api.math.Application
+    cn.standardai.api.ml.Application
+
+### By Docker
+No images can be used yet
+
+## Improvement
+Now the project can work, although there is a lot to improve. Distributed calculation, GPU calculation are not supported yet, involving Tensorflow in framework layer can solve the question. Spark, HDFS should be involved also, to improve our capability of processing big data.
+
+Entrance like API, ASH is a little difficulty for new users, we're consider to develop a graphic website to help people know/use our system.
+
+The most up-to-date tech is in the library, then the papers, then framework like tensorflow. Our platform is far from the newest tech if we donot move on. We should make more algorithms, maybe a new framework.
+
