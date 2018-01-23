@@ -1,5 +1,6 @@
-# STDAIAPI (For English version, please see below)
-数据集与深度学习模型全生命周期管理平台
+# STDAIAPI
+## For English version, please see below
+深度学习模型全生命周期管理平台
 
 ## 系统概述
 ### 概述
@@ -611,7 +612,7 @@ A micro-service architect is used. Every single functional module make a minimal
 |stdaiapi-statistic|Module providing statistic functions|
 
 ## Functions
-### Data processing
+### Data Processing
 Data uploading, tagging, mining interfaces are provided.
 
 |Category|Algorithm|API|
@@ -632,7 +633,7 @@ Platform provide a lifecycle management for deep learning model. The followings 
 
 For details please refer to API documents.
 
-### Business functions
+### Business Functions
 For business functions, user management, token management, dictionary functions are provided, for details please refer to API documents.
 
 ### Entrance
@@ -758,7 +759,7 @@ For programming call, SDK are used. A RESTful API is our standard SDK, includes
         ]
     }'
 
-###### Data Upload Interface, create dataset only
+###### Data Upload Interface (create dataset only)
     curl -XPOST -H 'token: RSTR0X2BV3FH9BFSI' -H 'Content-Type: application/json' http://123.56.253.228/data/data -d '
     {
         "dataName": "yale",
@@ -1031,7 +1032,7 @@ For programming call, SDK are used. A RESTful API is our standard SDK, includes
 
 ## Code Structure
 ### Layer Structure
-AI tech grows so fast that we cannot know how far it will get. In order to keep maintain extendible, a multi-layer structure is used. Even some functions, modules become obsolete, other parts can still work well without effected.
+AI tech grows so fast that we do not know where it will lead us. In order to keep maintain extendible, a multi-layer structure is used. Even some functions, modules become obsolete, other parts can still work well without effected.
 
 |Layer|Responsibility|Modules|Work To Do|
 |---|---|---|---|
@@ -1041,7 +1042,7 @@ AI tech grows so fast that we cannot know how far it will get. In order to keep 
 |Framework Layer|Distributed calculation framework, deep learning framework|stdaiapi-algorithm|GPU, Tensorflow, MapReduce|
 |Data Layer|Data access interface|stdaiapi-dao, stdaiapi-es, stdaiapi-redis|
 
-### Layer inside module
+### Layers Inside Module
 Some of the modules, like stdaiapi-ml、stdaiapi-biz, use SpringBoot development framework. There is a service layer and an agent layer. Service layer receives request from frontend, dispatch it to agent layer, wraps the results from agent layer and send to frontend as response. Agent layer process logic part, sometimes calls other layers.
 
 ## Deployment
